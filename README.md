@@ -1,4 +1,4 @@
-# 📌 Gatekeeper — Zero-Trust API Gateway & Management Platform
+# 📌 Gatekeeper — *Zero-Trust API Gateway & Management Platform*
 
 
 ## 1. 🧠 What This Project Is / Why It Exists
