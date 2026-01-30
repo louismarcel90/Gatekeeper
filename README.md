@@ -1,7 +1,7 @@
 # 📌 Gatekeeper — *Zero-Trust API Gateway & Management Platform*
 
 
-## 1. 🧠 What This Project Is / Why It Exists
+## 1. 🧠 What is Gatekeeper / Why It Exists
 
 
 Gatekeeper is a full-stack API security and governance platform built to address today’s most urgent enterprise needs: access control, rate limiting, auditability, analytics, and abuse prevention.
@@ -24,7 +24,7 @@ This project demonstrates the design of a modern API Gateway, focused on securit
 ---
 
 
-## 3. 🧪 What This Project Demonstrates
+## 3. 🧪 What Gatekeeper Demonstrates
 
 
 - System design of a Zero-Trust API gateway
@@ -84,7 +84,7 @@ This project demonstrates the design of a modern API Gateway, focused on securit
 ---
 
 
-## 8. 🏛️ Why This Project Matters
+## 8. 🏛️ Why Gatekeeper Matters
 
 
 APIs are a company’s primary integration surface and attack vector.
