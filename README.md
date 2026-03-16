@@ -94,4 +94,4 @@ This project demonstrates the design of a modern API Gateway, focused on securit
 APIs are a company’s primary integration surface and attack vector.
 
 
-Gatekeeper mirrors how modern platform teams design internal infrastructure for regulated, security-conscious, and fast-growing organizations.
+Gatekeeper mirrors how modern platform teams design internal infrastructure for regulated, security-conscious, and fast-growing organizations
