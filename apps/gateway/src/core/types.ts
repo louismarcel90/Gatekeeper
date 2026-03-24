@@ -1,11 +1,24 @@
 export type DecisionType = "ALLOW" | "DENY" | "THROTTLE";
 
+export type DecisionReasonCode =
+  | "OK"
+  | "SNAPSHOT_MISSING"
+  | "ROUTE_NOT_FOUND"
+  | "ROUTE_DISABLED"
+  | "POLICY_NOT_FOUND"
+  | "API_KEY_MISSING"
+  | "SCOPE_MISSING"
+  | "RATE_LIMIT_EXCEEDED";
+
 export type Decision = {
+  decision_id: string;
   decision: DecisionType;
-  reason_code: string;
+  reason_code: DecisionReasonCode;
   policy_id?: string;
   route_id?: string;
-  explanation?: string;
+  matched_rule?: string;
+  explanation: string;
+  snapshot_version?: number;
   timestamp: string;
 };
 
@@ -15,6 +28,7 @@ export type RequestContext = {
   headers: Record<string, string | string[] | undefined>;
   ip: string;
   client_id?: string;
+  scopes: string[];
 };
 
 export type ManagedRoute = {

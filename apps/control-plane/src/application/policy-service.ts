@@ -1,17 +1,17 @@
 import { Policy } from "../domain/types";
 import { CreatePolicyInput } from "../domain/validators";
-import { store } from "../infrastructure/store";
+import { getAllPolicies, insertPolicy } from "../infrastructure/policy-repository";
 
-export function listPolicies(): Policy[] {
-  return store.getPolicies();
+export async function listPolicies(): Promise<Policy[]> {
+  return getAllPolicies();
 }
 
-export function createPolicy(input: CreatePolicyInput): Policy {
-  return store.addPolicy({
+export async function createPolicy(input: CreatePolicyInput): Promise<Policy> {
+  return insertPolicy({
     id: input.id,
     route_id: input.route_id,
     require_api_key: input.require_api_key,
     required_scopes: input.required_scopes,
-    rate_limit_per_minute: input.rate_limit_per_minute
+    rate_limit_per_minute: input.rate_limit_per_minute,
   });
 }

@@ -4,7 +4,7 @@ import { sendNotFound } from "../shared/http";
 
 export async function registerSnapshotRoutes(app: FastifyInstance) {
   app.get("/snapshots/latest", async (req, reply) => {
-    const snapshot = getLatestSnapshot();
+    const snapshot = await getLatestSnapshot();
 
     if (!snapshot) {
       return sendNotFound(reply, "No snapshot has been published yet.");
@@ -14,7 +14,7 @@ export async function registerSnapshotRoutes(app: FastifyInstance) {
   });
 
   app.post("/snapshots/publish", async (req, reply) => {
-    const snapshot = publishSnapshot();
+    const snapshot = await publishSnapshot();
     return reply.code(201).send(snapshot);
   });
 }

@@ -1,14 +1,17 @@
 import Fastify from "fastify";
+import { controlPlaneConfig } from "./config/env";
+import { initDatabase } from "./db/init";
 import { registerHealthRoutes } from "./routes/health";
 import { registerManagedRouteRoutes } from "./routes/routes";
 import { registerPolicyRoutes } from "./routes/policies";
 import { registerSnapshotRoutes } from "./routes/snapshots";
 
 const app = Fastify({
-  logger: true
+  logger: true,
 });
 
 async function buildServer() {
+  await initDatabase();
   await registerHealthRoutes(app);
   await registerManagedRouteRoutes(app);
   await registerPolicyRoutes(app);
@@ -20,12 +23,20 @@ async function buildServer() {
 async function start() {
   try {
     await buildServer();
+
     await app.listen({
-      port: 3001,
-      host: "0.0.0.0"
+      port: controlPlaneConfig.port,
+      host: controlPlaneConfig.host,
     });
 
-    app.log.info("Control Plane running on port 3001");
+    app.log.info(
+      {
+        port: controlPlaneConfig.port,
+        host: controlPlaneConfig.host,
+        databaseUrl: controlPlaneConfig.databaseUrl,
+      },
+      "Control Plane running",
+    );
   } catch (error) {
     app.log.error(error, "Failed to start Control Plane");
     process.exit(1);

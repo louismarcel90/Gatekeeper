@@ -6,7 +6,7 @@ import { sendBadRequest, sendInternalError } from "../shared/http";
 export async function registerManagedRouteRoutes(app: FastifyInstance) {
   app.get("/routes", async () => {
     return {
-      items: listRoutes()
+      items: await listRoutes(),
     };
   });
 
@@ -18,7 +18,7 @@ export async function registerManagedRouteRoutes(app: FastifyInstance) {
     }
 
     try {
-      const created = createRoute(parsed.data);
+      const created = await createRoute(parsed.data);
       return reply.code(201).send(created);
     } catch (error) {
       const message =

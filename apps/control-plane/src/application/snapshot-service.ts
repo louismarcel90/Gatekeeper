@@ -1,17 +1,27 @@
 import { Snapshot } from "../domain/types";
-import { store } from "../infrastructure/store";
+import { getAllPolicies } from "../infrastructure/policy-repository";
+import { getAllRoutes } from "../infrastructure/route-repository";
+import {
+  getLatestSnapshot as getLatestSnapshotFromDb,
+  getNextSnapshotVersion,
+  insertSnapshot,
+} from "../infrastructure/snapshot-repository";
 
-export function publishSnapshot(): Snapshot {
+export async function publishSnapshot(): Promise<Snapshot> {
+  const routes = await getAllRoutes();
+  const policies = await getAllPolicies();
+  const version = await getNextSnapshotVersion();
+
   const snapshot: Snapshot = {
-    version: store.getNextSnapshotVersion(),
+    version,
     generated_at: new Date().toISOString(),
-    routes: store.getRoutes(),
-    policies: store.getPolicies()
+    routes,
+    policies,
   };
 
-  return store.addSnapshot(snapshot);
+  return insertSnapshot(snapshot);
 }
 
-export function getLatestSnapshot(): Snapshot | null {
-  return store.getLatestSnapshot();
+export async function getLatestSnapshot(): Promise<Snapshot | null> {
+  return getLatestSnapshotFromDb();
 }

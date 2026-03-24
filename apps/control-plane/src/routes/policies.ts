@@ -6,7 +6,7 @@ import { sendBadRequest, sendInternalError } from "../shared/http";
 export async function registerPolicyRoutes(app: FastifyInstance) {
   app.get("/policies", async () => {
     return {
-      items: listPolicies()
+      items: await listPolicies(),
     };
   });
 
@@ -18,7 +18,7 @@ export async function registerPolicyRoutes(app: FastifyInstance) {
     }
 
     try {
-      const created = createPolicy(parsed.data);
+      const created = await createPolicy(parsed.data);
       return reply.code(201).send(created);
     } catch (error) {
       const message =

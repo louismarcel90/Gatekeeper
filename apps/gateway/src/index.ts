@@ -4,7 +4,7 @@ import { buildContext } from "./core/context";
 import { evaluateWithSnapshot } from "./core/decision-engine";
 import { logRequest } from "./middleware/logger";
 import { registerDebugRoutes } from "./routes/debug";
-import { loadSnapshotOnStartup } from "./services/snapshot-sync";
+import { loadSnapshotOnStartup, startSnapshotPolling } from "./services/snapshot-sync";
 import { snapshotStore } from "./services/snapshot-store";
 
 const app = Fastify({ logger: true });
@@ -37,6 +37,7 @@ async function registerRoutes() {
 async function start() {
   try {
     await loadSnapshotOnStartup();
+    startSnapshotPolling();
     await registerRoutes();
 
     await app.listen({
@@ -49,6 +50,7 @@ async function start() {
         port: gatewayConfig.port,
         host: gatewayConfig.host,
         controlPlaneBaseUrl: gatewayConfig.controlPlaneBaseUrl,
+        snapshotPollIntervalMs: gatewayConfig.snapshotPollIntervalMs,
       },
       "Gateway running",
     );

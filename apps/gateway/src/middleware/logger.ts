@@ -3,9 +3,11 @@ import { Decision } from "../core/types";
 
 export function logRequest(req: FastifyRequest, decision: Decision) {
   req.log.info({
-    method: req.method,
-    url: req.url,
-    ip: req.ip,
+    request: {
+      method: req.method,
+      url: req.url,
+      ip: req.ip,
+    },
     decision,
   });
 }

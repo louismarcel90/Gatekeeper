@@ -14,12 +14,27 @@ function readHeader(
   return value;
 }
 
+function parseScopes(rawValue: string | undefined): string[] {
+  if (!rawValue) {
+    return [];
+  }
+
+  return rawValue
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
 export function buildContext(req: FastifyRequest): RequestContext {
+  const apiKey = readHeader(req.headers, "x-api-key");
+  const rawScopes = readHeader(req.headers, "x-scopes");
+
   return {
     method: req.method,
     path: req.url,
     headers: req.headers,
     ip: req.ip,
-    client_id: readHeader(req.headers, "x-api-key"),
+    client_id: apiKey,
+    scopes: parseScopes(rawScopes),
   };
 }

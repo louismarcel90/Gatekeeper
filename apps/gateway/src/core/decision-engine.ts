@@ -1,10 +1,7 @@
-import { Decision, ManagedRoute, Policy, RequestContext, Snapshot } from "./types";
-
-function findRoute(snapshot: Snapshot, context: RequestContext): ManagedRoute | undefined {
-  return snapshot.routes.find((route) => {
-    return route.enabled && route.method === context.method && route.path === context.path;
-  });
-}
+import { buildDecision } from "./decision-factory";
+import { findManagedRoute } from "./route-matcher";
+import { findMissingScopes } from "./scope-utils";
+import { Policy, RequestContext, Snapshot } from "./types";
 
 function findPolicyForRoute(snapshot: Snapshot, routeId: string): Policy | undefined {
   return snapshot.policies.find((policy) => policy.route_id === routeId);
@@ -13,69 +10,97 @@ function findPolicyForRoute(snapshot: Snapshot, routeId: string): Policy | undef
 export function evaluateWithSnapshot(
   context: RequestContext,
   snapshot: Snapshot | null,
-): Decision {
-  const now = new Date().toISOString();
-
+) {
   if (!snapshot) {
-    return {
+    return buildDecision({
       decision: "DENY",
       reason_code: "SNAPSHOT_MISSING",
-      explanation: "No active snapshot loaded in gateway runtime.",
-      timestamp: now,
-    };
+      explanation: "No active snapshot is loaded in the gateway runtime.",
+      matched_rule: "gateway.snapshot.required",
+    });
   }
 
-  const route = findRoute(snapshot, context);
+  const route = findManagedRoute(snapshot, context);
 
   if (!route) {
-    return {
+    return buildDecision({
       decision: "DENY",
       reason_code: "ROUTE_NOT_FOUND",
-      explanation: "No enabled managed route matched this request.",
-      timestamp: now,
-    };
+      explanation: "No managed route matched the incoming request.",
+      snapshot_version: snapshot.version,
+      matched_rule: "routing.route.match",
+    });
+  }
+
+  if (!route.enabled) {
+    return buildDecision({
+      decision: "DENY",
+      reason_code: "ROUTE_DISABLED",
+      explanation: "The matched route exists but is currently disabled.",
+      snapshot_version: snapshot.version,
+      route_id: route.id,
+      matched_rule: "routing.route.enabled",
+    });
   }
 
   const policy = findPolicyForRoute(snapshot, route.id);
 
   if (!policy) {
-    return {
+    return buildDecision({
       decision: "DENY",
       reason_code: "POLICY_NOT_FOUND",
+      explanation: "The matched route does not have an attached policy.",
+      snapshot_version: snapshot.version,
       route_id: route.id,
-      explanation: "No policy is attached to the matched route.",
-      timestamp: now,
-    };
+      matched_rule: "policy.route.attached",
+    });
   }
 
   if (policy.require_api_key && !context.client_id) {
-    return {
+    return buildDecision({
       decision: "DENY",
       reason_code: "API_KEY_MISSING",
+      explanation: "This route requires a valid API key.",
+      snapshot_version: snapshot.version,
       route_id: route.id,
       policy_id: policy.id,
-      explanation: "This route requires an API key.",
-      timestamp: now,
-    };
+      matched_rule: "auth.api_key.required",
+    });
   }
 
-  if (policy.rate_limit_per_minute !== null && context.path === "/heavy") {
-    return {
+  const missingScopes = findMissingScopes(policy.required_scopes, context.scopes);
+
+  if (missingScopes.length > 0) {
+    return buildDecision({
+      decision: "DENY",
+      reason_code: "SCOPE_MISSING",
+      explanation: `Missing required scopes: ${missingScopes.join(", ")}`,
+      snapshot_version: snapshot.version,
+      route_id: route.id,
+      policy_id: policy.id,
+      matched_rule: "auth.scopes.required",
+    });
+  }
+
+  if (policy.rate_limit_per_minute !== null && context.path.startsWith("/heavy")) {
+    return buildDecision({
       decision: "THROTTLE",
       reason_code: "RATE_LIMIT_EXCEEDED",
+      explanation: "The request was throttled by the active route policy.",
+      snapshot_version: snapshot.version,
       route_id: route.id,
       policy_id: policy.id,
-      explanation: "The request was throttled by the current route policy.",
-      timestamp: now,
-    };
+      matched_rule: "traffic.rate_limit.per_minute",
+    });
   }
 
-  return {
+  return buildDecision({
     decision: "ALLOW",
     reason_code: "OK",
+    explanation: "The request matched an enabled route and satisfied its active policy.",
+    snapshot_version: snapshot.version,
     route_id: route.id,
     policy_id: policy.id,
-    explanation: "The request matched an enabled route and satisfied its policy.",
-    timestamp: now,
-  };
+    matched_rule: "decision.allow.default",
+  });
 }

@@ -14,6 +14,10 @@ class SnapshotStore {
   hasSnapshot(): boolean {
     return this.snapshot !== null;
   }
+
+  getVersion(): number | null {
+    return this.snapshot?.version ?? null;
+  }
 }
 
 export const snapshotStore = new SnapshotStore();
