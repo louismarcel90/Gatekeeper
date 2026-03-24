@@ -1,25 +1,61 @@
 import Fastify from "fastify";
+import { gatewayConfig } from "./config/env";
 import { buildContext } from "./core/context";
-import { evaluate } from "./core/decision-engine";
+import { evaluateWithSnapshot } from "./core/decision-engine";
 import { logRequest } from "./middleware/logger";
+import { registerDebugRoutes } from "./routes/debug";
+import { loadSnapshotOnStartup } from "./services/snapshot-sync";
+import { snapshotStore } from "./services/snapshot-store";
 
 const app = Fastify({ logger: true });
 
-app.all("/*", async (req, reply) => {
-  const context = buildContext(req);
-  const decision = evaluate(context);
+async function registerRoutes() {
+  await registerDebugRoutes(app);
 
-  logRequest(req, decision);
+  app.all("/*", async (req, reply) => {
+    const context = buildContext(req);
+    const snapshot = snapshotStore.getSnapshot();
+    const decision = evaluateWithSnapshot(context, snapshot);
 
-  if (decision.decision === "DENY") {
-    return reply.code(403).send(decision);
+    logRequest(req, decision);
+
+    if (decision.decision === "DENY") {
+      return reply.code(403).send(decision);
+    }
+
+    if (decision.decision === "THROTTLE") {
+      return reply.code(429).send(decision);
+    }
+
+    return reply.code(200).send({
+      ok: true,
+      decision,
+    });
+  });
+}
+
+async function start() {
+  try {
+    await loadSnapshotOnStartup();
+    await registerRoutes();
+
+    await app.listen({
+      port: gatewayConfig.port,
+      host: gatewayConfig.host,
+    });
+
+    app.log.info(
+      {
+        port: gatewayConfig.port,
+        host: gatewayConfig.host,
+        controlPlaneBaseUrl: gatewayConfig.controlPlaneBaseUrl,
+      },
+      "Gateway running",
+    );
+  } catch (error) {
+    app.log.error(error, "Failed to start Gateway");
+    process.exit(1);
   }
+}
 
-  if (decision.decision === "THROTTLE") {
-    return reply.code(429).send(decision);
-  }
-
-  return { ok: true, decision };
-});
-
-app.listen({ port: 3002, host: "0.0.0.0" });
+void start();

@@ -5,6 +5,7 @@ export function logRequest(req: FastifyRequest, decision: Decision) {
   req.log.info({
     method: req.method,
     url: req.url,
-    decision
+    ip: req.ip,
+    decision,
   });
 }
