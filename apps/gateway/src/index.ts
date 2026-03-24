@@ -4,6 +4,7 @@ import { buildContext } from "./core/context";
 import { evaluateWithSnapshot } from "./core/decision-engine";
 import { logRequest } from "./middleware/logger";
 import { registerDebugRoutes } from "./routes/debug";
+import { connectRedis } from "./infrastructure/redis-client";
 import { loadSnapshotOnStartup, startSnapshotPolling } from "./services/snapshot-sync";
 import { snapshotStore } from "./services/snapshot-store";
 
@@ -15,7 +16,7 @@ async function registerRoutes() {
   app.all("/*", async (req, reply) => {
     const context = buildContext(req);
     const snapshot = snapshotStore.getSnapshot();
-    const decision = evaluateWithSnapshot(context, snapshot);
+    const decision = await evaluateWithSnapshot(context, snapshot);
 
     logRequest(req, decision);
 
@@ -24,6 +25,10 @@ async function registerRoutes() {
     }
 
     if (decision.decision === "THROTTLE") {
+      if (decision.rate_limit?.retry_after_seconds) {
+        reply.header("Retry-After", String(decision.rate_limit.retry_after_seconds));
+      }
+
       return reply.code(429).send(decision);
     }
 
@@ -36,6 +41,7 @@ async function registerRoutes() {
 
 async function start() {
   try {
+    await connectRedis();
     await loadSnapshotOnStartup();
     startSnapshotPolling();
     await registerRoutes();
@@ -51,6 +57,7 @@ async function start() {
         host: gatewayConfig.host,
         controlPlaneBaseUrl: gatewayConfig.controlPlaneBaseUrl,
         snapshotPollIntervalMs: gatewayConfig.snapshotPollIntervalMs,
+        redisUrl: gatewayConfig.redisUrl,
       },
       "Gateway running",
     );

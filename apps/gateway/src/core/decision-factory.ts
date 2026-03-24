@@ -9,6 +9,11 @@ type BuildDecisionInput = {
   route_id?: string;
   policy_id?: string;
   matched_rule?: string;
+  rate_limit?: {
+    limit: number;
+    current: number;
+    retry_after_seconds: number;
+  };
 };
 
 export function buildDecision(input: BuildDecisionInput): Decision {
@@ -21,6 +26,7 @@ export function buildDecision(input: BuildDecisionInput): Decision {
     route_id: input.route_id,
     policy_id: input.policy_id,
     matched_rule: input.matched_rule,
+    rate_limit: input.rate_limit,
     timestamp: new Date().toISOString(),
   };
 }

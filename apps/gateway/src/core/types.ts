@@ -19,6 +19,11 @@ export type Decision = {
   matched_rule?: string;
   explanation: string;
   snapshot_version?: number;
+  rate_limit?: {
+    limit: number;
+    current: number;
+    retry_after_seconds: number;
+  };
   timestamp: string;
 };
 

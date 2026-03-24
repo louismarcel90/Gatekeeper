@@ -1,3 +1,4 @@
+import { checkRateLimit } from "../services/rate-limiter";
 import { buildDecision } from "./decision-factory";
 import { findManagedRoute } from "./route-matcher";
 import { findMissingScopes } from "./scope-utils";
@@ -7,7 +8,7 @@ function findPolicyForRoute(snapshot: Snapshot, routeId: string): Policy | undef
   return snapshot.policies.find((policy) => policy.route_id === routeId);
 }
 
-export function evaluateWithSnapshot(
+export async function evaluateWithSnapshot(
   context: RequestContext,
   snapshot: Snapshot | null,
 ) {
@@ -82,16 +83,30 @@ export function evaluateWithSnapshot(
     });
   }
 
-  if (policy.rate_limit_per_minute !== null && context.path.startsWith("/heavy")) {
-    return buildDecision({
-      decision: "THROTTLE",
-      reason_code: "RATE_LIMIT_EXCEEDED",
-      explanation: "The request was throttled by the active route policy.",
-      snapshot_version: snapshot.version,
-      route_id: route.id,
-      policy_id: policy.id,
-      matched_rule: "traffic.rate_limit.per_minute",
+  if (policy.rate_limit_per_minute !== null) {
+    const clientId = context.client_id ?? "anonymous";
+    const rateLimit = await checkRateLimit({
+      routeId: route.id,
+      clientId,
+      limitPerMinute: policy.rate_limit_per_minute,
     });
+
+    if (!rateLimit.allowed) {
+      return buildDecision({
+        decision: "THROTTLE",
+        reason_code: "RATE_LIMIT_EXCEEDED",
+        explanation: "The request exceeded the configured per-minute rate limit.",
+        snapshot_version: snapshot.version,
+        route_id: route.id,
+        policy_id: policy.id,
+        matched_rule: "traffic.rate_limit.per_minute",
+        rate_limit: {
+          limit: rateLimit.limit,
+          current: rateLimit.current,
+          retry_after_seconds: rateLimit.retry_after_seconds,
+        },
+      });
+    }
   }
 
   return buildDecision({
