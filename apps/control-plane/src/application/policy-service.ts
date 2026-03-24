@@ -13,5 +13,6 @@ export async function createPolicy(input: CreatePolicyInput): Promise<Policy> {
     require_api_key: input.require_api_key,
     required_scopes: input.required_scopes,
     rate_limit_per_minute: input.rate_limit_per_minute,
+    quota_per_day: input.quota_per_day,
   });
 }

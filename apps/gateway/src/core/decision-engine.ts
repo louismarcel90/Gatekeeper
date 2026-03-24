@@ -1,3 +1,4 @@
+import { checkQuota } from "../services/quota-limiter";
 import { checkRateLimit } from "../services/rate-limiter";
 import { buildDecision } from "./decision-factory";
 import { findManagedRoute } from "./route-matcher";
@@ -83,8 +84,9 @@ export async function evaluateWithSnapshot(
     });
   }
 
+  const clientId = context.client_id ?? "anonymous";
+
   if (policy.rate_limit_per_minute !== null) {
-    const clientId = context.client_id ?? "anonymous";
     const rateLimit = await checkRateLimit({
       routeId: route.id,
       clientId,
@@ -104,6 +106,31 @@ export async function evaluateWithSnapshot(
           limit: rateLimit.limit,
           current: rateLimit.current,
           retry_after_seconds: rateLimit.retry_after_seconds,
+        },
+      });
+    }
+  }
+
+  if (policy.quota_per_day !== null) {
+    const quota = await checkQuota({
+      routeId: route.id,
+      clientId,
+      limitPerDay: policy.quota_per_day,
+    });
+
+    if (!quota.allowed) {
+      return buildDecision({
+        decision: "THROTTLE",
+        reason_code: "QUOTA_EXCEEDED",
+        explanation: "The request exceeded the configured daily quota.",
+        snapshot_version: snapshot.version,
+        route_id: route.id,
+        policy_id: policy.id,
+        matched_rule: "traffic.quota.per_day",
+        quota: {
+          limit: quota.limit,
+          current: quota.current,
+          retry_after_seconds: quota.retry_after_seconds,
         },
       });
     }

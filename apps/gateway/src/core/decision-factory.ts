@@ -14,6 +14,11 @@ type BuildDecisionInput = {
     current: number;
     retry_after_seconds: number;
   };
+  quota?: {
+    limit: number;
+    current: number;
+    retry_after_seconds: number;
+  };
 };
 
 export function buildDecision(input: BuildDecisionInput): Decision {
@@ -27,6 +32,7 @@ export function buildDecision(input: BuildDecisionInput): Decision {
     policy_id: input.policy_id,
     matched_rule: input.matched_rule,
     rate_limit: input.rate_limit,
+    quota: input.quota,
     timestamp: new Date().toISOString(),
   };
 }

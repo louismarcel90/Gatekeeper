@@ -5,6 +5,7 @@ import { evaluateWithSnapshot } from "./core/decision-engine";
 import { logRequest } from "./middleware/logger";
 import { registerDebugRoutes } from "./routes/debug";
 import { connectRedis } from "./infrastructure/redis-client";
+import { dispatchDecisionAudit } from "./services/audit-dispatcher";
 import { loadSnapshotOnStartup, startSnapshotPolling } from "./services/snapshot-sync";
 import { snapshotStore } from "./services/snapshot-store";
 
@@ -19,6 +20,7 @@ async function registerRoutes() {
     const decision = await evaluateWithSnapshot(context, snapshot);
 
     logRequest(req, decision);
+    dispatchDecisionAudit(app.log, { context, decision });
 
     if (decision.decision === "DENY") {
       return reply.code(403).send(decision);
@@ -27,6 +29,10 @@ async function registerRoutes() {
     if (decision.decision === "THROTTLE") {
       if (decision.rate_limit?.retry_after_seconds) {
         reply.header("Retry-After", String(decision.rate_limit.retry_after_seconds));
+      }
+
+      if (decision.quota?.retry_after_seconds) {
+        reply.header("Retry-After", String(decision.quota.retry_after_seconds));
       }
 
       return reply.code(429).send(decision);

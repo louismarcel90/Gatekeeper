@@ -8,7 +8,8 @@ export type DecisionReasonCode =
   | "POLICY_NOT_FOUND"
   | "API_KEY_MISSING"
   | "SCOPE_MISSING"
-  | "RATE_LIMIT_EXCEEDED";
+  | "RATE_LIMIT_EXCEEDED"
+  | "QUOTA_EXCEEDED";
 
 export type Decision = {
   decision_id: string;
@@ -20,6 +21,11 @@ export type Decision = {
   explanation: string;
   snapshot_version?: number;
   rate_limit?: {
+    limit: number;
+    current: number;
+    retry_after_seconds: number;
+  };
+  quota?: {
     limit: number;
     current: number;
     retry_after_seconds: number;
@@ -50,6 +56,7 @@ export type Policy = {
   require_api_key: boolean;
   required_scopes: string[];
   rate_limit_per_minute: number | null;
+  quota_per_day: number | null;
 };
 
 export type Snapshot = {
