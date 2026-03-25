@@ -78,3 +78,9 @@ export type SimulationDecision = {
   };
   timestamp: string;
 };
+
+export type PolicyDocument = {
+  version: number;
+  routes: ManagedRoute[];
+  policies: Policy[];
+};

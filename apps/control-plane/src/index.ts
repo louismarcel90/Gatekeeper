@@ -2,7 +2,9 @@ import Fastify from "fastify";
 import { controlPlaneConfig } from "./config/env";
 import { initDatabase } from "./db/init";
 import { registerAuditRoutes } from "./routes/audit";
+import { registerCandidateSimulationRoutes } from "./routes/candidate-simulation";
 import { registerHealthRoutes } from "./routes/health";
+import { registerPolicyDocumentRoutes } from "./routes/policy-documents";
 import { registerManagedRouteRoutes } from "./routes/routes";
 import { registerPolicyRoutes } from "./routes/policies";
 import { registerSimulationRoutes } from "./routes/simulation";
@@ -20,6 +22,8 @@ async function buildServer() {
   await registerSnapshotRoutes(app);
   await registerAuditRoutes(app);
   await registerSimulationRoutes(app);
+  await registerPolicyDocumentRoutes(app);
+  await registerCandidateSimulationRoutes(app);
 
   return app;
 }

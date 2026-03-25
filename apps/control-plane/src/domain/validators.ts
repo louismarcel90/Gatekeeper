@@ -39,7 +39,20 @@ export const simulateDecisionSchema = z.object({
   scopes: z.array(z.string()).default([]),
 });
 
+export const policyDocumentSchema = z.object({
+  version: z.number().int().positive(),
+  routes: z.array(createRouteSchema),
+  policies: z.array(createPolicySchema),
+});
+
+export const candidateSimulationSchema = z.object({
+  document: policyDocumentSchema,
+  input: simulateDecisionSchema,
+});
+
 export type CreateRouteInput = z.infer<typeof createRouteSchema>;
 export type CreatePolicyInput = z.infer<typeof createPolicySchema>;
 export type CreateDecisionAuditLogInput = z.infer<typeof createDecisionAuditLogSchema>;
 export type SimulateDecisionInput = z.infer<typeof simulateDecisionSchema>;
+export type PolicyDocumentInput = z.infer<typeof policyDocumentSchema>;
+export type CandidateSimulationInput = z.infer<typeof candidateSimulationSchema>;
