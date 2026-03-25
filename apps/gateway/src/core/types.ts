@@ -7,6 +7,7 @@ export type DecisionReasonCode =
   | "ROUTE_DISABLED"
   | "POLICY_NOT_FOUND"
   | "API_KEY_MISSING"
+  | "JWT_INVALID"
   | "SCOPE_MISSING"
   | "RATE_LIMIT_EXCEEDED"
   | "QUOTA_EXCEEDED";
@@ -33,6 +34,14 @@ export type Decision = {
   timestamp: string;
 };
 
+export type JwtClaims = {
+  sub?: string;
+  client_id?: string;
+  scope?: string;
+  iat?: number;
+  exp?: number;
+};
+
 export type RequestContext = {
   method: string;
   path: string;
@@ -40,6 +49,13 @@ export type RequestContext = {
   ip: string;
   client_id?: string;
   scopes: string[];
+  auth: {
+    api_key_present: boolean;
+    bearer_present: boolean;
+    jwt_valid: boolean;
+    jwt_invalid_reason?: string;
+    subject?: string;
+  };
 };
 
 export type ManagedRoute = {

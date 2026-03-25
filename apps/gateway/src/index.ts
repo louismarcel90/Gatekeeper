@@ -2,9 +2,10 @@ import Fastify from "fastify";
 import { gatewayConfig } from "./config/env";
 import { buildContext } from "./core/context";
 import { evaluateWithSnapshot } from "./core/decision-engine";
-import { logRequest } from "./middleware/logger";
-import { registerDebugRoutes } from "./routes/debug";
 import { connectRedis } from "./infrastructure/redis-client";
+import { logRequest } from "./middleware/logger";
+import { registerDevAuthRoutes } from "./routes/dev-auth";
+import { registerDebugRoutes } from "./routes/debug";
 import { dispatchDecisionAudit } from "./services/audit-dispatcher";
 import { loadSnapshotOnStartup, startSnapshotPolling } from "./services/snapshot-sync";
 import { snapshotStore } from "./services/snapshot-store";
@@ -13,6 +14,7 @@ const app = Fastify({ logger: true });
 
 async function registerRoutes() {
   await registerDebugRoutes(app);
+  await registerDevAuthRoutes(app);
 
   app.all("/*", async (req, reply) => {
     const context = buildContext(req);

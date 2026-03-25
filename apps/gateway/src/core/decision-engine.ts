@@ -62,11 +62,35 @@ export async function evaluateWithSnapshot(
     return buildDecision({
       decision: "DENY",
       reason_code: "API_KEY_MISSING",
-      explanation: "This route requires a valid API key.",
+      explanation: "This route requires a valid API key or authenticated client identity.",
       snapshot_version: snapshot.version,
       route_id: route.id,
       policy_id: policy.id,
-      matched_rule: "auth.api_key.required",
+      matched_rule: "auth.client_identity.required",
+    });
+  }
+
+  if (policy.required_scopes.length > 0 && context.auth.bearer_present && !context.auth.jwt_valid) {
+    return buildDecision({
+      decision: "DENY",
+      reason_code: "JWT_INVALID",
+      explanation: `The bearer token is invalid: ${context.auth.jwt_invalid_reason ?? "unknown reason"}`,
+      snapshot_version: snapshot.version,
+      route_id: route.id,
+      policy_id: policy.id,
+      matched_rule: "auth.jwt.valid",
+    });
+  }
+
+  if (policy.required_scopes.length > 0 && !context.auth.jwt_valid) {
+    return buildDecision({
+      decision: "DENY",
+      reason_code: "JWT_INVALID",
+      explanation: "A valid bearer token is required to satisfy scoped access.",
+      snapshot_version: snapshot.version,
+      route_id: route.id,
+      policy_id: policy.id,
+      matched_rule: "auth.jwt.required_for_scopes",
     });
   }
 
