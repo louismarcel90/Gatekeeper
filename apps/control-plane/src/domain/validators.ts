@@ -32,6 +32,14 @@ export const createDecisionAuditLogSchema = z.object({
   snapshot_version: z.number().int().nullable(),
 });
 
+export const simulateDecisionSchema = z.object({
+  path: z.string().min(1),
+  method: z.enum(["GET", "POST", "PUT", "PATCH", "DELETE"]),
+  client_id: z.string().min(1).optional(),
+  scopes: z.array(z.string()).default([]),
+});
+
 export type CreateRouteInput = z.infer<typeof createRouteSchema>;
 export type CreatePolicyInput = z.infer<typeof createPolicySchema>;
 export type CreateDecisionAuditLogInput = z.infer<typeof createDecisionAuditLogSchema>;
+export type SimulateDecisionInput = z.infer<typeof simulateDecisionSchema>;

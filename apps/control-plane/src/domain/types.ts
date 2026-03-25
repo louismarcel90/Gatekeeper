@@ -40,3 +40,41 @@ export type DecisionAuditLog = {
   snapshot_version: number | null;
   created_at: string;
 };
+
+export type SimulationDecisionType = "ALLOW" | "DENY" | "THROTTLE";
+
+export type SimulationDecisionReasonCode =
+  | "OK"
+  | "SNAPSHOT_MISSING"
+  | "ROUTE_NOT_FOUND"
+  | "ROUTE_DISABLED"
+  | "POLICY_NOT_FOUND"
+  | "API_KEY_MISSING"
+  | "SCOPE_MISSING"
+  | "RATE_LIMIT_WOULD_EXCEED"
+  | "QUOTA_WOULD_EXCEED";
+
+export type SimulationInput = {
+  path: string;
+  method: HttpMethod;
+  client_id?: string;
+  scopes: string[];
+};
+
+export type SimulationDecision = {
+  decision_id: string;
+  decision: SimulationDecisionType;
+  reason_code: SimulationDecisionReasonCode;
+  policy_id?: string;
+  route_id?: string;
+  matched_rule?: string;
+  explanation: string;
+  snapshot_version?: number;
+  simulated_rate_limit?: {
+    configured_limit: number;
+  };
+  simulated_quota?: {
+    configured_limit: number;
+  };
+  timestamp: string;
+};
