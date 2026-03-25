@@ -1,6 +1,7 @@
 import { randomUUID } from "crypto";
 import { pool } from "../db/client";
 import { DeploymentHistoryEntry } from "../domain/types";
+import { DeploymentHistoryQueryInput } from "../domain/validators";
 
 type DeploymentHistoryRow = {
   id: string;
@@ -34,13 +35,40 @@ export async function insertDeploymentHistoryEntry(params: {
   };
 }
 
-export async function listDeploymentHistory(): Promise<DeploymentHistoryEntry[]> {
-  const result = await pool.query<DeploymentHistoryRow>(`
+export async function listDeploymentHistory(
+  filters: DeploymentHistoryQueryInput,
+): Promise<DeploymentHistoryEntry[]> {
+  const conditions: string[] = [];
+  const values: Array<string | number> = [];
+  let index = 1;
+
+  if (filters.action) {
+    conditions.push(`action = $${index++}`);
+    values.push(filters.action);
+  }
+
+  if (filters.snapshot_version !== undefined) {
+    conditions.push(`snapshot_version = $${index++}`);
+    values.push(filters.snapshot_version);
+  }
+
+  const whereClause =
+    conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+
+  const limitPlaceholder = `$${index++}`;
+  const offsetPlaceholder = `$${index++}`;
+  values.push(filters.limit, filters.offset);
+
+  const query = `
     SELECT id, snapshot_version, action, created_at
     FROM deployment_history
+    ${whereClause}
     ORDER BY created_at DESC
-    LIMIT 100
-  `);
+    LIMIT ${limitPlaceholder}
+    OFFSET ${offsetPlaceholder}
+  `;
+
+  const result = await pool.query<DeploymentHistoryRow>(query, values);
 
   return result.rows.map((row) => ({
     id: row.id,

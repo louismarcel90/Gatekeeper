@@ -50,9 +50,30 @@ export const candidateSimulationSchema = z.object({
   input: simulateDecisionSchema,
 });
 
+export const decisionAuditQuerySchema = z.object({
+  decision: z.enum(["ALLOW", "DENY", "THROTTLE"]).optional(),
+  reason_code: z.string().min(1).optional(),
+  client_id: z.string().min(1).optional(),
+  route_id: z.string().min(1).optional(),
+  policy_id: z.string().min(1).optional(),
+  path: z.string().min(1).optional(),
+  snapshot_version: z.coerce.number().int().positive().optional(),
+  limit: z.coerce.number().int().positive().max(200).default(50),
+  offset: z.coerce.number().int().min(0).default(0),
+});
+
+export const deploymentHistoryQuerySchema = z.object({
+  action: z.enum(["PUBLISH", "ACTIVATE", "ROLLBACK"]).optional(),
+  snapshot_version: z.coerce.number().int().positive().optional(),
+  limit: z.coerce.number().int().positive().max(200).default(50),
+  offset: z.coerce.number().int().min(0).default(0),
+});
+
 export type CreateRouteInput = z.infer<typeof createRouteSchema>;
 export type CreatePolicyInput = z.infer<typeof createPolicySchema>;
 export type CreateDecisionAuditLogInput = z.infer<typeof createDecisionAuditLogSchema>;
 export type SimulateDecisionInput = z.infer<typeof simulateDecisionSchema>;
 export type PolicyDocumentInput = z.infer<typeof policyDocumentSchema>;
 export type CandidateSimulationInput = z.infer<typeof candidateSimulationSchema>;
+export type DecisionAuditQueryInput = z.infer<typeof decisionAuditQuerySchema>;
+export type DeploymentHistoryQueryInput = z.infer<typeof deploymentHistoryQuerySchema>; 
