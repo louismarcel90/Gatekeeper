@@ -3,6 +3,7 @@ import { controlPlaneConfig } from "./config/env";
 import { initDatabase } from "./db/init";
 import { registerAuditRoutes } from "./routes/audit";
 import { registerCandidateSimulationRoutes } from "./routes/candidate-simulation";
+import { registerDeploymentRoutes } from "./routes/deployments";
 import { registerHealthRoutes } from "./routes/health";
 import { registerPolicyDocumentRoutes } from "./routes/policy-documents";
 import { registerManagedRouteRoutes } from "./routes/routes";
@@ -24,6 +25,7 @@ async function buildServer() {
   await registerSimulationRoutes(app);
   await registerPolicyDocumentRoutes(app);
   await registerCandidateSimulationRoutes(app);
+  await registerDeploymentRoutes(app);
 
   return app;
 }

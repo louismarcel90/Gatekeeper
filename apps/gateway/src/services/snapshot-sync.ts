@@ -1,9 +1,9 @@
 import { gatewayConfig } from "../config/env";
-import { fetchLatestSnapshot } from "./control-plane-client";
+import { fetchActiveSnapshot } from "./control-plane-client";
 import { snapshotStore } from "./snapshot-store";
 
 export async function loadSnapshotOnStartup(): Promise<void> {
-  const snapshot = await fetchLatestSnapshot();
+  const snapshot = await fetchActiveSnapshot();
 
   if (!snapshot) {
     return;
@@ -17,16 +17,16 @@ export function startSnapshotPolling(): void {
 
   setInterval(async () => {
     try {
-      const latestSnapshot = await fetchLatestSnapshot();
+      const activeSnapshot = await fetchActiveSnapshot();
 
-      if (!latestSnapshot) {
+      if (!activeSnapshot) {
         return;
       }
 
       const currentVersion = snapshotStore.getVersion();
 
-      if (currentVersion === null || latestSnapshot.version > currentVersion) {
-        snapshotStore.setSnapshot(latestSnapshot);
+      if (currentVersion === null || activeSnapshot.version !== currentVersion) {
+        snapshotStore.setSnapshot(activeSnapshot);
       }
     } catch (error) {
       console.error("Snapshot polling failed:", error);

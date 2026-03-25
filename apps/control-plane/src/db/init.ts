@@ -27,7 +27,8 @@ export async function initDatabase(): Promise<void> {
       version INTEGER PRIMARY KEY,
       generated_at TIMESTAMPTZ NOT NULL,
       routes JSONB NOT NULL,
-      policies JSONB NOT NULL
+      policies JSONB NOT NULL,
+      is_active BOOLEAN NOT NULL DEFAULT FALSE
     );
   `);
 
@@ -51,7 +52,21 @@ export async function initDatabase(): Promise<void> {
   `);
 
   await pool.query(`
+    CREATE TABLE IF NOT EXISTS deployment_history (
+      id TEXT PRIMARY KEY,
+      snapshot_version INTEGER NOT NULL REFERENCES snapshots(version) ON DELETE CASCADE,
+      action TEXT NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+  `);
+
+  await pool.query(`
     ALTER TABLE policies
     ADD COLUMN IF NOT EXISTS quota_per_day INTEGER NULL;
+  `);
+
+  await pool.query(`
+    ALTER TABLE snapshots
+    ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL DEFAULT FALSE;
   `);
 }

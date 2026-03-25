@@ -22,6 +22,14 @@ export type Snapshot = {
   generated_at: string;
   routes: ManagedRoute[];
   policies: Policy[];
+  is_active?: boolean;
+};
+
+export type DeploymentHistoryEntry = {
+  id: string;
+  snapshot_version: number;
+  action: "PUBLISH" | "ACTIVATE" | "ROLLBACK";
+  created_at: string;
 };
 
 export type DecisionAuditLog = {

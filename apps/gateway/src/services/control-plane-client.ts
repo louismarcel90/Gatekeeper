@@ -2,8 +2,8 @@ import { request } from "undici";
 import { Snapshot } from "../core/types";
 import { gatewayConfig } from "../config/env";
 
-export async function fetchLatestSnapshot(): Promise<Snapshot | null> {
-  const url = `${gatewayConfig.controlPlaneBaseUrl}/snapshots/latest`;
+export async function fetchActiveSnapshot(): Promise<Snapshot | null> {
+  const url = `${gatewayConfig.controlPlaneBaseUrl}/snapshots/active`;
 
   const response = await request(url, {
     method: "GET",
@@ -14,7 +14,7 @@ export async function fetchLatestSnapshot(): Promise<Snapshot | null> {
   }
 
   if (response.statusCode !== 200) {
-    throw new Error(`Failed to fetch latest snapshot. HTTP ${response.statusCode}`);
+    throw new Error(`Failed to fetch active snapshot. HTTP ${response.statusCode}`);
   }
 
   const body = (await response.body.json()) as Snapshot;
