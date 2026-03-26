@@ -2,6 +2,7 @@ import Fastify from "fastify";
 import { controlPlaneConfig } from "./config/env";
 import { initDatabase } from "./db/init";
 import { registerAuditRoutes } from "./routes/audit";
+import { registerAuthRoutes } from "./routes/auth";
 import { registerCandidateSimulationRoutes } from "./routes/candidate-simulation";
 import { registerDeploymentRoutes } from "./routes/deployments";
 import { registerHealthRoutes } from "./routes/health";
@@ -18,6 +19,7 @@ const app = Fastify({
 async function buildServer() {
   await initDatabase();
   await registerHealthRoutes(app);
+  await registerAuthRoutes(app);
   await registerManagedRouteRoutes(app);
   await registerPolicyRoutes(app);
   await registerSnapshotRoutes(app);

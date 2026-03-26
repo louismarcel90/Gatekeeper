@@ -69,6 +69,11 @@ export const deploymentHistoryQuerySchema = z.object({
   offset: z.coerce.number().int().min(0).default(0),
 });
 
+export const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(8),
+});
+
 export type CreateRouteInput = z.infer<typeof createRouteSchema>;
 export type CreatePolicyInput = z.infer<typeof createPolicySchema>;
 export type CreateDecisionAuditLogInput = z.infer<typeof createDecisionAuditLogSchema>;
@@ -76,4 +81,5 @@ export type SimulateDecisionInput = z.infer<typeof simulateDecisionSchema>;
 export type PolicyDocumentInput = z.infer<typeof policyDocumentSchema>;
 export type CandidateSimulationInput = z.infer<typeof candidateSimulationSchema>;
 export type DecisionAuditQueryInput = z.infer<typeof decisionAuditQuerySchema>;
-export type DeploymentHistoryQueryInput = z.infer<typeof deploymentHistoryQuerySchema>; 
+export type DeploymentHistoryQueryInput = z.infer<typeof deploymentHistoryQuerySchema>;
+export type LoginInput = z.infer<typeof loginSchema>;

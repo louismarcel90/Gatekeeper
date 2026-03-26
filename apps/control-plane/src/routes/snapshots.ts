@@ -7,10 +7,11 @@ import {
   publishSnapshot,
   rollbackToSnapshotVersion,
 } from "../application/snapshot-service";
+import { requireAdminAuth, requireRole } from "../middleware/admin-auth";
 import { sendInternalError, sendNotFound } from "../shared/http";
 
 export async function registerSnapshotRoutes(app: FastifyInstance) {
-  app.get("/snapshots", async () => {
+  app.get("/snapshots", { preHandler: [requireAdminAuth] }, async () => {
     return {
       items: await listSnapshots(),
     };
@@ -36,60 +37,72 @@ export async function registerSnapshotRoutes(app: FastifyInstance) {
     return snapshot;
   });
 
-  app.post("/snapshots/publish", async (req, reply) => {
-    const snapshot = await publishSnapshot();
-    return reply.code(201).send(snapshot);
-  });
+  app.post(
+    "/snapshots/publish",
+    { preHandler: [requireAdminAuth, requireRole(["security", "admin"])] },
+    async (req, reply) => {
+      const snapshot = await publishSnapshot();
+      return reply.code(201).send(snapshot);
+    },
+  );
 
-  app.post("/snapshots/:version/activate", async (req, reply) => {
-    const params = req.params as { version: string };
-    const version = Number(params.version);
+  app.post(
+    "/snapshots/:version/activate",
+    { preHandler: [requireAdminAuth, requireRole(["admin"])] },
+    async (req, reply) => {
+      const params = req.params as { version: string };
+      const version = Number(params.version);
 
-    if (Number.isNaN(version)) {
-      return reply.code(400).send({
-        error: "BAD_REQUEST",
-        message: "Snapshot version must be a number.",
-      });
-    }
-
-    try {
-      const snapshot = await activateSnapshotVersion(version);
-      return reply.code(200).send(snapshot);
-    } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Unexpected error while activating snapshot.";
-
-      if (message.includes("was not found")) {
-        return sendNotFound(reply, message);
+      if (Number.isNaN(version)) {
+        return reply.code(400).send({
+          error: "BAD_REQUEST",
+          message: "Snapshot version must be a number.",
+        });
       }
 
-      return sendInternalError(reply, message);
-    }
-  });
+      try {
+        const snapshot = await activateSnapshotVersion(version);
+        return reply.code(200).send(snapshot);
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : "Unexpected error while activating snapshot.";
 
-  app.post("/snapshots/:version/rollback", async (req, reply) => {
-    const params = req.params as { version: string };
-    const version = Number(params.version);
+        if (message.includes("was not found")) {
+          return sendNotFound(reply, message);
+        }
 
-    if (Number.isNaN(version)) {
-      return reply.code(400).send({
-        error: "BAD_REQUEST",
-        message: "Snapshot version must be a number.",
-      });
-    }
+        return sendInternalError(reply, message);
+      }
+    },
+  );
 
-    try {
-      const snapshot = await rollbackToSnapshotVersion(version);
-      return reply.code(200).send(snapshot);
-    } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Unexpected error while rolling back snapshot.";
+  app.post(
+    "/snapshots/:version/rollback",
+    { preHandler: [requireAdminAuth, requireRole(["admin"])] },
+    async (req, reply) => {
+      const params = req.params as { version: string };
+      const version = Number(params.version);
 
-      if (message.includes("was not found")) {
-        return sendNotFound(reply, message);
+      if (Number.isNaN(version)) {
+        return reply.code(400).send({
+          error: "BAD_REQUEST",
+          message: "Snapshot version must be a number.",
+        });
       }
 
-      return sendInternalError(reply, message);
-    }
-  });
+      try {
+        const snapshot = await rollbackToSnapshotVersion(version);
+        return reply.code(200).send(snapshot);
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : "Unexpected error while rolling back snapshot.";
+
+        if (message.includes("was not found")) {
+          return sendNotFound(reply, message);
+        }
+
+        return sendInternalError(reply, message);
+      }
+    },
+  );
 }

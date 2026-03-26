@@ -1,6 +1,19 @@
+import { randomUUID } from "crypto";
+import bcrypt from "bcryptjs";
+import { controlPlaneConfig } from "../config/env";
 import { pool } from "./client";
 
 export async function initDatabase(): Promise<void> {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS admin_users (
+      id TEXT PRIMARY KEY,
+      email TEXT NOT NULL UNIQUE,
+      role TEXT NOT NULL,
+      password_hash TEXT NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+  `);
+
   await pool.query(`
     CREATE TABLE IF NOT EXISTS managed_routes (
       id TEXT PRIMARY KEY,
@@ -69,4 +82,26 @@ export async function initDatabase(): Promise<void> {
     ALTER TABLE snapshots
     ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL DEFAULT FALSE;
   `);
+
+  const existingAdmin = await pool.query<{ email: string }>(
+    `
+    SELECT email
+    FROM admin_users
+    WHERE email = $1
+    LIMIT 1
+    `,
+    [controlPlaneConfig.adminSeedEmail],
+  );
+
+  if (existingAdmin.rows.length === 0) {
+    const passwordHash = await bcrypt.hash(controlPlaneConfig.adminSeedPassword, 10);
+
+    await pool.query(
+      `
+      INSERT INTO admin_users (id, email, role, password_hash)
+      VALUES ($1, $2, $3, $4)
+      `,
+      [randomUUID(), controlPlaneConfig.adminSeedEmail, "admin", passwordHash],
+    );
+  }
 }

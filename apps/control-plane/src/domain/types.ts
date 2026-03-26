@@ -1,5 +1,15 @@
 export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
+export type AdminRole = "viewer" | "security" | "admin";
+
+export type AdminUser = {
+  id: string;
+  email: string;
+  role: AdminRole;
+  password_hash: string;
+  created_at?: string;
+};
+
 export type ManagedRoute = {
   id: string;
   path: string;

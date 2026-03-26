@@ -8,6 +8,7 @@ import {
   createDecisionAuditLogSchema,
   decisionAuditQuerySchema,
 } from "../domain/validators";
+import { requireAdminAuth } from "../middleware/admin-auth";
 import {
   sendBadRequest,
   sendInternalError,
@@ -15,35 +16,43 @@ import {
 } from "../shared/http";
 
 export async function registerAuditRoutes(app: FastifyInstance) {
-  app.get("/audit/decisions", async (req, reply) => {
-    const parsed = decisionAuditQuerySchema.safeParse(req.query);
+  app.get(
+    "/audit/decisions",
+    { preHandler: [requireAdminAuth] },
+    async (req, reply) => {
+      const parsed = decisionAuditQuerySchema.safeParse(req.query);
 
-    if (!parsed.success) {
-      return sendBadRequest(reply, parsed.error.message);
-    }
+      if (!parsed.success) {
+        return sendBadRequest(reply, parsed.error.message);
+      }
 
-    const items = await getDecisionAuditLogs(parsed.data);
+      const items = await getDecisionAuditLogs(parsed.data);
 
-    return {
-      items,
-      pagination: {
-        limit: parsed.data.limit,
-        offset: parsed.data.offset,
-      },
-      filters: parsed.data,
-    };
-  });
+      return {
+        items,
+        pagination: {
+          limit: parsed.data.limit,
+          offset: parsed.data.offset,
+        },
+        filters: parsed.data,
+      };
+    },
+  );
 
-  app.get("/audit/decisions/:decisionId", async (req, reply) => {
-    const params = req.params as { decisionId: string };
-    const item = await getDecisionAuditLog(params.decisionId);
+  app.get(
+    "/audit/decisions/:decisionId",
+    { preHandler: [requireAdminAuth] },
+    async (req, reply) => {
+      const params = req.params as { decisionId: string };
+      const item = await getDecisionAuditLog(params.decisionId);
 
-    if (!item) {
-      return sendNotFound(reply, `Decision audit "${params.decisionId}" was not found.`);
-    }
+      if (!item) {
+        return sendNotFound(reply, `Decision audit "${params.decisionId}" was not found.`);
+      }
 
-    return item;
-  });
+      return item;
+    },
+  );
 
   app.post("/audit/decisions", async (req, reply) => {
     const parsed = createDecisionAuditLogSchema.safeParse(req.body);
