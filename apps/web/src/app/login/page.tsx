@@ -18,7 +18,7 @@ export default function LoginPage() {
       await loginMutation.mutateAsync({ email, password });
       router.replace("/");
     } catch {
-      // handled below
+      // ToDo: handled visually below
     }
   }
 
@@ -29,38 +29,61 @@ export default function LoginPage() {
         display: "grid",
         placeItems: "center",
         padding: 24,
+        background: "#F7F7F5",
       }}
     >
       <form
         onSubmit={handleSubmit}
         style={{
-          width: 360,
+          width: 420,
           display: "grid",
-          gap: 16,
-          padding: 24,
-          border: "1px solid #ddd",
-          borderRadius: 16,
+          gap: 18,
+          padding: 28,
+          borderRadius: 28,
+          border: "1px solid #E7E5E4",
+          background: "#FFFFFF",
+          boxShadow: "0 20px 60px rgba(17,17,17,0.06)",
+          color: "#111111",
         }}
       >
-        <h1>Gatekeeper Login</h1>
+        <div style={{ display: "grid", gap: 8 }}>
+          <div style={{ fontSize: 36, fontWeight: 700, letterSpacing: "-0.03em" }}>
+            Gatekeeper
+          </div>
+          <div style={{ color: "#6B665F" }}>
+            Sign in to access the admin control plane.
+          </div>
+        </div>
 
         <label style={{ display: "grid", gap: 8 }}>
-          <span>Email</span>
+          <span style={{ fontSize: 14, color: "#44403C" }}>Email</span>
           <input
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             type="email"
-            style={{ padding: 12, borderRadius: 8, border: "1px solid #ccc" }}
+            style={{
+              padding: 14,
+              borderRadius: 14,
+              border: "1px solid #E7E5E4",
+              background: "#FFFFFF",
+              color: "#111111",
+            }}
           />
         </label>
 
         <label style={{ display: "grid", gap: 8 }}>
-          <span>Password</span>
+          <span style={{ fontSize: 14, color: "#44403C" }}>Password</span>
           <input
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             type="password"
-            style={{ padding: 12, borderRadius: 8, border: "1px solid #ccc" }}
+            style={{
+              padding: 14,
+              borderRadius: 14,
+              border: "1px solid #E7E5E4",
+              background: "#FFFFFF",
+              color: "#111111",
+            }}
           />
         </label>
 
@@ -68,9 +91,12 @@ export default function LoginPage() {
           type="submit"
           disabled={loginMutation.isPending}
           style={{
-            padding: 12,
-            borderRadius: 8,
-            border: "none",
+            padding: 14,
+            borderRadius: 14,
+            border: "1px solid #D9D5FF",
+            background: "#F7F6FF",
+            color: "#5B57D6",
+            fontWeight: 700,
             cursor: "pointer",
           }}
         >
@@ -78,7 +104,7 @@ export default function LoginPage() {
         </button>
 
         {loginMutation.isError ? (
-          <div style={{ color: "crimson" }}>
+          <div style={{ color: "#B54848", fontSize: 14 }}>
             Invalid credentials or backend unavailable.
           </div>
         ) : null}

@@ -1,0 +1,146 @@
+"use client";
+
+import { PageHeader } from "@/src/components/app-shell/page-header";
+import { StatCard } from "@/src/components/app-shell/stat-card";
+import { SectionCard } from "@/src/components/data-display/section-card";
+import { StatusBadge } from "@/src/components/data-display/status-badge";
+import { PageContainer } from "@/src/components/page-layout/page-container";
+import { PageSectionGrid } from "@/src/components/page-layout/page-section-grid";
+import { PageStack } from "@/src/components/page-layout/page-stack";
+import { PageTwoPane } from "@/src/components/page-layout/page-two-pane";
+import { useAuthStore } from "@/src/core/state/auth-store";
+import { useRoutes } from "@/src/modules/routes/use-routes";
+import { useActiveSnapshot } from "@/src/modules/snapshots/use-snapshots";
+
+type RouteItem = {
+  id: string;
+  method: string;
+  path: string;
+  enabled: boolean;
+};
+
+export default function DashboardPage() {
+  const user = useAuthStore((state) => state.user);
+  const routesQuery = useRoutes();
+  const activeSnapshotQuery = useActiveSnapshot();
+
+  const routes = (routesQuery.data ?? []) as RouteItem[];
+  const enabledRoutes = routes.filter((route) => route.enabled).length;
+
+  return (
+    <PageContainer>
+      <PageStack>
+        <PageHeader
+          title="Dashboard"
+          subtitle="Operate, investigate, and govern API access decisions across Gatekeeper with a calm, auditable, and deployment-safe control plane."
+          action={<StatusBadge tone="gold">{user?.role ?? "unknown"}</StatusBadge>}
+        />
+
+        <PageSectionGrid>
+          <StatCard label="Managed Routes" value={routes.length} />
+          <StatCard label="Enabled Routes" value={enabledRoutes} accent="violet" />
+          <StatCard
+            label="Active Snapshot"
+            value={activeSnapshotQuery.data?.version ?? "-"}
+            accent="gold"
+          />
+        </PageSectionGrid>
+
+        <PageTwoPane
+          left={
+            <SectionCard title="Routes Overview">
+              {routesQuery.isLoading ? (
+                <div style={{ color: "#6B665F", fontSize: 14 }}>Loading routes...</div>
+              ) : routesQuery.isError ? (
+                <div style={{ color: "#B54848", fontSize: 14 }}>
+                  Failed to load routes. Dashboard remains usable in degraded mode.
+                </div>
+              ) : (
+                <div style={{ display: "grid", gap: 10, minWidth: 0 }}>
+                  {routes.slice(0, 5).map((route) => (
+                    <div
+                      key={route.id}
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "64px minmax(0, 1fr) 96px",
+                        gap: 10,
+                        alignItems: "center",
+                        padding: "12px 14px",
+                        borderRadius: 14,
+                        background: "#FCFCFB",
+                        border: "1px solid #EEEAE6",
+                        color: "#111111",
+                        minWidth: 0,
+                      }}
+                    >
+                      <strong style={{ fontSize: 14 }}>{route.method}</strong>
+
+                      <span
+                        style={{
+                          color: "#57534E",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          fontSize: 14,
+                        }}
+                      >
+                        {route.path}
+                      </span>
+
+                      <div style={{ justifySelf: "end" }}>
+                        <StatusBadge tone={route.enabled ? "green" : "red"}>
+                          {route.enabled ? "Enabled" : "Disabled"}
+                        </StatusBadge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </SectionCard>
+          }
+          right={
+            <SectionCard title="Operator Actions">
+              <div style={{ display: "grid", gap: 12 }}>
+                <div
+                  style={{
+                    padding: 16,
+                    borderRadius: 16,
+                    background: "#F7F6FF",
+                    border: "1px solid #E0DCFF",
+                    display: "grid",
+                    gap: 6,
+                  }}
+                >
+                  <div style={{ fontSize: 16, fontWeight: 700, color: "#111111" }}>
+                    Run Simulation
+                  </div>
+                  <div style={{ color: "#5F5B53", fontSize: 14, lineHeight: 1.45 }}>
+                    Preview route and policy behavior before deployment.
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    padding: 16,
+                    borderRadius: 16,
+                    background: "#FBF7F2",
+                    border: "1px solid #E8D3B7",
+                    display: "grid",
+                    gap: 6,
+                  }}
+                >
+                  <div style={{ fontSize: 16, fontWeight: 700, color: "#111111" }}>
+                    Investigation Flow
+                  </div>
+                  <div style={{ color: "#5F5B53", fontSize: 14, lineHeight: 1.45 }}>
+                    Trace deny, throttle, and snapshot changes across audit history.
+                  </div>
+                </div>
+              </div>
+            </SectionCard>
+          }
+        />
+      </PageStack>
+    </PageContainer>
+  );
+}
