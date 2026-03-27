@@ -12,6 +12,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@fastify/cors": "8",
     "bcryptjs": "^3.0.3",
     "dotenv": "^17.3.1",
     "fastify": "^4.29.1",
