@@ -6,6 +6,10 @@ export function useAuditLogs(params?: {
   decision?: string;
   reason_code?: string;
   client_id?: string;
+  actor_email?: string;
+  request_id?: string;
+  limit?: number;
+  offset?: number;
 }) {
   const status = useAuthStore((state) => state.status);
 
@@ -15,7 +19,7 @@ export function useAuditLogs(params?: {
       const response = await apiClient.get("/audit/decisions", {
         params,
       });
-      return response.data.items;
+      return response.data;
     },
     enabled: status === "authenticated",
     refetchInterval: 20000,
