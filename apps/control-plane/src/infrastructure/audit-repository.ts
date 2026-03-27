@@ -20,6 +20,9 @@ type DecisionAuditLogRow = {
   matched_rule: string | null;
   explanation: string;
   snapshot_version: number | null;
+  request_id: string | null;
+  actor_user_id: string | null;
+  actor_email: string | null;
   created_at: string;
 };
 
@@ -38,6 +41,9 @@ function mapRow(row: DecisionAuditLogRow): DecisionAuditLog {
     matched_rule: row.matched_rule,
     explanation: row.explanation,
     snapshot_version: row.snapshot_version,
+    request_id: row.request_id,
+    actor_user_id: row.actor_user_id,
+    actor_email: row.actor_email,
     created_at: row.created_at,
   };
 }
@@ -62,9 +68,12 @@ export async function insertDecisionAuditLog(
       ip,
       matched_rule,
       explanation,
-      snapshot_version
+      snapshot_version,
+      request_id,
+      actor_user_id,
+      actor_email
     )
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
     RETURNING
       id,
       decision_id,
@@ -79,6 +88,9 @@ export async function insertDecisionAuditLog(
       matched_rule,
       explanation,
       snapshot_version,
+      request_id,
+      actor_user_id,
+      actor_email,
       created_at
     `,
     [
@@ -95,6 +107,9 @@ export async function insertDecisionAuditLog(
       input.matched_rule,
       input.explanation,
       input.snapshot_version,
+      input.request_id ?? null,
+      input.actor_user_id ?? null,
+      input.actor_email ?? null,
     ],
   );
 
@@ -143,6 +158,16 @@ export async function listDecisionAuditLogs(
     values.push(filters.snapshot_version);
   }
 
+  if (filters.request_id) {
+    conditions.push(`request_id = $${index++}`);
+    values.push(filters.request_id);
+  }
+
+  if (filters.actor_email) {
+    conditions.push(`actor_email = $${index++}`);
+    values.push(filters.actor_email);
+  }
+
   const whereClause =
     conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
 
@@ -165,6 +190,9 @@ export async function listDecisionAuditLogs(
       matched_rule,
       explanation,
       snapshot_version,
+      request_id,
+      actor_user_id,
+      actor_email,
       created_at
     FROM decision_audit_logs
     ${whereClause}
@@ -196,6 +224,9 @@ export async function getDecisionAuditLogByDecisionId(
       matched_rule,
       explanation,
       snapshot_version,
+      request_id,
+      actor_user_id,
+      actor_email,
       created_at
     FROM decision_audit_logs
     WHERE decision_id = $1

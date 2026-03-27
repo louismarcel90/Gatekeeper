@@ -8,6 +8,7 @@ import {
   rollbackToSnapshotVersion,
 } from "../application/snapshot-service";
 import { requireAdminAuth, requireRole } from "../middleware/admin-auth";
+import { getActor, getRequestId } from "../shared/request-context";
 import { sendInternalError, sendNotFound } from "../shared/http";
 
 export async function registerSnapshotRoutes(app: FastifyInstance) {
@@ -41,7 +42,15 @@ export async function registerSnapshotRoutes(app: FastifyInstance) {
     "/snapshots/publish",
     { preHandler: [requireAdminAuth, requireRole(["security", "admin"])] },
     async (req, reply) => {
-      const snapshot = await publishSnapshot();
+      const actor = getActor(req);
+      const requestId = getRequestId(req);
+
+      const snapshot = await publishSnapshot({
+        request_id: requestId,
+        actor_user_id: actor.actor_user_id,
+        actor_email: actor.actor_email,
+      });
+
       return reply.code(201).send(snapshot);
     },
   );
@@ -61,7 +70,15 @@ export async function registerSnapshotRoutes(app: FastifyInstance) {
       }
 
       try {
-        const snapshot = await activateSnapshotVersion(version);
+        const actor = getActor(req);
+        const requestId = getRequestId(req);
+
+        const snapshot = await activateSnapshotVersion(version, {
+          request_id: requestId,
+          actor_user_id: actor.actor_user_id,
+          actor_email: actor.actor_email,
+        });
+
         return reply.code(200).send(snapshot);
       } catch (error) {
         const message =
@@ -91,7 +108,15 @@ export async function registerSnapshotRoutes(app: FastifyInstance) {
       }
 
       try {
-        const snapshot = await rollbackToSnapshotVersion(version);
+        const actor = getActor(req);
+        const requestId = getRequestId(req);
+
+        const snapshot = await rollbackToSnapshotVersion(version, {
+          request_id: requestId,
+          actor_user_id: actor.actor_user_id,
+          actor_email: actor.actor_email,
+        });
+
         return reply.code(200).send(snapshot);
       } catch (error) {
         const message =

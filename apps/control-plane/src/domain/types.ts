@@ -39,6 +39,9 @@ export type DeploymentHistoryEntry = {
   id: string;
   snapshot_version: number;
   action: "PUBLISH" | "ACTIVATE" | "ROLLBACK";
+  request_id?: string | null;
+  actor_user_id?: string | null;
+  actor_email?: string | null;
   created_at: string;
 };
 
@@ -56,6 +59,9 @@ export type DecisionAuditLog = {
   matched_rule: string | null;
   explanation: string;
   snapshot_version: number | null;
+  request_id?: string | null;
+  actor_user_id?: string | null;
+  actor_email?: string | null;
   created_at: string;
 };
 

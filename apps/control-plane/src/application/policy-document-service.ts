@@ -2,6 +2,13 @@ import { PolicyDocument } from "../domain/types";
 import { PolicyDocumentInput } from "../domain/validators";
 import { getAllPolicies, insertPolicy } from "../infrastructure/policy-repository";
 import { getAllRoutes, insertRoute } from "../infrastructure/route-repository";
+import { insertDecisionAuditLog } from "../infrastructure/audit-repository";
+
+type ActionContext = {
+  request_id?: string | null;
+  actor_user_id?: string | null;
+  actor_email?: string | null;
+};
 
 type ValidationResult = {
   valid: boolean;
@@ -64,7 +71,10 @@ export async function exportPolicyDocument(): Promise<PolicyDocument> {
   };
 }
 
-export async function importPolicyDocument(document: PolicyDocumentInput): Promise<PolicyDocument> {
+export async function importPolicyDocument(
+  document: PolicyDocumentInput,
+  context?: ActionContext,
+): Promise<PolicyDocument> {
   const validation = validatePolicyDocument(document);
 
   if (!validation.valid) {
@@ -86,6 +96,24 @@ export async function importPolicyDocument(document: PolicyDocumentInput): Promi
       // ignore duplicate insert for now
     }
   }
+
+  await insertDecisionAuditLog({
+    decision_id: `policy_import_${Date.now()}`,
+    decision: "ALLOW",
+    reason_code: "POLICY_DOCUMENT_IMPORTED",
+    route_id: null,
+    policy_id: null,
+    client_id: null,
+    path: "/policy-documents/import",
+    method: "POST",
+    ip: "control-plane",
+    matched_rule: "control_plane.policy_document.import",
+    explanation: "A policy document was imported through the admin control plane.",
+    snapshot_version: null,
+    request_id: context?.request_id ?? null,
+    actor_user_id: context?.actor_user_id ?? null,
+    actor_email: context?.actor_email ?? null,
+  });
 
   return {
     version: document.version,

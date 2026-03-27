@@ -12,7 +12,13 @@ import {
   listSnapshots as listSnapshotsFromDb,
 } from "../infrastructure/snapshot-repository";
 
-export async function publishSnapshot(): Promise<Snapshot> {
+type ActionContext = {
+  request_id?: string | null;
+  actor_user_id?: string | null;
+  actor_email?: string | null;
+};
+
+export async function publishSnapshot(context?: ActionContext): Promise<Snapshot> {
   const routes = await getAllRoutes();
   const policies = await getAllPolicies();
   const version = await getNextSnapshotVersion();
@@ -31,12 +37,18 @@ export async function publishSnapshot(): Promise<Snapshot> {
   await insertDeploymentHistoryEntry({
     snapshot_version: inserted.version,
     action: "PUBLISH",
+    request_id: context?.request_id ?? null,
+    actor_user_id: context?.actor_user_id ?? null,
+    actor_email: context?.actor_email ?? null,
   });
 
   if (inserted.is_active) {
     await insertDeploymentHistoryEntry({
       snapshot_version: inserted.version,
       action: "ACTIVATE",
+      request_id: context?.request_id ?? null,
+      actor_user_id: context?.actor_user_id ?? null,
+      actor_email: context?.actor_email ?? null,
     });
   }
 
@@ -55,7 +67,10 @@ export async function getActiveSnapshot(): Promise<Snapshot | null> {
   return getActiveSnapshotFromDb();
 }
 
-export async function activateSnapshotVersion(version: number): Promise<Snapshot> {
+export async function activateSnapshotVersion(
+  version: number,
+  context?: ActionContext,
+): Promise<Snapshot> {
   const snapshot = await getSnapshotByVersion(version);
 
   if (!snapshot) {
@@ -67,6 +82,9 @@ export async function activateSnapshotVersion(version: number): Promise<Snapshot
   await insertDeploymentHistoryEntry({
     snapshot_version: version,
     action: "ACTIVATE",
+    request_id: context?.request_id ?? null,
+    actor_user_id: context?.actor_user_id ?? null,
+    actor_email: context?.actor_email ?? null,
   });
 
   return {
@@ -75,7 +93,10 @@ export async function activateSnapshotVersion(version: number): Promise<Snapshot
   };
 }
 
-export async function rollbackToSnapshotVersion(version: number): Promise<Snapshot> {
+export async function rollbackToSnapshotVersion(
+  version: number,
+  context?: ActionContext,
+): Promise<Snapshot> {
   const snapshot = await getSnapshotByVersion(version);
 
   if (!snapshot) {
@@ -87,6 +108,9 @@ export async function rollbackToSnapshotVersion(version: number): Promise<Snapsh
   await insertDeploymentHistoryEntry({
     snapshot_version: version,
     action: "ROLLBACK",
+    request_id: context?.request_id ?? null,
+    actor_user_id: context?.actor_user_id ?? null,
+    actor_email: context?.actor_email ?? null,
   });
 
   return {

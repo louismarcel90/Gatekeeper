@@ -30,6 +30,9 @@ export const createDecisionAuditLogSchema = z.object({
   matched_rule: z.string().nullable(),
   explanation: z.string().min(1),
   snapshot_version: z.number().int().nullable(),
+  request_id: z.string().nullable().optional(),
+  actor_user_id: z.string().nullable().optional(),
+  actor_email: z.string().nullable().optional(),
 });
 
 export const simulateDecisionSchema = z.object({
@@ -58,6 +61,8 @@ export const decisionAuditQuerySchema = z.object({
   policy_id: z.string().min(1).optional(),
   path: z.string().min(1).optional(),
   snapshot_version: z.coerce.number().int().positive().optional(),
+  request_id: z.string().min(1).optional(),
+  actor_email: z.string().min(1).optional(),
   limit: z.coerce.number().int().positive().max(200).default(50),
   offset: z.coerce.number().int().min(0).default(0),
 });
@@ -65,6 +70,8 @@ export const decisionAuditQuerySchema = z.object({
 export const deploymentHistoryQuerySchema = z.object({
   action: z.enum(["PUBLISH", "ACTIVATE", "ROLLBACK"]).optional(),
   snapshot_version: z.coerce.number().int().positive().optional(),
+  request_id: z.string().min(1).optional(),
+  actor_email: z.string().min(1).optional(),
   limit: z.coerce.number().int().positive().max(200).default(50),
   offset: z.coerce.number().int().min(0).default(0),
 });
@@ -72,6 +79,12 @@ export const deploymentHistoryQuerySchema = z.object({
 export const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
+});
+
+export const createAdminUserSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(8),
+  role: z.enum(["viewer", "security", "admin"]),
 });
 
 export type CreateRouteInput = z.infer<typeof createRouteSchema>;
@@ -83,3 +96,4 @@ export type CandidateSimulationInput = z.infer<typeof candidateSimulationSchema>
 export type DecisionAuditQueryInput = z.infer<typeof decisionAuditQuerySchema>;
 export type DeploymentHistoryQueryInput = z.infer<typeof deploymentHistoryQuerySchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
+export type CreateAdminUserInput = z.infer<typeof createAdminUserSchema>;

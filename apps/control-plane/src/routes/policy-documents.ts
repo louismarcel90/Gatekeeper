@@ -6,6 +6,7 @@ import {
 } from "../application/policy-document-service";
 import { policyDocumentSchema } from "../domain/validators";
 import { requireAdminAuth, requireRole } from "../middleware/admin-auth";
+import { getActor, getRequestId } from "../shared/request-context";
 import { sendBadRequest, sendInternalError } from "../shared/http";
 
 export async function registerPolicyDocumentRoutes(app: FastifyInstance) {
@@ -36,7 +37,15 @@ export async function registerPolicyDocumentRoutes(app: FastifyInstance) {
       }
 
       try {
-        const imported = await importPolicyDocument(parsed.data);
+        const actor = getActor(req);
+        const requestId = getRequestId(req);
+
+        const imported = await importPolicyDocument(parsed.data, {
+          request_id: requestId,
+          actor_user_id: actor.actor_user_id,
+          actor_email: actor.actor_email,
+        });
+
         return reply.code(201).send(imported);
       } catch (error) {
         const message =

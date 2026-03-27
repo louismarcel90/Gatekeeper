@@ -60,6 +60,9 @@ export async function initDatabase(): Promise<void> {
       matched_rule TEXT NULL,
       explanation TEXT NOT NULL,
       snapshot_version INTEGER NULL,
+      request_id TEXT NULL,
+      actor_user_id TEXT NULL,
+      actor_email TEXT NULL,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
   `);
@@ -69,6 +72,9 @@ export async function initDatabase(): Promise<void> {
       id TEXT PRIMARY KEY,
       snapshot_version INTEGER NOT NULL REFERENCES snapshots(version) ON DELETE CASCADE,
       action TEXT NOT NULL,
+      request_id TEXT NULL,
+      actor_user_id TEXT NULL,
+      actor_email TEXT NULL,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
   `);
@@ -81,6 +87,36 @@ export async function initDatabase(): Promise<void> {
   await pool.query(`
     ALTER TABLE snapshots
     ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL DEFAULT FALSE;
+  `);
+
+  await pool.query(`
+    ALTER TABLE decision_audit_logs
+    ADD COLUMN IF NOT EXISTS request_id TEXT NULL;
+  `);
+
+  await pool.query(`
+    ALTER TABLE decision_audit_logs
+    ADD COLUMN IF NOT EXISTS actor_user_id TEXT NULL;
+  `);
+
+  await pool.query(`
+    ALTER TABLE decision_audit_logs
+    ADD COLUMN IF NOT EXISTS actor_email TEXT NULL;
+  `);
+
+  await pool.query(`
+    ALTER TABLE deployment_history
+    ADD COLUMN IF NOT EXISTS request_id TEXT NULL;
+  `);
+
+  await pool.query(`
+    ALTER TABLE deployment_history
+    ADD COLUMN IF NOT EXISTS actor_user_id TEXT NULL;
+  `);
+
+  await pool.query(`
+    ALTER TABLE deployment_history
+    ADD COLUMN IF NOT EXISTS actor_email TEXT NULL;
   `);
 
   const existingAdmin = await pool.query<{ email: string }>(

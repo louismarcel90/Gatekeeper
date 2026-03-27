@@ -7,22 +7,42 @@ type DeploymentHistoryRow = {
   id: string;
   snapshot_version: number;
   action: "PUBLISH" | "ACTIVATE" | "ROLLBACK";
+  request_id: string | null;
+  actor_user_id: string | null;
+  actor_email: string | null;
   created_at: string;
 };
 
 export async function insertDeploymentHistoryEntry(params: {
   snapshot_version: number;
   action: "PUBLISH" | "ACTIVATE" | "ROLLBACK";
+  request_id?: string | null;
+  actor_user_id?: string | null;
+  actor_email?: string | null;
 }): Promise<DeploymentHistoryEntry> {
   const id = randomUUID();
 
   const result = await pool.query<DeploymentHistoryRow>(
     `
-    INSERT INTO deployment_history (id, snapshot_version, action)
-    VALUES ($1, $2, $3)
-    RETURNING id, snapshot_version, action, created_at
+    INSERT INTO deployment_history (
+      id,
+      snapshot_version,
+      action,
+      request_id,
+      actor_user_id,
+      actor_email
+    )
+    VALUES ($1, $2, $3, $4, $5, $6)
+    RETURNING id, snapshot_version, action, request_id, actor_user_id, actor_email, created_at
     `,
-    [id, params.snapshot_version, params.action],
+    [
+      id,
+      params.snapshot_version,
+      params.action,
+      params.request_id ?? null,
+      params.actor_user_id ?? null,
+      params.actor_email ?? null,
+    ],
   );
 
   const row = result.rows[0]!;
@@ -31,6 +51,9 @@ export async function insertDeploymentHistoryEntry(params: {
     id: row.id,
     snapshot_version: row.snapshot_version,
     action: row.action,
+    request_id: row.request_id,
+    actor_user_id: row.actor_user_id,
+    actor_email: row.actor_email,
     created_at: row.created_at,
   };
 }
@@ -52,6 +75,16 @@ export async function listDeploymentHistory(
     values.push(filters.snapshot_version);
   }
 
+  if (filters.request_id) {
+    conditions.push(`request_id = $${index++}`);
+    values.push(filters.request_id);
+  }
+
+  if (filters.actor_email) {
+    conditions.push(`actor_email = $${index++}`);
+    values.push(filters.actor_email);
+  }
+
   const whereClause =
     conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
 
@@ -60,7 +93,7 @@ export async function listDeploymentHistory(
   values.push(filters.limit, filters.offset);
 
   const query = `
-    SELECT id, snapshot_version, action, created_at
+    SELECT id, snapshot_version, action, request_id, actor_user_id, actor_email, created_at
     FROM deployment_history
     ${whereClause}
     ORDER BY created_at DESC
@@ -74,6 +107,9 @@ export async function listDeploymentHistory(
     id: row.id,
     snapshot_version: row.snapshot_version,
     action: row.action,
+    request_id: row.request_id,
+    actor_user_id: row.actor_user_id,
+    actor_email: row.actor_email,
     created_at: row.created_at,
   }));
 }
