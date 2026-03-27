@@ -4,21 +4,22 @@ import { useState } from "react";
 import { PageHeader } from "@/src/components/app-shell/page-header";
 import { SectionCard } from "@/src/components/data-display/section-card";
 import { InlineMessage } from "@/src/components/feedback/inline-message";
+import { CapabilityHint } from "@/src/components/feedback/capability-hint";
+import { ActionButton } from "@/src/components/controls/action-button";
 import { PageContainer } from "@/src/components/page-layout/page-container";
-import { PageStack } from "@/src/components/page-layout/page-stack"; 
+import { PageStack } from "@/src/components/page-layout/page-stack";
 import { usePolicyDocumentExport } from "@/src/modules/policy-documents/use-policy-document-export";
 import { useImportPolicyDocument } from "@/src/modules/policy-documents/use-policy-document-actions";
-import { useAuthStore } from "@/src/core/state/auth-store";
+import { useCapability } from "@/src/modules/permissions/use-capability";
 
 export default function PolicyDocumentsPage() {
   const exportQuery = usePolicyDocumentExport();
   const importMutation = useImportPolicyDocument();
-  const user = useAuthStore((state) => state.user);
 
   const [inputValue, setInputValue] = useState("");
   const [message, setMessage] = useState("");
 
-  const canImport = user?.role === "security" || user?.role === "admin";
+  const canImport = useCapability("policyDocuments.import");
 
   async function handleImport() {
     setMessage("");
@@ -46,6 +47,13 @@ export default function PolicyDocumentsPage() {
           >
             {message}
           </InlineMessage>
+        ) : null}
+
+        {!canImport ? (
+          <CapabilityHint>
+            Your role can inspect policy documents, but importing a new policy document
+            requires a security or admin role.
+          </CapabilityHint>
         ) : null}
 
         <SectionCard title="Exported Policy Document">
@@ -79,7 +87,7 @@ export default function PolicyDocumentsPage() {
               <textarea
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
-                placeholder='Paste a policy document JSON here...'
+                placeholder="Paste a policy document JSON here..."
                 style={{
                   minHeight: 220,
                   padding: 14,
@@ -95,21 +103,13 @@ export default function PolicyDocumentsPage() {
               />
 
               <div>
-                <button
+                <ActionButton
+                  tone="violet"
                   onClick={handleImport}
                   disabled={importMutation.isPending}
-                  style={{
-                    padding: "10px 14px",
-                    borderRadius: 10,
-                    border: "1px solid #D9D5FF",
-                    background: "#F7F6FF",
-                    color: "#5B57D6",
-                    fontWeight: 700,
-                    cursor: "pointer",
-                  }}
                 >
                   {importMutation.isPending ? "Importing..." : "Import Policy Document"}
-                </button>
+                </ActionButton>
               </div>
             </div>
           </SectionCard>

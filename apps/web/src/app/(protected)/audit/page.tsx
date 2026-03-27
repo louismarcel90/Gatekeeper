@@ -10,7 +10,7 @@ import {
 import { SectionCard } from "@/src/components/data-display/section-card";
 import { StatusBadge } from "@/src/components/data-display/status-badge";
 import { EmptyState } from "@/src/components/feedback/empty-sate";
-import { PageContainer } from "@/src/components/page-layout/page-container";
+import { SystemPage } from "@/src/components/page-layout/system-page";
 import { PageStack } from "@/src/components/page-layout/page-stack";
 import { useAuditLogs } from "@/src/modules/audit/use-audit-logs";
 import { useState } from "react";
@@ -36,7 +36,7 @@ export default function AuditPage() {
   const items = (query.data ?? []) as AuditItem[];
 
   return (
-    <PageContainer>
+    <SystemPage>
       <PageStack>
         <PageHeader
           title="Audit Log"
@@ -62,7 +62,9 @@ export default function AuditPage() {
           {query.isLoading ? (
             <div style={{ color: "#6B665F" }}>Loading audit logs...</div>
           ) : query.isError ? (
-            <div style={{ color: "#B54848" }}>Failed to load audit logs.</div>
+            <div style={{ color: "#B54848" }}>
+              Audit data is temporarily unavailable. Existing page structure remains usable.
+            </div>
           ) : items.length === 0 ? (
             <EmptyState
               title="No audit entries found"
@@ -77,7 +79,7 @@ export default function AuditPage() {
                   key={item.decision_id}
                   columns={[
                     <StatusBadge
-                      key="status"
+                      key={`decision-${item.decision_id}`}
                       tone={
                         item.decision === "ALLOW"
                           ? "green"
@@ -99,6 +101,6 @@ export default function AuditPage() {
           )}
         </SectionCard>
       </PageStack>
-    </PageContainer>
+    </SystemPage>
   );
 }

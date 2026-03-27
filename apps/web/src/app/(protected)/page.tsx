@@ -4,10 +4,11 @@ import { PageHeader } from "@/src/components/app-shell/page-header";
 import { StatCard } from "@/src/components/app-shell/stat-card";
 import { SectionCard } from "@/src/components/data-display/section-card";
 import { StatusBadge } from "@/src/components/data-display/status-badge";
-import { PageContainer } from "@/src/components/page-layout/page-container";
 import { PageSectionGrid } from "@/src/components/page-layout/page-section-grid";
 import { PageStack } from "@/src/components/page-layout/page-stack";
 import { PageTwoPane } from "@/src/components/page-layout/page-two-pane";
+import { SystemPage } from "@/src/components/page-layout/system-page";
+import { RecentUiEvents } from "@/src/components/feedback/recent-ui-events";
 import { useAuthStore } from "@/src/core/state/auth-store";
 import { useRoutes } from "@/src/modules/routes/use-routes";
 import { useActiveSnapshot } from "@/src/modules/snapshots/use-snapshots";
@@ -28,7 +29,7 @@ export default function DashboardPage() {
   const enabledRoutes = routes.filter((route) => route.enabled).length;
 
   return (
-    <PageContainer>
+    <SystemPage>
       <PageStack>
         <PageHeader
           title="Dashboard"
@@ -98,49 +99,9 @@ export default function DashboardPage() {
               )}
             </SectionCard>
           }
-          right={
-            <SectionCard title="Operator Actions">
-              <div style={{ display: "grid", gap: 12 }}>
-                <div
-                  style={{
-                    padding: 16,
-                    borderRadius: 16,
-                    background: "#F7F6FF",
-                    border: "1px solid #E0DCFF",
-                    display: "grid",
-                    gap: 6,
-                  }}
-                >
-                  <div style={{ fontSize: 16, fontWeight: 700, color: "#111111" }}>
-                    Run Simulation
-                  </div>
-                  <div style={{ color: "#5F5B53", fontSize: 14, lineHeight: 1.45 }}>
-                    Preview route and policy behavior before deployment.
-                  </div>
-                </div>
-
-                <div
-                  style={{
-                    padding: 16,
-                    borderRadius: 16,
-                    background: "#FBF7F2",
-                    border: "1px solid #E8D3B7",
-                    display: "grid",
-                    gap: 6,
-                  }}
-                >
-                  <div style={{ fontSize: 16, fontWeight: 700, color: "#111111" }}>
-                    Investigation Flow
-                  </div>
-                  <div style={{ color: "#5F5B53", fontSize: 14, lineHeight: 1.45 }}>
-                    Trace deny, throttle, and snapshot changes across audit history.
-                  </div>
-                </div>
-              </div>
-            </SectionCard>
-          }
+          right={<RecentUiEvents />}
         />
       </PageStack>
-    </PageContainer>
+    </SystemPage>
   );
 }

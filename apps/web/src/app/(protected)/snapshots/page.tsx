@@ -7,7 +7,9 @@ import { SectionCard } from "@/src/components/data-display/section-card";
 import { StatusBadge } from "@/src/components/data-display/status-badge";
 import { EmptyState } from "@/src/components/feedback/empty-sate";
 import { InlineMessage } from "@/src/components/feedback/inline-message";
-import { PageContainer } from "@/src/components/page-layout/page-container";
+import { CapabilityHint } from "@/src/components/feedback/capability-hint";
+import { ActionButton } from "@/src/components/controls/action-button";
+import { SystemPage } from "@/src/components/page-layout/system-page";
 import { PageStack } from "@/src/components/page-layout/page-stack";
 import {
   useActivateSnapshot,
@@ -15,7 +17,7 @@ import {
   useRollbackSnapshot,
   useSnapshots,
 } from "@/src/modules/snapshots/use-snapshots";
-import { useAuthStore } from "@/src/core/state/auth-store";
+import { useCapability } from "@/src/modules/permissions/use-capability";
 
 type SnapshotItem = {
   version: number;
@@ -28,14 +30,14 @@ export default function SnapshotsPage() {
   const publishMutation = usePublishSnapshot();
   const activateMutation = useActivateSnapshot();
   const rollbackMutation = useRollbackSnapshot();
-  const user = useAuthStore((state) => state.user);
+
+  const canPublish = useCapability("snapshots.publish");
+  const canActivate = useCapability("snapshots.activate");
+  const canRollback = useCapability("snapshots.rollback");
 
   const [message, setMessage] = useState<string>("");
 
   const items = (query.data ?? []) as SnapshotItem[];
-
-  const canPublish = user?.role === "security" || user?.role === "admin";
-  const canAdmin = user?.role === "admin";
 
   async function handlePublish() {
     setMessage("");
@@ -68,28 +70,20 @@ export default function SnapshotsPage() {
   }
 
   return (
-    <PageContainer>
+    <SystemPage>
       <PageStack>
         <PageHeader
           title="Snapshots"
           subtitle="Review published configuration snapshots, publish new ones, and safely activate or rollback versions."
           action={
             canPublish ? (
-              <button
+              <ActionButton
+                tone="violet"
                 onClick={handlePublish}
                 disabled={publishMutation.isPending}
-                style={{
-                  padding: "10px 14px",
-                  borderRadius: 10,
-                  border: "1px solid #D9D5FF",
-                  background: "#F7F6FF",
-                  color: "#5B57D6",
-                  fontWeight: 700,
-                  cursor: "pointer",
-                }}
               >
                 {publishMutation.isPending ? "Publishing..." : "Publish Snapshot"}
-              </button>
+              </ActionButton>
             ) : null
           }
         />
@@ -100,6 +94,13 @@ export default function SnapshotsPage() {
           >
             {message}
           </InlineMessage>
+        ) : null}
+
+        {!canPublish && !canActivate && !canRollback ? (
+          <CapabilityHint>
+            Your role is read-only on snapshots. You can inspect configuration history, but
+            you cannot publish, activate, or rollback versions.
+          </CapabilityHint>
         ) : null}
 
         <SectionCard title="Snapshot History">
@@ -116,64 +117,40 @@ export default function SnapshotsPage() {
             <DataTable columns={["Version", "Generated At", "Status", "Actions"]}>
               {items.map((item) => (
                 <DataTableRow
-  key={item.version}
-  columns={[
-    `v${item.version}`,
-    new Date(item.generated_at).toLocaleString(),
-    item.is_active ? (
-      <StatusBadge key={`status-${item.version}`} tone="violet">
-        Active
-      </StatusBadge>
-    ) : (
-      <StatusBadge key={`status-${item.version}`}>Inactive</StatusBadge>
-    ),
-    <div
-      key={`actions-${item.version}`}
-      style={{ display: "flex", gap: 8, flexWrap: "wrap" }}
-    >
-      {canAdmin ? (
-        <button
-          onClick={() => handleActivate(item.version)}
-          disabled={activateMutation.isPending}
-          style={{
-            padding: "8px 10px",
-            borderRadius: 10,
-            border: "1px solid #D9D5FF",
-            background: "#F7F6FF",
-            color: "#5B57D6",
-            fontWeight: 600,
-            cursor: "pointer",
-          }}
-        >
-          Activate
-        </button>
-      ) : null}
+                  key={item.version}
+                  columns={[
+                    `v${item.version}`,
+                    new Date(item.generated_at).toLocaleString(),
+                    item.is_active ? (
+                      <StatusBadge key={`status-${item.version}`} tone="violet">Active</StatusBadge>
+                    ) : (
+                      <StatusBadge key={`status-${item.version}`}>Inactive</StatusBadge>
+                    ),
+                    <div key={`status-${item.version}`} style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                      <ActionButton
+                        
+                        tone="violet"
+                        onClick={() => handleActivate(item.version)}
+                        disabled={!canActivate || activateMutation.isPending || item.is_active}
+                      >
+                        Activate
+                      </ActionButton>
 
-      {canAdmin ? (
-        <button
-          onClick={() => handleRollback(item.version)}
-          disabled={rollbackMutation.isPending}
-          style={{
-            padding: "8px 10px",
-            borderRadius: 10,
-            border: "1px solid #E8D3B7",
-            background: "#FBF7F2",
-            color: "#9A6A2C",
-            fontWeight: 600,
-            cursor: "pointer",
-          }}
-        >
-          Rollback
-        </button>
-      ) : null}
-    </div>,
-  ]}
-/>
+                      <ActionButton
+                        tone="gold"
+                        onClick={() => handleRollback(item.version)}
+                        disabled={!canRollback || rollbackMutation.isPending}
+                      >
+                        Rollback
+                      </ActionButton>
+                    </div>,
+                  ]}
+                />
               ))}
             </DataTable>
           )}
         </SectionCard>
       </PageStack>
-    </PageContainer>
+    </SystemPage>
   );
 }

@@ -1,4 +1,4 @@
-import { AdminRole } from "../auth/types";
+import { AdminRole } from "@/src/modules/auth/types";
 
 export type NavItemConfig = {
   label: string;
@@ -40,7 +40,7 @@ export const NAV_ITEMS: NavItemConfig[] = [
   {
     label: "Policy Documents",
     href: "/policy-documents",
-    roles: ["security", "admin"],
+    roles: ["viewer", "security", "admin"],
   },
   {
     label: "Deployments",

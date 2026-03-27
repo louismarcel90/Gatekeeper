@@ -18,5 +18,8 @@ export function useAuditLogs(params?: {
       return response.data.items;
     },
     enabled: status === "authenticated",
+    refetchInterval: 20000,
+    staleTime: 7000,
+    refetchOnWindowFocus: true,
   });
 }

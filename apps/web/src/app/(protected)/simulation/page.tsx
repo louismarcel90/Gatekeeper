@@ -5,17 +5,18 @@ import { PageHeader } from "@/src/components/app-shell/page-header";
 import { SectionCard } from "@/src/components/data-display/section-card";
 import { StatusBadge } from "@/src/components/data-display/status-badge";
 import { InlineMessage } from "@/src/components/feedback/inline-message";
+import { CapabilityHint } from "@/src/components/feedback/capability-hint";
+import { ActionButton } from "@/src/components/controls/action-button";
 import { PageContainer } from "@/src/components/page-layout/page-container";
 import { PageStack } from "@/src/components/page-layout/page-stack";
 import { PageTwoPane } from "@/src/components/page-layout/page-two-pane";
 import { useSimulateDecision } from "@/src/modules/simulation/use-simulate-decision";
 import { useCandidateSimulation } from "@/src/modules/simulation/use-candidate-simulation";
-import { useAuthStore } from "@/src/core/state/auth-store";
+import { useCapability } from "@/src/modules/permissions/use-capability";
 
 export default function SimulationPage() {
   const simulateMutation = useSimulateDecision();
   const candidateMutation = useCandidateSimulation();
-  const user = useAuthStore((state) => state.user);
 
   const [path, setPath] = useState("/search");
   const [method, setMethod] = useState<"GET" | "POST" | "PUT" | "PATCH" | "DELETE">(
@@ -25,7 +26,7 @@ export default function SimulationPage() {
   const [scopes, setScopes] = useState("search:read");
   const [candidateDocument, setCandidateDocument] = useState("");
 
-  const canCandidateSimulate = user?.role === "security" || user?.role === "admin";
+  const canCandidateSimulate = useCapability("simulation.candidate");
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -58,7 +59,7 @@ export default function SimulationPage() {
         },
       });
     } catch {
-      // ToDo: handled below
+      // handled below
     }
   }
 
@@ -77,6 +78,13 @@ export default function SimulationPage() {
         />
 
         {resultError ? <InlineMessage tone="error">{resultError}</InlineMessage> : null}
+
+        {!canCandidateSimulate ? (
+          <CapabilityHint>
+            Your role can run runtime simulation, but candidate simulation requires a
+            security or admin role.
+          </CapabilityHint>
+        ) : null}
 
         <PageTwoPane
           left={
@@ -137,21 +145,13 @@ export default function SimulationPage() {
                   }}
                 />
 
-                <button
-                  type="submit"
+                <ActionButton
+                type="submit"
+                  tone="violet"
                   disabled={simulateMutation.isPending}
-                  style={{
-                    padding: 12,
-                    borderRadius: 12,
-                    border: "1px solid #D9D5FF",
-                    background: "#F7F6FF",
-                    color: "#5B57D6",
-                    fontWeight: 700,
-                    cursor: "pointer",
-                  }}
                 >
                   {simulateMutation.isPending ? "Simulating..." : "Run Runtime Simulation"}
-                </button>
+                </ActionButton>
               </form>
 
               {canCandidateSimulate ? (
@@ -163,7 +163,7 @@ export default function SimulationPage() {
                   <textarea
                     value={candidateDocument}
                     onChange={(e) => setCandidateDocument(e.target.value)}
-                    placeholder='Paste candidate policy document JSON here...'
+                    placeholder="Paste candidate policy document JSON here..."
                     style={{
                       minHeight: 180,
                       padding: 14,
@@ -178,24 +178,15 @@ export default function SimulationPage() {
                     }}
                   />
 
-                  <button
-                    type="button"
+                  <ActionButton
+                    tone="gold"
                     onClick={handleCandidateSimulation}
                     disabled={candidateMutation.isPending}
-                    style={{
-                      padding: 12,
-                      borderRadius: 12,
-                      border: "1px solid #E8D3B7",
-                      background: "#FBF7F2",
-                      color: "#9A6A2C",
-                      fontWeight: 700,
-                      cursor: "pointer",
-                    }}
                   >
                     {candidateMutation.isPending
                       ? "Running candidate simulation..."
                       : "Run Candidate Simulation"}
-                  </button>
+                  </ActionButton>
                 </div>
               ) : null}
             </SectionCard>
