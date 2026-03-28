@@ -40,9 +40,7 @@ Gatekeeper ensures:
 - every decision is traceable
 - no access is implicitly trusted
 
----
-
----
+--
 
  ## ⚡ Real World Scenario
 
