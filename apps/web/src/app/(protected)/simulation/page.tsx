@@ -19,9 +19,7 @@ export default function SimulationPage() {
   const candidateMutation = useCandidateSimulation();
 
   const [path, setPath] = useState("/search");
-  const [method, setMethod] = useState<"GET" | "POST" | "PUT" | "PATCH" | "DELETE">(
-    "GET",
-  );
+  const [method, setMethod] = useState<"GET" | "POST" | "PUT" | "PATCH" | "DELETE">("GET");
   const [clientId, setClientId] = useState("partner-x");
   const [scopes, setScopes] = useState("search:read");
   const [candidateDocument, setCandidateDocument] = useState("");
@@ -81,8 +79,8 @@ export default function SimulationPage() {
 
         {!canCandidateSimulate ? (
           <CapabilityHint>
-            Your role can run runtime simulation, but candidate simulation requires a
-            security or admin role.
+            Your role can run runtime simulation, but candidate simulation requires a security or
+            admin role.
           </CapabilityHint>
         ) : null}
 
@@ -145,11 +143,7 @@ export default function SimulationPage() {
                   }}
                 />
 
-                <ActionButton
-                type="submit"
-                  tone="violet"
-                  disabled={simulateMutation.isPending}
-                >
+                <ActionButton type="submit" tone="violet" disabled={simulateMutation.isPending}>
                   {simulateMutation.isPending ? "Simulating..." : "Run Runtime Simulation"}
                 </ActionButton>
               </form>
@@ -213,11 +207,21 @@ export default function SimulationPage() {
                     </StatusBadge>
                   </div>
 
-                  <div><strong>Reason:</strong> {result.reason_code}</div>
-                  <div><strong>Explanation:</strong> {result.explanation}</div>
-                  <div><strong>Route ID:</strong> {result.route_id ?? "—"}</div>
-                  <div><strong>Policy ID:</strong> {result.policy_id ?? "—"}</div>
-                  <div><strong>Snapshot:</strong> {result.snapshot_version ?? "—"}</div>
+                  <div>
+                    <strong>Reason:</strong> {result.reason_code}
+                  </div>
+                  <div>
+                    <strong>Explanation:</strong> {result.explanation}
+                  </div>
+                  <div>
+                    <strong>Route ID:</strong> {result.route_id ?? "—"}
+                  </div>
+                  <div>
+                    <strong>Policy ID:</strong> {result.policy_id ?? "—"}
+                  </div>
+                  <div>
+                    <strong>Snapshot:</strong> {result.snapshot_version ?? "—"}
+                  </div>
                 </div>
               )}
             </SectionCard>

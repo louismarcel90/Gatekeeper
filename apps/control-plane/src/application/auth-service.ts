@@ -3,10 +3,7 @@ import jwt from "jsonwebtoken";
 import { controlPlaneConfig } from "../config/env";
 import { AdminUser } from "../domain/types";
 import { LoginInput } from "../domain/validators";
-import {
-  findAdminUserByEmail,
-  findAdminUserById,
-} from "../infrastructure/admin-user-repository";
+import { findAdminUserByEmail, findAdminUserById } from "../infrastructure/admin-user-repository";
 
 type AuthTokenPayload = {
   sub: string;
@@ -63,9 +60,7 @@ export function verifyAdminToken(token: string): AuthTokenPayload {
   if (
     typeof decoded.sub !== "string" ||
     typeof decoded.email !== "string" ||
-    (decoded.role !== "viewer" &&
-      decoded.role !== "security" &&
-      decoded.role !== "admin")
+    (decoded.role !== "viewer" && decoded.role !== "security" && decoded.role !== "admin")
   ) {
     throw new Error("INVALID_ADMIN_TOKEN");
   }
@@ -77,10 +72,9 @@ export function verifyAdminToken(token: string): AuthTokenPayload {
   };
 }
 
-export async function getAdminProfile(userId: string): Promise<Pick<
-  AdminUser,
-  "id" | "email" | "role" | "created_at"
-> | null> {
+export async function getAdminProfile(
+  userId: string,
+): Promise<Pick<AdminUser, "id" | "email" | "role" | "created_at"> | null> {
   const user = await findAdminUserById(userId);
 
   if (!user) {

@@ -1,8 +1,4 @@
-export function CapabilityHint({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export function CapabilityHint({ children }: { children: React.ReactNode }) {
   return (
     <div
       style={{

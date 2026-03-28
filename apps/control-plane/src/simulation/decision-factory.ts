@@ -21,9 +21,7 @@ type BuildSimulationDecisionInput = {
   };
 };
 
-export function buildSimulationDecision(
-  input: BuildSimulationDecisionInput,
-): SimulationDecision {
+export function buildSimulationDecision(input: BuildSimulationDecisionInput): SimulationDecision {
   return {
     decision_id: randomUUID(),
     decision: input.decision,

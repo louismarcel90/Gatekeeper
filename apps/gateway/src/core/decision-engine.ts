@@ -9,10 +9,7 @@ function findPolicyForRoute(snapshot: Snapshot, routeId: string): Policy | undef
   return snapshot.policies.find((policy) => policy.route_id === routeId);
 }
 
-export async function evaluateWithSnapshot(
-  context: RequestContext,
-  snapshot: Snapshot | null,
-) {
+export async function evaluateWithSnapshot(context: RequestContext, snapshot: Snapshot | null) {
   if (!snapshot) {
     return buildDecision({
       decision: "DENY",

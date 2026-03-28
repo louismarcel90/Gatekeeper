@@ -1,9 +1,6 @@
 import { randomUUID } from "crypto";
 import { pool } from "../db/client";
-import {
-  CreateDecisionAuditLogInput,
-  DecisionAuditQueryInput,
-} from "../domain/validators";
+import { CreateDecisionAuditLogInput, DecisionAuditQueryInput } from "../domain/validators";
 import { DecisionAuditLog } from "../domain/types";
 
 type DecisionAuditLogRow = {
@@ -168,8 +165,7 @@ export async function listDecisionAuditLogs(
     values.push(filters.actor_email);
   }
 
-  const whereClause =
-    conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+  const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
 
   const limitPlaceholder = `$${index++}`;
   const offsetPlaceholder = `$${index++}`;

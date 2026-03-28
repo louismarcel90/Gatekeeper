@@ -4,40 +4,29 @@ import {
   getDecisionAuditLog,
   getDecisionAuditLogs,
 } from "../application/audit-service";
-import {
-  createDecisionAuditLogSchema,
-  decisionAuditQuerySchema,
-} from "../domain/validators";
+import { createDecisionAuditLogSchema, decisionAuditQuerySchema } from "../domain/validators";
 import { requireAdminAuth } from "../middleware/admin-auth";
-import {
-  sendBadRequest,
-  sendInternalError,
-  sendNotFound,
-} from "../shared/http";
+import { sendBadRequest, sendInternalError, sendNotFound } from "../shared/http";
 
 export async function registerAuditRoutes(app: FastifyInstance) {
-  app.get(
-    "/audit/decisions",
-    { preHandler: [requireAdminAuth] },
-    async (req, reply) => {
-      const parsed = decisionAuditQuerySchema.safeParse(req.query);
+  app.get("/audit/decisions", { preHandler: [requireAdminAuth] }, async (req, reply) => {
+    const parsed = decisionAuditQuerySchema.safeParse(req.query);
 
-      if (!parsed.success) {
-        return sendBadRequest(reply, parsed.error.message);
-      }
+    if (!parsed.success) {
+      return sendBadRequest(reply, parsed.error.message);
+    }
 
-      const items = await getDecisionAuditLogs(parsed.data);
+    const items = await getDecisionAuditLogs(parsed.data);
 
-      return {
-        items,
-        pagination: {
-          limit: parsed.data.limit,
-          offset: parsed.data.offset,
-        },
-        filters: parsed.data,
-      };
-    },
-  );
+    return {
+      items,
+      pagination: {
+        limit: parsed.data.limit,
+        offset: parsed.data.offset,
+      },
+      filters: parsed.data,
+    };
+  });
 
   app.get(
     "/audit/decisions/:decisionId",

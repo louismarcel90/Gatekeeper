@@ -12,9 +12,7 @@ declare module "fastify" {
   }
 }
 
-function extractBearerToken(
-  headers: Record<string, string | string[] | undefined>,
-): string | null {
+function extractBearerToken(headers: Record<string, string | string[] | undefined>): string | null {
   const raw = headers["authorization"];
   const value = Array.isArray(raw) ? raw[0] : raw;
 

@@ -1,12 +1,6 @@
 import { ReactNode } from "react";
 
-export function DataTable({
-  columns,
-  children,
-}: {
-  columns: string[];
-  children: ReactNode;
-}) {
+export function DataTable({ columns, children }: { columns: string[]; children: ReactNode }) {
   return (
     <div
       style={{
@@ -51,11 +45,7 @@ export function DataTable({
   );
 }
 
-export function DataTableRow({
-  columns,
-}: {
-  columns: ReactNode[];
-}) {
+export function DataTableRow({ columns }: { columns: ReactNode[] }) {
   return (
     <div
       style={{

@@ -3,11 +3,7 @@
 import { useMemo, useState } from "react";
 import { PageHeader } from "@/src/components/app-shell/page-header";
 import { DataTable, DataTableRow } from "@/src/components/data-display/data-table";
-import {
-  FilterInput,
-  FilterSelect,
-  FiltersBar,
-} from "@/src/components/data-display/filters-bar";
+import { FilterInput, FilterSelect, FiltersBar } from "@/src/components/data-display/filters-bar";
 import { SectionCard } from "@/src/components/data-display/section-card";
 import { StatusBadge } from "@/src/components/data-display/status-badge";
 import { EmptyState } from "@/src/components/feedback/empty-sate";
@@ -57,31 +53,24 @@ export default function AuditPage() {
   });
 
   const sortedItems = useMemo(() => {
-  const items = (query.data?.items ?? []) as AuditItem[];
-  const copy = [...items];
+    const items = (query.data?.items ?? []) as AuditItem[];
+    const copy = [...items];
 
-  if (sortMode === "oldest") {
-    copy.sort(
-      (a, b) =>
-        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-    );
+    if (sortMode === "oldest") {
+      copy.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+      return copy;
+    }
+
+    if (sortMode === "decision") {
+      copy.sort((a, b) => a.decision.localeCompare(b.decision));
+      return copy;
+    }
+
+    copy.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
     return copy;
-  }
+  }, [query.data?.items, sortMode]);
 
-  if (sortMode === "decision") {
-    copy.sort((a, b) => a.decision.localeCompare(b.decision));
-    return copy;
-  }
-
-  copy.sort(
-    (a, b) =>
-      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-  );
-
-  return copy;
-}, [query.data?.items, sortMode]);
-
- 
   const pagedItems = sortedItems.slice(page * pageSize, (page + 1) * pageSize);
 
   return (
@@ -151,8 +140,8 @@ export default function AuditPage() {
 
           <FiltersBar>
             <div style={{ fontSize: 13, color: "#6B665F" }}>
-              Filters apply to the current audit result set. Click any row to inspect full
-              request correlation details.
+              Filters apply to the current audit result set. Click any row to inspect full request
+              correlation details.
             </div>
           </FiltersBar>
 
@@ -216,11 +205,7 @@ export default function AuditPage() {
                 pageSize={pageSize}
                 itemCount={sortedItems.length}
                 onPrevious={() => setPage((p) => Math.max(0, p - 1))}
-                onNext={() =>
-                  setPage((p) =>
-                    (p + 1) * pageSize < sortedItems.length ? p + 1 : p,
-                  )
-                }
+                onNext={() => setPage((p) => ((p + 1) * pageSize < sortedItems.length ? p + 1 : p))}
               />
             </>
           )}

@@ -7,12 +7,12 @@ export default [
   ...tseslint.configs.recommended,
   prettier,
   {
-    ignores: ["**/dist/**", "**/.next/**", "**/node_modules/**"]
+    ignores: ["**/dist/**", "**/.next/**", "**/node_modules/**"],
   },
   {
     languageOptions: {
       ecmaVersion: "latest",
-      sourceType: "commonjs"
-    }
-  }
+      sourceType: "commonjs",
+    },
+  },
 ];

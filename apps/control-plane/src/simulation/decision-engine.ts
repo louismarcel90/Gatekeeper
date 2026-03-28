@@ -7,10 +7,7 @@ function findPolicyForRoute(snapshot: Snapshot, routeId: string): Policy | undef
   return snapshot.policies.find((policy) => policy.route_id === routeId);
 }
 
-export function evaluateSimulation(
-  input: SimulationInput,
-  snapshot: Snapshot | null,
-) {
+export function evaluateSimulation(input: SimulationInput, snapshot: Snapshot | null) {
   if (!snapshot) {
     return buildSimulationDecision({
       decision: "DENY",
@@ -123,8 +120,7 @@ export function evaluateSimulation(
   return buildSimulationDecision({
     decision: "ALLOW",
     reason_code: "OK",
-    explanation:
-      "The simulated request matched an enabled route and satisfied its active policy.",
+    explanation: "The simulated request matched an enabled route and satisfied its active policy.",
     snapshot_version: snapshot.version,
     route_id: route.id,
     policy_id: policy.id,

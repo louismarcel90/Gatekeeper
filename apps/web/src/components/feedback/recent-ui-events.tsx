@@ -27,9 +27,7 @@ export function RecentUiEvents() {
           gap: 12,
         }}
       >
-        <div style={{ fontSize: 16, fontWeight: 700, color: "#111111" }}>
-          Recent UI Events
-        </div>
+        <div style={{ fontSize: 16, fontWeight: 700, color: "#111111" }}>Recent UI Events</div>
 
         <ActionButton tone="neutral" onClick={clearEvents} disabled={events.length === 0}>
           Clear
@@ -37,9 +35,7 @@ export function RecentUiEvents() {
       </div>
 
       {events.length === 0 ? (
-        <div style={{ color: "#6B665F", fontSize: 14 }}>
-          No recent UI events yet.
-        </div>
+        <div style={{ color: "#6B665F", fontSize: 14 }}>No recent UI events yet.</div>
       ) : (
         <div style={{ display: "grid", gap: 10 }}>
           {events.slice(0, 8).map((event) => (
@@ -80,16 +76,12 @@ export function RecentUiEvents() {
                 </div>
               </div>
 
-              <div style={{ fontWeight: 600, color: "#111111", fontSize: 14 }}>
-                {event.scope}
-              </div>
+              <div style={{ fontWeight: 600, color: "#111111", fontSize: 14 }}>{event.scope}</div>
 
               <div style={{ color: "#5F5B53", fontSize: 14 }}>{event.message}</div>
 
               {event.request_id ? (
-                <div style={{ fontSize: 12, color: "#78716C" }}>
-                  request_id: {event.request_id}
-                </div>
+                <div style={{ fontSize: 12, color: "#78716C" }}>request_id: {event.request_id}</div>
               ) : null}
             </div>
           ))}

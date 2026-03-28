@@ -89,17 +89,15 @@ export default function SnapshotsPage() {
         />
 
         {message ? (
-          <InlineMessage
-            tone={message.toLowerCase().includes("failed") ? "error" : "success"}
-          >
+          <InlineMessage tone={message.toLowerCase().includes("failed") ? "error" : "success"}>
             {message}
           </InlineMessage>
         ) : null}
 
         {!canPublish && !canActivate && !canRollback ? (
           <CapabilityHint>
-            Your role is read-only on snapshots. You can inspect configuration history, but
-            you cannot publish, activate, or rollback versions.
+            Your role is read-only on snapshots. You can inspect configuration history, but you
+            cannot publish, activate, or rollback versions.
           </CapabilityHint>
         ) : null}
 
@@ -122,13 +120,17 @@ export default function SnapshotsPage() {
                     `v${item.version}`,
                     new Date(item.generated_at).toLocaleString(),
                     item.is_active ? (
-                      <StatusBadge key={`status-${item.version}`} tone="violet">Active</StatusBadge>
+                      <StatusBadge key={`status-${item.version}`} tone="violet">
+                        Active
+                      </StatusBadge>
                     ) : (
                       <StatusBadge key={`status-${item.version}`}>Inactive</StatusBadge>
                     ),
-                    <div key={`status-${item.version}`} style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    <div
+                      key={`status-${item.version}`}
+                      style={{ display: "flex", gap: 8, flexWrap: "wrap" }}
+                    >
                       <ActionButton
-                        
                         tone="violet"
                         onClick={() => handleActivate(item.version)}
                         disabled={!canActivate || activateMutation.isPending || item.is_active}

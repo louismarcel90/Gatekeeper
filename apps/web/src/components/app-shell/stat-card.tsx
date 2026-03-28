@@ -7,14 +7,11 @@ export function StatCard({
   value: string | number;
   accent?: "neutral" | "violet" | "gold";
 }) {
-  const borderColor =
-    accent === "violet" ? "#D9D5FF" : accent === "gold" ? "#E8D3B7" : "#E7E5E4";
+  const borderColor = accent === "violet" ? "#D9D5FF" : accent === "gold" ? "#E8D3B7" : "#E7E5E4";
 
-  const bg =
-    accent === "violet" ? "#F7F6FF" : accent === "gold" ? "#FBF7F2" : "#FFFFFF";
+  const bg = accent === "violet" ? "#F7F6FF" : accent === "gold" ? "#FBF7F2" : "#FFFFFF";
 
-  const valueColor =
-    accent === "violet" ? "#5B57D6" : accent === "gold" ? "#9A6A2C" : "#111111";
+  const valueColor = accent === "violet" ? "#5B57D6" : accent === "gold" ? "#9A6A2C" : "#111111";
 
   return (
     <div

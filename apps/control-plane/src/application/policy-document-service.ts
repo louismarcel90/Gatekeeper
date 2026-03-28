@@ -49,10 +49,7 @@ function validateDuplicateIds(document: PolicyDocumentInput): string[] {
 }
 
 export function validatePolicyDocument(document: PolicyDocumentInput): ValidationResult {
-  const errors = [
-    ...validateDuplicateIds(document),
-    ...validateRoutePolicyReferences(document),
-  ];
+  const errors = [...validateDuplicateIds(document), ...validateRoutePolicyReferences(document)];
 
   return {
     valid: errors.length === 0,

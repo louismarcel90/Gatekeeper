@@ -45,20 +45,14 @@ async function start() {
     await buildServer();
 
     await app.register(cors, {
-  origin: "http://localhost:3000",
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: [
-    "Content-Type",
-    "Authorization",
-    "x-request-id",
-    "x-client-name",
-    "Accept",
-  ],
-  exposedHeaders: ["x-request-id"],
-  preflight: true,
-  optionsSuccessStatus: 204,
-});
+      origin: "http://localhost:3000",
+      credentials: true,
+      methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+      allowedHeaders: ["Content-Type", "Authorization", "x-request-id", "x-client-name", "Accept"],
+      exposedHeaders: ["x-request-id"],
+      preflight: true,
+      optionsSuccessStatus: 204,
+    });
 
     await app.listen({
       port: controlPlaneConfig.port,

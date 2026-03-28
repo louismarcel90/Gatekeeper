@@ -1,4 +1,4 @@
-import { apiClient } from "@/src/core/api/client"; 
+import { apiClient } from "@/src/core/api/client";
 import { AuthUser, LoginResponse } from "./types";
 
 export async function loginRequest(params: {

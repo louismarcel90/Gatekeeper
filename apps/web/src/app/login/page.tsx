@@ -47,12 +47,8 @@ export default function LoginPage() {
         }}
       >
         <div style={{ display: "grid", gap: 8 }}>
-          <div style={{ fontSize: 36, fontWeight: 700, letterSpacing: "-0.03em" }}>
-            Gatekeeper
-          </div>
-          <div style={{ color: "#6B665F" }}>
-            Sign in to access the admin control plane.
-          </div>
+          <div style={{ fontSize: 36, fontWeight: 700, letterSpacing: "-0.03em" }}>Gatekeeper</div>
+          <div style={{ color: "#6B665F" }}>Sign in to access the admin control plane.</div>
         </div>
 
         <label style={{ display: "grid", gap: 8 }}>

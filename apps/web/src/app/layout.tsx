@@ -1,11 +1,7 @@
-import { QueryProvider } from "../core/providers/query-provider"; 
+import { QueryProvider } from "../core/providers/query-provider";
 import { AuthProvider } from "../core/providers/auth-provider";
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body>

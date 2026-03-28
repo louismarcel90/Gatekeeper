@@ -1,8 +1,5 @@
 import { DecisionAuditLog } from "../domain/types";
-import {
-  CreateDecisionAuditLogInput,
-  DecisionAuditQueryInput,
-} from "../domain/validators";
+import { CreateDecisionAuditLogInput, DecisionAuditQueryInput } from "../domain/validators";
 import {
   getDecisionAuditLogByDecisionId,
   insertDecisionAuditLog,
@@ -21,8 +18,6 @@ export async function getDecisionAuditLogs(
   return listDecisionAuditLogs(filters);
 }
 
-export async function getDecisionAuditLog(
-  decisionId: string,
-): Promise<DecisionAuditLog | null> {
+export async function getDecisionAuditLog(decisionId: string): Promise<DecisionAuditLog | null> {
   return getDecisionAuditLogByDecisionId(decisionId);
 }

@@ -47,10 +47,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   hydrateToken: () => {
-    const token =
-      typeof window !== "undefined"
-        ? localStorage.getItem("admin_token")
-        : null;
+    const token = typeof window !== "undefined" ? localStorage.getItem("admin_token") : null;
 
     set((state) => ({
       ...state,

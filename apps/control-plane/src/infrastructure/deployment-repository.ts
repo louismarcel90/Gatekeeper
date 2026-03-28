@@ -85,8 +85,7 @@ export async function listDeploymentHistory(
     values.push(filters.actor_email);
   }
 
-  const whereClause =
-    conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+  const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
 
   const limitPlaceholder = `$${index++}`;
   const offsetPlaceholder = `$${index++}`;

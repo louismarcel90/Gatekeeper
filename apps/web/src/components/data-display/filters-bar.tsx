@@ -1,8 +1,4 @@
-export function FiltersBar({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export function FiltersBar({ children }: { children: React.ReactNode }) {
   return (
     <div
       style={{

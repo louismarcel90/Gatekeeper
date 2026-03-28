@@ -1,9 +1,4 @@
-import {
-  PolicyDocument,
-  SimulationDecision,
-  SimulationInput,
-  Snapshot,
-} from "../domain/types";
+import { PolicyDocument, SimulationDecision, SimulationInput, Snapshot } from "../domain/types";
 import { evaluateSimulation } from "../simulation/decision-engine";
 
 function buildSnapshotFromDocument(document: PolicyDocument): Snapshot {

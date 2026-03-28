@@ -1,12 +1,6 @@
 import { ReactNode } from "react";
 
-export function PageTwoPane({
-  left,
-  right,
-}: {
-  left: ReactNode;
-  right: ReactNode;
-}) {
+export function PageTwoPane({ left, right }: { left: ReactNode; right: ReactNode }) {
   return (
     <div
       style={{

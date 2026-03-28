@@ -5,7 +5,7 @@ export async function registerHealthRoutes(app: FastifyInstance) {
     return {
       ok: true,
       service: "control-plane",
-      ts: new Date().toISOString()
+      ts: new Date().toISOString(),
     };
   });
 

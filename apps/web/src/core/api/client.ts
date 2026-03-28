@@ -37,9 +37,11 @@ apiClient.interceptors.request.use((config) => {
 
 apiClient.interceptors.response.use(
   (response) => {
-    const metadata = (response.config as typeof response.config & {
-      metadata?: { request_id?: string; started_at?: number };
-    }).metadata;
+    const metadata = (
+      response.config as typeof response.config & {
+        metadata?: { request_id?: string; started_at?: number };
+      }
+    ).metadata;
 
     const durationMs =
       typeof metadata?.started_at === "number" ? Date.now() - metadata.started_at : undefined;

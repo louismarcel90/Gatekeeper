@@ -1,9 +1,6 @@
 "use client";
 
-import { LucideIcon } from "lucide-react";
-import { useAuthStore } from "@/src/core/state/auth-store";
-import { getVisibleNavItems } from "@/src/modules/navigation/role-access";
-import { NavItem } from "./nav-item";
+import type { ComponentType } from "react";
 import {
   LayoutDashboard,
   Route,
@@ -13,8 +10,13 @@ import {
   FileSearch,
   FileText,
   Rocket,
-  Bot,
+  UserStar,
 } from "lucide-react";
+
+import { useAuthStore } from "@/src/core/state/auth-store";
+import { getVisibleNavItems } from "@/src/modules/navigation/role-access";
+import { NavItem } from "./nav-item";
+// import { GatekeeperMark } from "../icons/gatekeeper-mark";
 
 type NavLabel =
   | "Dashboard"
@@ -27,7 +29,9 @@ type NavLabel =
   | "Deployments"
   | "Admin Users";
 
-const navIcons: Record<NavLabel, LucideIcon> = {
+type IconType = ComponentType<{ className?: string }>;
+
+const navIcons: Record<NavLabel, IconType> = {
   Dashboard: LayoutDashboard,
   Routes: Route,
   Policies: ShieldCheck,
@@ -36,7 +40,7 @@ const navIcons: Record<NavLabel, LucideIcon> = {
   "Audit Log": FileSearch,
   "Policy Documents": FileText,
   Deployments: Rocket,
-  "Admin Users": Bot,
+  "Admin Users": UserStar,
 };
 
 export function Sidebar() {
@@ -80,15 +84,7 @@ export function Sidebar() {
             letterSpacing: "-0.02em",
           }}
         >
-          <div
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: 14,
-              background: "linear-gradient(180deg, #8FA7FF, #6C83F7)",
-              flexShrink: 0,
-            }}
-          />
+          {/* <GatekeeperMark /> */}
           <span>Gatekeeper</span>
         </div>
 
@@ -101,14 +97,7 @@ export function Sidebar() {
           {items.map((item) => {
             const Icon = navIcons[item.label as NavLabel] ?? LayoutDashboard;
 
-            return (
-              <NavItem
-                key={item.href}
-                href={item.href}
-                label={item.label}
-                icon={Icon}
-              />
-            );
+            return <NavItem key={item.href} href={item.href} label={item.label} icon={Icon} />;
           })}
         </nav>
 

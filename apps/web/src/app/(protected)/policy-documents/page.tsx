@@ -42,17 +42,15 @@ export default function PolicyDocumentsPage() {
         />
 
         {message ? (
-          <InlineMessage
-            tone={message.toLowerCase().includes("failed") ? "error" : "success"}
-          >
+          <InlineMessage tone={message.toLowerCase().includes("failed") ? "error" : "success"}>
             {message}
           </InlineMessage>
         ) : null}
 
         {!canImport ? (
           <CapabilityHint>
-            Your role can inspect policy documents, but importing a new policy document
-            requires a security or admin role.
+            Your role can inspect policy documents, but importing a new policy document requires a
+            security or admin role.
           </CapabilityHint>
         ) : null}
 

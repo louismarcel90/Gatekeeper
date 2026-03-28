@@ -22,9 +22,7 @@ export function SystemHealthBar() {
       }}
     >
       <div style={{ display: "grid", gap: 4 }}>
-        <div style={{ fontWeight: 700, fontSize: 14, color: "#111111" }}>
-          System Health
-        </div>
+        <div style={{ fontWeight: 700, fontSize: 14, color: "#111111" }}>System Health</div>
         <div style={{ fontSize: 13, color: "#6B665F" }}>
           Control Plane health and frontend sync status.
         </div>

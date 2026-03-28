@@ -29,8 +29,8 @@ export function DegradedModeBanner() {
     >
       <div style={{ fontWeight: 700 }}>Degraded mode</div>
       <div style={{ fontSize: 14, lineHeight: 1.45 }}>
-        The Control Plane is not responding normally. Read operations may fail or show stale
-        data. Avoid sensitive operations until system health recovers.
+        The Control Plane is not responding normally. Read operations may fail or show stale data.
+        Avoid sensitive operations until system health recovers.
       </div>
     </div>
   );
