@@ -271,14 +271,14 @@ Run control plane:
 
 ```bash
 
-pnpm control-plane:dev
+pnpm --filter @gatekeeper/control-plane dev
 
 ```
 Run gateway:
 
 ```bash
 
-pnpm gateway:dev
+pnpm --filter @gatekeeper/gateway dev
 
 ```
 
