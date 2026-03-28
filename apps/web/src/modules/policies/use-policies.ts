@@ -3,22 +3,23 @@ import { apiClient } from "@/src/core/api/client";
 import { useAuthStore } from "@/src/core/state/auth-store";
 import { logUiEvent } from "@/src/modules/observability/logger";
 
-export type RouteInput = {
+export type PolicyInput = {
   id: string;
-  path: string;
-  method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
-  upstream_url: string;
-  enabled: boolean;
+  route_id: string;
+  require_api_key: boolean;
+  required_scopes: string[];
+  rate_limit_per_minute: number | null;
+  quota_per_day: number | null;
 };
 
-export function useRoutes() {
+export function usePolicies() {
   const status = useAuthStore((state) => state.status);
 
   return useQuery({
-    queryKey: ["routes"],
+    queryKey: ["policies"],
     queryFn: async () => {
-      const res = await apiClient.get("/routes");
-      return res.data.items;
+      const response = await apiClient.get("/policies");
+      return response.data.items;
     },
     enabled: status === "authenticated",
     refetchInterval: 15000,
@@ -27,45 +28,45 @@ export function useRoutes() {
   });
 }
 
-export function useCreateRoute() {
+export function useCreatePolicy() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (payload: RouteInput) => {
+    mutationFn: async (payload: PolicyInput) => {
       logUiEvent({
         level: "info",
-        scope: "routes.create",
-        message: `Creating route ${payload.id}`,
+        scope: "policies.create",
+        message: `Creating policy ${payload.id}`,
         meta: {
-          route_id: payload.id,
-          path: payload.path,
-          method: payload.method,
+          policy_id: payload.id,
+          route_id: payload.route_id,
         },
       });
 
-      const response = await apiClient.post("/routes", payload);
+      const response = await apiClient.post("/policies", payload);
       return response.data;
     },
     onSuccess: async (data) => {
       logUiEvent({
         level: "success",
-        scope: "routes.create",
-        message: `Route ${data.id} created successfully`,
+        scope: "policies.create",
+        message: `Policy ${data.id} created successfully`,
         meta: {
-          route_id: data.id,
+          policy_id: data.id,
         },
       });
 
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["routes"] }),
+        queryClient.invalidateQueries({ queryKey: ["policies"] }),
         queryClient.invalidateQueries({ queryKey: ["policy-document", "export"] }),
+        queryClient.invalidateQueries({ queryKey: ["snapshots"] }),
       ]);
     },
     onError: (error) => {
       logUiEvent({
         level: "error",
-        scope: "routes.create",
-        message: "Route creation failed",
+        scope: "policies.create",
+        message: "Policy creation failed",
         meta: {
           error: error instanceof Error ? error.message : "unknown error",
         },

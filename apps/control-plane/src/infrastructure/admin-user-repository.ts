@@ -54,3 +54,15 @@ export async function findAdminUserById(id: string): Promise<AdminUser | null> {
 
   return mapRow(result.rows[0]!);
 }
+
+export async function listAdminUsers(): Promise<AdminUser[]> {
+  const result = await pool.query<AdminUserRow>(
+    `
+    SELECT id, email, role, password_hash, created_at
+    FROM admin_users
+    ORDER BY created_at DESC
+    `,
+  );
+
+  return result.rows.map(mapRow);
+}

@@ -1,8 +1,43 @@
 "use client";
 
+import { LucideIcon } from "lucide-react";
 import { useAuthStore } from "@/src/core/state/auth-store";
 import { getVisibleNavItems } from "@/src/modules/navigation/role-access";
 import { NavItem } from "./nav-item";
+import {
+  LayoutDashboard,
+  Route,
+  ShieldCheck,
+  FlaskConical,
+  Layers,
+  FileSearch,
+  FileText,
+  Rocket,
+  Bot,
+} from "lucide-react";
+
+type NavLabel =
+  | "Dashboard"
+  | "Routes"
+  | "Policies"
+  | "Simulation"
+  | "Snapshots"
+  | "Audit Log"
+  | "Policy Documents"
+  | "Deployments"
+  | "Admin Users";
+
+const navIcons: Record<NavLabel, LucideIcon> = {
+  Dashboard: LayoutDashboard,
+  Routes: Route,
+  Policies: ShieldCheck,
+  Simulation: FlaskConical,
+  Snapshots: Layers,
+  "Audit Log": FileSearch,
+  "Policy Documents": FileText,
+  Deployments: Rocket,
+  "Admin Users": Bot,
+};
 
 export function Sidebar() {
   const user = useAuthStore((state) => state.user);
@@ -63,9 +98,18 @@ export function Sidebar() {
             gap: 6,
           }}
         >
-          {items.map((item) => (
-            <NavItem key={item.href} href={item.href} label={item.label} />
-          ))}
+          {items.map((item) => {
+            const Icon = navIcons[item.label as NavLabel] ?? LayoutDashboard;
+
+            return (
+              <NavItem
+                key={item.href}
+                href={item.href}
+                label={item.label}
+                icon={Icon}
+              />
+            );
+          })}
         </nav>
 
         <div
@@ -80,7 +124,14 @@ export function Sidebar() {
             overflow: "hidden",
           }}
         >
-          <div style={{ fontSize: 12, color: "#78716C" }}>Signed in as</div>
+          <div
+            style={{
+              fontSize: 12,
+              color: "#78716C",
+            }}
+          >
+            Signed in as
+          </div>
 
           <div
             style={{
