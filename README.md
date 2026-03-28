@@ -110,6 +110,12 @@ No request is trusted by default.
 
 ---
 
+### System flow:
+
+Client → Gateway → Decision Engine → Policy Snapshot → Decision → Audit Log
+
+---
+
 ## 🏛️ Project Structure
 
 ```bash
