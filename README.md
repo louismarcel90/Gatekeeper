@@ -42,7 +42,7 @@ Gatekeeper ensures:
 
 ---
 
- ## ⚡ Real World Scenario
+## ⚡ Real World Scenario
 
 ❌ **Problem**
 
@@ -52,7 +52,6 @@ APIs are the weakest link in modern systems.
 - authorization logic is scattered
 - no unified control layer exists
 - auditability is incomplete
-
 
   ✅ **Solution**
 
@@ -171,15 +170,15 @@ Policies are:
 
 - Centralized policy engine  
   → + consistency  
-  → − added latency  
+  → − added latency
 
 - Runtime evaluation  
   → + security  
-  → − compute overhead  
+  → − compute overhead
 
 - Strict enforcement (fail closed)  
   → + safety  
-  → − potential false denials  
+  → − potential false denials
 
 ---
 
@@ -208,6 +207,7 @@ It is designed to fail safely.
 ## 🚀 Quick Start
 
 ### 📦 1. Installation
+
 #### 📋 Prerequisites
 
 Make sure you have installed:
@@ -270,6 +270,7 @@ docker ps
 ```
 
 ---
+
 Run control plane:
 
 ```bash
@@ -277,6 +278,7 @@ Run control plane:
 pnpm --filter @gatekeeper/control-plane dev
 
 ```
+
 Run gateway:
 
 ```bash

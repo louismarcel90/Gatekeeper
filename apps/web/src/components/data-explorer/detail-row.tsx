@@ -1,10 +1,4 @@
-export function DetailRow({
-  label,
-  value,
-}: {
-  label: string;
-  value: React.ReactNode;
-}) {
+export function DetailRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div
       style={{

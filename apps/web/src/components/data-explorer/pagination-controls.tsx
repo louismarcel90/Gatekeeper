@@ -35,11 +35,7 @@ export function PaginationControls({
           Previous
         </ActionButton>
 
-        <ActionButton
-          tone="neutral"
-          onClick={onNext}
-          disabled={(page + 1) * pageSize >= itemCount}
-        >
+        <ActionButton tone="neutral" onClick={onNext} disabled={(page + 1) * pageSize >= itemCount}>
           Next
         </ActionButton>
       </div>

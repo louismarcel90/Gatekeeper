@@ -3,11 +3,7 @@
 import { useMemo, useState } from "react";
 import { PageHeader } from "@/src/components/app-shell/page-header";
 import { DataTable, DataTableRow } from "@/src/components/data-display/data-table";
-import {
-  FilterInput,
-  FilterSelect,
-  FiltersBar,
-} from "@/src/components/data-display/filters-bar";
+import { FilterInput, FilterSelect, FiltersBar } from "@/src/components/data-display/filters-bar";
 import { SectionCard } from "@/src/components/data-display/section-card";
 import { StatusBadge } from "@/src/components/data-display/status-badge";
 import { EmptyState } from "@/src/components/feedback/empty-sate";
@@ -66,26 +62,24 @@ export default function PoliciesPage() {
   });
 
   const filteredItems = useMemo(() => {
-  const items = (query.data ?? []) as PolicyItem[];
-  let result = [...items];
+    const items = (query.data ?? []) as PolicyItem[];
+    let result = [...items];
 
-  if (routeFilter.trim()) {
-    const needle = routeFilter.trim().toLowerCase();
-    result = result.filter((item) => item.route_id.toLowerCase().includes(needle));
-  }
+    if (routeFilter.trim()) {
+      const needle = routeFilter.trim().toLowerCase();
+      result = result.filter((item) => item.route_id.toLowerCase().includes(needle));
+    }
 
-  if (sortMode === "route") {
-    result.sort((a, b) => a.route_id.localeCompare(b.route_id));
-  } else if (sortMode === "rate") {
-    result.sort(
-      (a, b) => (a.rate_limit_per_minute ?? 0) - (b.rate_limit_per_minute ?? 0),
-    );
-  } else {
-    result.sort((a, b) => a.id.localeCompare(b.id));
-  }
+    if (sortMode === "route") {
+      result.sort((a, b) => a.route_id.localeCompare(b.route_id));
+    } else if (sortMode === "rate") {
+      result.sort((a, b) => (a.rate_limit_per_minute ?? 0) - (b.rate_limit_per_minute ?? 0));
+    } else {
+      result.sort((a, b) => a.id.localeCompare(b.id));
+    }
 
-  return result;
-}, [query.data, routeFilter, sortMode]);
+    return result;
+  }, [query.data, routeFilter, sortMode]);
   const pagedItems = filteredItems.slice(page * pageSize, (page + 1) * pageSize);
 
   async function handleCreatePolicy() {
@@ -107,14 +101,9 @@ export default function PoliciesPage() {
       .filter(Boolean);
 
     const parsedRate =
-      form.rate_limit_per_minute.trim() === ""
-        ? null
-        : Number(form.rate_limit_per_minute);
+      form.rate_limit_per_minute.trim() === "" ? null : Number(form.rate_limit_per_minute);
 
-    const parsedQuota =
-      form.quota_per_day.trim() === ""
-        ? null
-        : Number(form.quota_per_day);
+    const parsedQuota = form.quota_per_day.trim() === "" ? null : Number(form.quota_per_day);
 
     if (parsedRate !== null && Number.isNaN(parsedRate)) {
       setMessage("Rate limit must be a valid number.");
@@ -160,9 +149,13 @@ export default function PoliciesPage() {
 
         {message ? (
           <InlineMessage
-            tone={message.toLowerCase().includes("failed") || message.includes("required") || message.includes("must")
-              ? "error"
-              : "success"}
+            tone={
+              message.toLowerCase().includes("failed") ||
+              message.includes("required") ||
+              message.includes("must")
+                ? "error"
+                : "success"
+            }
           >
             {message}
           </InlineMessage>
@@ -170,8 +163,8 @@ export default function PoliciesPage() {
 
         {!canCreate ? (
           <CapabilityHint>
-            Your role can inspect policies, but creating a new policy requires a security
-            or admin role.
+            Your role can inspect policies, but creating a new policy requires a security or admin
+            role.
           </CapabilityHint>
         ) : null}
 
@@ -227,9 +220,7 @@ export default function PoliciesPage() {
                       columns={[
                         item.id,
                         item.route_id,
-                        item.required_scopes.length > 0
-                          ? item.required_scopes.join(", ")
-                          : "—",
+                        item.required_scopes.length > 0 ? item.required_scopes.join(", ") : "—",
                         item.rate_limit_per_minute ?? "—",
                         item.quota_per_day ?? "—",
                       ]}
@@ -244,9 +235,7 @@ export default function PoliciesPage() {
                 itemCount={filteredItems.length}
                 onPrevious={() => setPage((p) => Math.max(0, p - 1))}
                 onNext={() =>
-                  setPage((p) =>
-                    (p + 1) * pageSize < filteredItems.length ? p + 1 : p,
-                  )
+                  setPage((p) => ((p + 1) * pageSize < filteredItems.length ? p + 1 : p))
                 }
               />
             </>
@@ -275,14 +264,8 @@ export default function PoliciesPage() {
                   : "—"
               }
             />
-            <DetailRow
-              label="Rate Limit / Min"
-              value={selectedItem.rate_limit_per_minute ?? "—"}
-            />
-            <DetailRow
-              label="Quota / Day"
-              value={selectedItem.quota_per_day ?? "—"}
-            />
+            <DetailRow label="Rate Limit / Min" value={selectedItem.rate_limit_per_minute ?? "—"} />
+            <DetailRow label="Quota / Day" value={selectedItem.quota_per_day ?? "—"} />
           </DetailPanel>
         ) : null}
 
@@ -291,9 +274,7 @@ export default function PoliciesPage() {
             <div style={{ display: "grid", gap: 12 }}>
               <input
                 value={form.id}
-                onChange={(e) =>
-                  setForm((current) => ({ ...current, id: e.target.value }))
-                }
+                onChange={(e) => setForm((current) => ({ ...current, id: e.target.value }))}
                 placeholder="Policy ID"
                 style={{
                   padding: 12,
@@ -305,9 +286,7 @@ export default function PoliciesPage() {
 
               <input
                 value={form.route_id}
-                onChange={(e) =>
-                  setForm((current) => ({ ...current, route_id: e.target.value }))
-                }
+                onChange={(e) => setForm((current) => ({ ...current, route_id: e.target.value }))}
                 placeholder="Route ID"
                 style={{
                   padding: 12,

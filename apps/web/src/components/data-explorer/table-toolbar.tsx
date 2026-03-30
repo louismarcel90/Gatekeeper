@@ -1,10 +1,4 @@
-export function TableToolbar({
-  left,
-  right,
-}: {
-  left?: React.ReactNode;
-  right?: React.ReactNode;
-}) {
+export function TableToolbar({ left, right }: { left?: React.ReactNode; right?: React.ReactNode }) {
   return (
     <div
       style={{

@@ -3,11 +3,7 @@
 import { useMemo, useState } from "react";
 import { PageHeader } from "@/src/components/app-shell/page-header";
 import { DataTable, DataTableRow } from "@/src/components/data-display/data-table";
-import {
-  FilterInput,
-  FilterSelect,
-  FiltersBar,
-} from "@/src/components/data-display/filters-bar";
+import { FilterInput, FilterSelect, FiltersBar } from "@/src/components/data-display/filters-bar";
 import { SectionCard } from "@/src/components/data-display/section-card";
 import { StatusBadge } from "@/src/components/data-display/status-badge";
 import { EmptyState } from "@/src/components/feedback/empty-sate";
@@ -47,33 +43,31 @@ export default function AdminUsersPage() {
   const [formPassword, setFormPassword] = useState("");
   const [formRole, setFormRole] = useState<"viewer" | "security" | "admin">("viewer");
 
- const filteredItems = useMemo(() => {
-  const items = (query.data ?? []) as AdminUserItem[];
-  let result = [...items];
+  const filteredItems = useMemo(() => {
+    const items = (query.data ?? []) as AdminUserItem[];
+    let result = [...items];
 
-  if (emailFilter.trim()) {
-    const needle = emailFilter.trim().toLowerCase();
-    result = result.filter((item) => item.email.toLowerCase().includes(needle));
-  }
+    if (emailFilter.trim()) {
+      const needle = emailFilter.trim().toLowerCase();
+      result = result.filter((item) => item.email.toLowerCase().includes(needle));
+    }
 
-  if (roleFilter) {
-    result = result.filter((item) => item.role === roleFilter);
-  }
+    if (roleFilter) {
+      result = result.filter((item) => item.role === roleFilter);
+    }
 
-  if (sortMode === "email") {
-    result.sort((a, b) => a.email.localeCompare(b.email));
-  } else if (sortMode === "role") {
-    result.sort((a, b) => a.role.localeCompare(b.role));
-  } else {
-    result.sort(
-      (a, b) =>
-        new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime()
-    );
-  }
+    if (sortMode === "email") {
+      result.sort((a, b) => a.email.localeCompare(b.email));
+    } else if (sortMode === "role") {
+      result.sort((a, b) => a.role.localeCompare(b.role));
+    } else {
+      result.sort(
+        (a, b) => new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime(),
+      );
+    }
 
-  return result;
-}, [query.data, emailFilter, roleFilter, sortMode]);
-
+    return result;
+  }, [query.data, emailFilter, roleFilter, sortMode]);
 
   const pagedItems = filteredItems.slice(page * pageSize, (page + 1) * pageSize);
 
@@ -213,9 +207,7 @@ export default function AdminUsersPage() {
                         ) : (
                           <StatusBadge>viewer</StatusBadge>
                         ),
-                        item.created_at
-                          ? new Date(item.created_at).toLocaleString()
-                          : "—",
+                        item.created_at ? new Date(item.created_at).toLocaleString() : "—",
                       ]}
                     />
                   </div>
@@ -228,9 +220,7 @@ export default function AdminUsersPage() {
                 itemCount={filteredItems.length}
                 onPrevious={() => setPage((p) => Math.max(0, p - 1))}
                 onNext={() =>
-                  setPage((p) =>
-                    (p + 1) * pageSize < filteredItems.length ? p + 1 : p,
-                  )
+                  setPage((p) => ((p + 1) * pageSize < filteredItems.length ? p + 1 : p))
                 }
               />
             </>
@@ -256,9 +246,7 @@ export default function AdminUsersPage() {
             <DetailRow
               label="Created At"
               value={
-                selectedItem.created_at
-                  ? new Date(selectedItem.created_at).toLocaleString()
-                  : "—"
+                selectedItem.created_at ? new Date(selectedItem.created_at).toLocaleString() : "—"
               }
             />
           </DetailPanel>
@@ -294,9 +282,7 @@ export default function AdminUsersPage() {
 
               <select
                 value={formRole}
-                onChange={(e) =>
-                  setFormRole(e.target.value as "viewer" | "security" | "admin")
-                }
+                onChange={(e) => setFormRole(e.target.value as "viewer" | "security" | "admin")}
                 style={{
                   padding: 12,
                   borderRadius: 12,

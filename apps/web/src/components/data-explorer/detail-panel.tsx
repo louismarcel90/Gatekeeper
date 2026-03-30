@@ -1,10 +1,4 @@
-export function DetailPanel({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
+export function DetailPanel({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div
       style={{

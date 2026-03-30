@@ -3,11 +3,7 @@
 import { useMemo, useState } from "react";
 import { PageHeader } from "@/src/components/app-shell/page-header";
 import { DataTable, DataTableRow } from "@/src/components/data-display/data-table";
-import {
-  FilterInput,
-  FilterSelect,
-  FiltersBar,
-} from "@/src/components/data-display/filters-bar";
+import { FilterInput, FilterSelect, FiltersBar } from "@/src/components/data-display/filters-bar";
 import { SectionCard } from "@/src/components/data-display/section-card";
 import { StatusBadge } from "@/src/components/data-display/status-badge";
 import { EmptyState } from "@/src/components/feedback/empty-sate";
@@ -58,28 +54,28 @@ export default function RoutesPage() {
   const [form, setForm] = useState<RouteInput>(EMPTY_FORM);
 
   const filteredItems = useMemo(() => {
-  const items = (query.data ?? []) as RouteItem[];
-  let result = [...items];
+    const items = (query.data ?? []) as RouteItem[];
+    let result = [...items];
 
-  if (pathFilter.trim()) {
-    const needle = pathFilter.trim().toLowerCase();
-    result = result.filter((item) => item.path.toLowerCase().includes(needle));
-  }
+    if (pathFilter.trim()) {
+      const needle = pathFilter.trim().toLowerCase();
+      result = result.filter((item) => item.path.toLowerCase().includes(needle));
+    }
 
-  if (methodFilter) {
-    result = result.filter((item) => item.method === methodFilter);
-  }
+    if (methodFilter) {
+      result = result.filter((item) => item.method === methodFilter);
+    }
 
-  if (sortMode === "method") {
-    result.sort((a, b) => a.method.localeCompare(b.method));
-  } else if (sortMode === "enabled") {
-    result.sort((a, b) => Number(b.enabled) - Number(a.enabled));
-  } else {
-    result.sort((a, b) => a.path.localeCompare(b.path));
-  }
+    if (sortMode === "method") {
+      result.sort((a, b) => a.method.localeCompare(b.method));
+    } else if (sortMode === "enabled") {
+      result.sort((a, b) => Number(b.enabled) - Number(a.enabled));
+    } else {
+      result.sort((a, b) => a.path.localeCompare(b.path));
+    }
 
-  return result;
-}, [query.data, pathFilter, methodFilter, sortMode]);
+    return result;
+  }, [query.data, pathFilter, methodFilter, sortMode]);
 
   const pagedItems = filteredItems.slice(page * pageSize, (page + 1) * pageSize);
 
@@ -135,9 +131,13 @@ export default function RoutesPage() {
 
         {message ? (
           <InlineMessage
-            tone={message.toLowerCase().includes("failed") || message.includes("required") || message.includes("must")
-              ? "error"
-              : "success"}
+            tone={
+              message.toLowerCase().includes("failed") ||
+              message.includes("required") ||
+              message.includes("must")
+                ? "error"
+                : "success"
+            }
           >
             {message}
           </InlineMessage>
@@ -145,8 +145,8 @@ export default function RoutesPage() {
 
         {!canCreate ? (
           <CapabilityHint>
-            Your role can inspect routes, but creating a new route requires a security or
-            admin role.
+            Your role can inspect routes, but creating a new route requires a security or admin
+            role.
           </CapabilityHint>
         ) : null}
 
@@ -237,9 +237,7 @@ export default function RoutesPage() {
                 itemCount={filteredItems.length}
                 onPrevious={() => setPage((p) => Math.max(0, p - 1))}
                 onNext={() =>
-                  setPage((p) =>
-                    (p + 1) * pageSize < filteredItems.length ? p + 1 : p,
-                  )
+                  setPage((p) => ((p + 1) * pageSize < filteredItems.length ? p + 1 : p))
                 }
               />
             </>
@@ -294,12 +292,7 @@ export default function RoutesPage() {
 
               <select
                 value={form.method}
-                onChange={(e) =>
-                  updateForm(
-                    "method",
-                    e.target.value as RouteInput["method"],
-                  )
-                }
+                onChange={(e) => updateForm("method", e.target.value as RouteInput["method"])}
                 style={{
                   padding: 12,
                   borderRadius: 12,
