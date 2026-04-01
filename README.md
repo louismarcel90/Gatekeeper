@@ -33,7 +33,9 @@ Gatekeeper is a Decision Infrastructure Layer.
 Not:
 
 API Gateway ❌
+
 Auth system ❌
+
 WAF ❌
 
 It is:
@@ -47,10 +49,13 @@ A system that evaluates, explains, and proves every API decision
 ❌ **Problem**
 
 Request:
+
 GET /search?q=financial-report
 
 JWT: valid ✔
+
 User: analyst ✔
+
 Scope: search:read ✔
 
 → System allows
@@ -568,6 +573,7 @@ Gatekeeper → proves decisions
 ## 👨‍💻 Author
 
 Louis-Marcel Bonga
+
 System Design • Distributed Systems • Decision Infrastructure
 
 Building systems that don’t just work —
