@@ -17,7 +17,7 @@
 <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/opentelemetry/opentelemetry-original.svg" width="40" height="40"/>
 </p>
 
-> Enforcing trust at runtime. Not assumed. Not implicit.
+> Every request is not just validated. It is judged, explained, and proven.
 
 ![node](https://img.shields.io/badge/node-%3E%3D18-green)
 ![license](https://img.shields.io/badge/license-MIT-blue)
@@ -28,17 +28,17 @@
 
 ## 🧠 What is Gatekeeper / Why It Exists
 
-Modern systems are not secure by design. They are:
+Gatekeeper is a Decision Infrastructure Layer.
 
-- implicitly trusted
-- inconsistently protected
-- impossible to audit in real-time
+Not:
 
-Gatekeeper ensures:
+API Gateway ❌
+Auth system ❌
+WAF ❌
 
-- every request is evaluated
-- every decision is traceable
-- no access is implicitly trusted
+It is:
+
+A system that evaluates, explains, and proves every API decision
 
 ---
 
@@ -46,14 +46,24 @@ Gatekeeper ensures:
 
 ❌ **Problem**
 
-APIs are the weakest link in modern systems.
+Request:
+GET /search?q=financial-report
 
-- services trust each other implicitly
-- authorization logic is scattered
-- no unified control layer exists
-- auditability is incomplete
+JWT: valid ✔
+User: analyst ✔
+Scope: search:read ✔
 
-  ✅ **Solution**
+→ System allows
+
+BUT:
+
+Time: 02:13 AM ❗  
+Device: unknown ❗  
+Dataset: sensitive ❗
+
+→ This request should NOT exist
+
+✅ **Solution**
 
 Gatekeeper enforces **Zero-Trust at runtime**:
 
@@ -66,45 +76,102 @@ Gatekeeper enforces **Zero-Trust at runtime**:
 
 ## 🧩 System Thinking
 
-Gatekeeper is not a proxy.
+Request
+↓
+Context Enrichment
+↓
+Policy Evaluation
+↓
+Risk Scoring
+↓
+Decision
+↓
+Evidence (Audit)
 
-It is a **decision system** where:
+Decision = f(identity, action, resource, context, policy)
 
-- access is evaluated per request
-- policies define behavior, not code
-- state is derived from policy snapshots
-- trust is continuously verified
+```bash
+                REQUEST
 
-No request is trusted by default.
+        (TECHNICALLLY VALID)
+                ↓
+        ┌───────────────────┐
+        │    GATEKEEPER     │
+        │                   │
+        │  ❓ SHOULD THIS   │
+        │     EXIST ?       │
+        └─────────┬─────────┘
+                  ↓
+         ┌──────────────────┐
+         │     DECISION     │
+         │                  │
+         │  ALLOW / DENY    │
+         │  + EXPLANATION   │
+         │  + PROOF         │
+         └──────────────────┘
+```
 
 ---
 
 ## 🏗 System Architecture
 
+### 🔵 CONTROL PLANE (GOVERNANCE)
+
+- Policy Management
+- Rule Authoring
+- Versioning
+- Compliance
+- Configuration
+
+### 🔴 DATA PLANE (RUNTIME)
+
+- Request Interception
+- Context Enrichment
+- Policy Evaluation
+- Decision Execution
+
+### 🔵🔴 FULL ARCHITECTURE
+
 ```bash
-
-    [ Client Request ]
-            |
-            ▼
-    +------------------+
-    |     Gateway      |
-    |  Policy Engine   |
-    +------------------+
-            |
-            ▼
-    +------------------+
-    |  Control Plane   |
-    | Policy Management|
-    +------------------+
-            |
-            ▼
-    +------------------+
-    |  Data Layer      |
-    | - PostgreSQL     |
-    | - Redis (cache)  |
-    | - Audit Logs     |
-    +------------------+
-
+                    ┌────────────────────┐
+                    │     CLIENTS        │
+                    └─────────┬──────────┘
+                              │
+                              ▼
+                  ┌──────────────────────┐
+                  │   GATEKEEPER EDGE    │
+                  │ (Auth / RateLimit)   │
+                  └─────────┬────────────┘
+                            │
+                            ▼
+               ┌──────────────────────────┐
+               │   DECISION ENGINE        │
+               │                          │
+               │  - Context               │
+               │  - Policy                │
+               │  - Risk                  │
+               └───────┬──────────────────┘
+                       │
+       ┌───────────────┼─────────────────────┐
+       ▼               ▼                     ▼
+┌────────────┐  ┌──────────────┐   ┌──────────────┐
+│ POLICY SVC │  │ CONTEXT SVC  │   │ RISK ENGINE  │
+└─────┬──────┘  └──────┬───────┘   └──────┬───────┘
+      │                │                  │
+      ▼                ▼                  ▼
+              ┌──────────────────────┐
+              │   DECISION OUTPUT     │
+              └─────────┬────────────┘
+                        │
+                        ▼
+              ┌──────────────────────┐
+              │   AUDIT (IMMUTABLE)  │
+              └─────────┬────────────┘
+                        │
+                        ▼
+              ┌──────────────────────┐
+              │   TARGET API         │
+              └──────────────────────┘
 ```
 
 ---
@@ -112,6 +179,59 @@ No request is trusted by default.
 ### System flow:
 
 Client → Gateway → Decision Engine → Policy Snapshot → Decision → Audit Log
+
+---
+
+## 🔬 The Decision Trace (PROOF SYSTEM)
+
+```bash
+{
+  "decision_id": "dec_9f3a",
+  "timestamp": "2026-04-01T02:13:22Z",
+
+  "input": {
+    "user": "analyst@corp",
+    "action": "search",
+    "resource": "financial-report"
+  },
+
+  "context": {
+    "time": "02:13",
+    "location": "unknown_ip",
+    "device": "untrusted"
+  },
+
+  "evaluation": {
+    "policies_checked": 4,
+    "matched_policy": "policy_search_read_v3",
+    "rules_triggered": [
+      "scope_valid",
+      "outside_business_hours",
+      "untrusted_device"
+    ]
+  },
+
+  "risk": {
+    "score": 0.82,
+    "factors": [
+      "time_anomaly",
+      "device_unknown"
+    ]
+  },
+
+  "decision": "DENY",
+
+  "reason": "OUT_OF_POLICY_CONTEXT",
+
+  "explainability": "Sensitive data access outside allowed conditions",
+
+  "integrity": {
+    "input_hash": "abc123",
+    "policy_version": 8,
+    "signature": "immutable-proof"
+  }
+}
+```
 
 ---
 
@@ -184,23 +304,37 @@ Policies are:
 
 ## ⚠️ Failure Modes
 
-- Missing policy snapshot → request denied
-- Invalid policy → fallback to safe state
-- Partial system failure → deny by default
+1. Decision Engine Down
 
-The system assumes failure.
+→ FAIL CLOSED (default deny)
 
-It is designed to fail safely.
+2. Partial Context
 
----
+```bash
+context = incomplete
+risk = elevated
+decision = stricter
+```
+
+3. Policy Drift
+
+→ solved via versioned snapshots
+
+4. Replay Attack
+
+→ nonce + timestamp
+
+5. Latency Spike
+
+## → circuit breaker + decision cache
 
 ## 🧭 Principles
 
-- Trust is never implicit
-- Policies define behavior, not code
-- Systems must be explainable
-- Security must be auditable
-- Failure must be safe
+- Deny > Allow when uncertain
+- Context is first-class
+- Decisions must be explainable
+- Systems must be provable
+- Logs are not enough → evidence matters
 
 ---
 
@@ -346,7 +480,13 @@ http://localhost:3001
 
 ## 📡 Runtime Reality
 
-This system is designed for real-world constraints.
+t=0ms → request received  
+t=2ms → auth validated  
+t=6ms → context enriched  
+t=11ms → policy evaluated  
+t=18ms → risk scored  
+t=22ms → decision computed  
+t=25ms → audit written
 
 📊 **Performance (simulated)**
 
@@ -390,10 +530,13 @@ This system is designed for real-world constraints.
 
 ✅ **Verification**
 
+Every decision can be:
+
 ```bash
-- Policy evaluation tests
-- Snapshot integrity validation
-- Decision replay from audit logs
+REPLAYED
+VERIFIED
+AUDITED
+PROVEN
 ```
 
 ---
@@ -401,19 +544,34 @@ This system is designed for real-world constraints.
 ## 🔐 **Security**
 
 ```bash
-- every request is evaluated against active policies
-- no implicit trust between services
-- decisions are logged and auditable
-- enforcement occurs at runtime (not at build-time)
+- OAuth2 / JWT / mTLS
+- RBAC + ABAC
+- Policy-as-code
+- Multi-tenant isolation
+- Encrypted audit logs
+```
 
-Security is not assumed. It is enforced.
+---
+
+🧨 WHY GATEKEEPER WINS
+
+```bash
+API Gateway → routes traffic
+Auth → validates identity
+WAF → filters requests
+
+Gatekeeper → proves decisions
 ```
 
 ---
 
 ## 👨‍💻 Author
 
-Built with precision, systems thinking, and a performance-first mindset.
+Louis-Marcel Bonga
+System Design • Distributed Systems • Decision Infrastructure
+
+Building systems that don’t just work —
+they justify themselves.
 
 ---
 
