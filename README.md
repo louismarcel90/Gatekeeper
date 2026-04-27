@@ -244,7 +244,7 @@ Client → Gateway → Decision Engine → Policy Snapshot → Decision → Audi
 
 ---
 
-## 🏛️ Project Structure
+## 🏗️ Project Structure
 
 ```bash
 
@@ -344,6 +344,20 @@ decision = stricter
 - Decisions must be explainable
 - Systems must be provable
 - Logs are not enough → evidence matters
+
+---
+
+## 🏛️ Engineering Constitution
+
+> Non-negotiable engineering laws governing this system.
+
+This system is built under a mission-grade engineering standard:
+deterministic, observable, and auditable by design.
+
+State is a projection. Events are the source of truth.
+Failures are expected and handled explicitly (never silently).
+
+Every request is verified, authorized, and enforced under zero-trust policies.
 
 ---
 
