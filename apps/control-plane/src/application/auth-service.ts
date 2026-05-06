@@ -32,7 +32,9 @@ export async function loginAdmin(input: LoginInput): Promise<{
       sub: user.id,
       email: user.email,
       role: user.role,
-    } satisfies AuthTokenPayload,
+      client_id: "admin-client",
+      scope: "search:read",
+    },
     controlPlaneConfig.adminJwtSecret,
     {
       algorithm: "HS256",

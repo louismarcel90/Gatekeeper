@@ -1,5 +1,5 @@
 import Fastify from "fastify";
-import { gatewayConfig } from "./config/env";
+import { env } from "./config/env";
 import { buildContext } from "./core/context";
 import { evaluateWithSnapshot } from "./core/decision-engine";
 import { connectRedis } from "./infrastructure/redis-client";
@@ -9,6 +9,7 @@ import { registerDebugRoutes } from "./routes/debug";
 import { dispatchDecisionAudit } from "./services/audit-dispatcher";
 import { loadSnapshotOnStartup, startSnapshotPolling } from "./services/snapshot-sync";
 import { snapshotStore } from "./services/snapshot-store";
+import { startRuntimeInfrastructure } from "./bootstrap/start-runtime";
 
 const app = Fastify({ logger: true });
 
@@ -53,22 +54,18 @@ async function start() {
     await loadSnapshotOnStartup();
     startSnapshotPolling();
     await registerRoutes();
+    await startRuntimeInfrastructure();
 
-    await app.listen({
-      port: gatewayConfig.port,
-      host: gatewayConfig.host,
-    });
+    await app.listen({ port: env.PORT });
 
     app.log.info(
-      {
-        port: gatewayConfig.port,
-        host: gatewayConfig.host,
-        controlPlaneBaseUrl: gatewayConfig.controlPlaneBaseUrl,
-        snapshotPollIntervalMs: gatewayConfig.snapshotPollIntervalMs,
-        redisUrl: gatewayConfig.redisUrl,
-      },
-      "Gateway running",
-    );
+  {
+    port: env.PORT,
+    controlPlaneBaseUrl: env.CONTROL_PLANE_BASE_URL,
+    snapshotPollIntervalMs: env.SNAPSHOT_POLL_INTERVAL_MS,
+  },
+  "Gateway running",
+);
   } catch (error) {
     app.log.error(error, "Failed to start Gateway");
     process.exit(1);

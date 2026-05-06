@@ -15,6 +15,7 @@ import { registerManagedRouteRoutes } from "./routes/routes";
 import { registerPolicyRoutes } from "./routes/policies";
 import { registerSimulationRoutes } from "./routes/simulation";
 import { registerSnapshotRoutes } from "./routes/snapshots";
+import { registerRuntimeRoutes } from "./routes/runtime";
 
 const app = Fastify({
   logger: true,
@@ -36,6 +37,7 @@ async function buildServer() {
   await registerPolicyDocumentRoutes(app);
   await registerCandidateSimulationRoutes(app);
   await registerDeploymentRoutes(app);
+  await registerRuntimeRoutes(app);
 
   return app;
 }

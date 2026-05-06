@@ -1,8 +1,36 @@
-export const gatewayConfig = {
-  port: Number(process.env.GATEWAY_PORT ?? 3002),
-  host: process.env.GATEWAY_HOST ?? "0.0.0.0",
-  controlPlaneBaseUrl: process.env.CONTROL_PLANE_BASE_URL ?? "http://127.0.0.1:3001",
-  snapshotPollIntervalMs: Number(process.env.SNAPSHOT_POLL_INTERVAL_MS ?? 5000),
-  redisUrl: process.env.REDIS_URL ?? "redis://127.0.0.1:56379",
-  jwtSecret: process.env.JWT_SECRET ?? "gatekeeper-dev-secret",
+import { z } from "zod";
+
+const envSchema = z.object({
+  GATEWAY_PORT: z.coerce.number().default(3002),
+  GATEWAY_HOST: z.string().default("0.0.0.0"),
+
+  CONTROL_PLANE_BASE_URL: z.string().url().default("http://127.0.0.1:3001"),
+
+  JWT_SECRET: z.string().min(1).default("super-secret-development-key"),
+
+  SNAPSHOT_POLL_INTERVAL_MS: z.coerce.number().int().positive().default(5000),
+
+  REDIS_URL: z.string().url().default("redis://127.0.0.1:56379"),
+});
+
+const parsedEnv = envSchema.safeParse(process.env);
+
+if (!parsedEnv.success) {
+  console.error(
+    "Invalid gateway environment variables",
+    parsedEnv.error.flatten().fieldErrors,
+  );
+
+  process.exit(1);
+}
+
+const parsed = parsedEnv.data;
+
+export const env = {
+  PORT: parsed.GATEWAY_PORT,
+  HOST: parsed.GATEWAY_HOST,
+  CONTROL_PLANE_BASE_URL: parsed.CONTROL_PLANE_BASE_URL,
+  JWT_SECRET: parsed.JWT_SECRET,
+  SNAPSHOT_POLL_INTERVAL_MS: parsed.SNAPSHOT_POLL_INTERVAL_MS,
+  REDIS_URL: parsed.REDIS_URL,
 };

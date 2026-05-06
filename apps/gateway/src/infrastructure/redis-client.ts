@@ -1,8 +1,8 @@
 import { createClient, type RedisClientType } from "redis";
-import { gatewayConfig } from "../config/env";
+import { env } from "../config/env";
 
 export const redisClient: RedisClientType = createClient({
-  url: gatewayConfig.redisUrl,
+  url: env.REDIS_URL,
 });
 
 let hasConnected = false;

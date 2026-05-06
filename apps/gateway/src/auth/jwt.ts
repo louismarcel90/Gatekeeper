@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { gatewayConfig } from "../config/env";
+import { env } from "../config/env";
 import { JwtClaims } from "../core/types";
 
 export type JwtVerificationResult =
@@ -32,7 +32,7 @@ export function extractBearerToken(
 
 export function verifyJwt(token: string): JwtVerificationResult {
   try {
-    const decoded = jwt.verify(token, gatewayConfig.jwtSecret);
+    const decoded = jwt.verify(token, env.JWT_SECRET);
 
     if (typeof decoded === "string") {
       return {

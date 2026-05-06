@@ -1,12 +1,12 @@
 import { request } from "undici";
-import { gatewayConfig } from "../config/env";
+import { env } from "../config/env";
 import { Decision, RequestContext } from "../core/types";
 
 export async function sendDecisionAudit(params: {
   context: RequestContext;
   decision: Decision;
 }): Promise<void> {
-  const url = `${gatewayConfig.controlPlaneBaseUrl}/audit/decisions`;
+  const url = `${env.CONTROL_PLANE_BASE_URL}/audit/decisions`;
 
   await request(url, {
     method: "POST",

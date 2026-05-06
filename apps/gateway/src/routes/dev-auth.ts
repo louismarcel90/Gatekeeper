@@ -1,15 +1,20 @@
-import { FastifyInstance } from "fastify";
+import type { FastifyInstance } from "fastify";
 import jwt from "jsonwebtoken";
-import { gatewayConfig } from "../config/env";
 
-export async function registerDevAuthRoutes(app: FastifyInstance) {
-  app.post("/_dev/token", async (req, reply) => {
-    const body = (req.body ?? {}) as {
-      sub?: string;
-      client_id?: string;
-      scope?: string;
-      expires_in_seconds?: number;
-    };
+import { env } from "../config/env";
+
+type DevTokenRequestBody = {
+  sub?: string;
+  client_id?: string;
+  scope?: string;
+  expires_in_seconds?: number;
+};
+
+export async function registerDevAuthRoutes(
+  app: FastifyInstance,
+): Promise<void> {
+  app.post<{ Body: DevTokenRequestBody }>("/_dev/token", async (req, reply) => {
+    const body = req.body;
 
     const token = jwt.sign(
       {
@@ -17,7 +22,7 @@ export async function registerDevAuthRoutes(app: FastifyInstance) {
         client_id: body.client_id,
         scope: body.scope ?? "",
       },
-      gatewayConfig.jwtSecret,
+      env.JWT_SECRET,
       {
         algorithm: "HS256",
         expiresIn: body.expires_in_seconds ?? 3600,

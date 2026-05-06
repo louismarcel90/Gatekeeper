@@ -1,4 +1,4 @@
-import { gatewayConfig } from "../config/env";
+import { env } from "../config/env";
 import { fetchActiveSnapshot } from "./control-plane-client";
 import { snapshotStore } from "./snapshot-store";
 
@@ -13,7 +13,7 @@ export async function loadSnapshotOnStartup(): Promise<void> {
 }
 
 export function startSnapshotPolling(): void {
-  const intervalMs = gatewayConfig.snapshotPollIntervalMs;
+  const intervalMs = env.SNAPSHOT_POLL_INTERVAL_MS;
 
   setInterval(async () => {
     try {

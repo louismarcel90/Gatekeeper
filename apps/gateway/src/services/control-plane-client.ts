@@ -1,9 +1,9 @@
 import { request } from "undici";
 import { Snapshot } from "../core/types";
-import { gatewayConfig } from "../config/env";
+import { env } from "../config/env";
 
 export async function fetchActiveSnapshot(): Promise<Snapshot | null> {
-  const url = `${gatewayConfig.controlPlaneBaseUrl}/snapshots/active`;
+  const url = `${env.CONTROL_PLANE_BASE_URL}/snapshots/active`;
 
   const response = await request(url, {
     method: "GET",
