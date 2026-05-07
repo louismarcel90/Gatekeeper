@@ -25,6 +25,7 @@ export type RuntimePolicy = {
   routeId: string;
   requireApiKey: boolean;
   requiredScopes: string[];
+  rateLimitPerMinute: number;
 };
 
 export type RuntimeEvaluationResult = {

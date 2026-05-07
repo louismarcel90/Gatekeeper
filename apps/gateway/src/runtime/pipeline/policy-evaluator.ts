@@ -1,14 +1,21 @@
 import { getActiveSnapshot } from "../runtime-snapshot-store";
+import { evaluateDistributedRateLimit } from "./distributed-rate-limiter";
 import {
   RuntimeEvaluationResult,
   RuntimeIdentity,
   RuntimeRoute,
 } from "../runtime-types";
 
-export function evaluatePolicy(
+import {
+  recordAllowDecision,
+  recordDenyDecision,
+  recordRateLimitExceeded,
+} from "../../observability/runtime-metrics";
+
+export async function evaluatePolicy(
   route: RuntimeRoute,
   identity: RuntimeIdentity,
-): RuntimeEvaluationResult {
+): Promise<RuntimeEvaluationResult> {
   const snapshot = getActiveSnapshot();
 
   const policy = snapshot.policies.find(
@@ -24,20 +31,45 @@ export function evaluatePolicy(
     };
   }
 
-  const missingScopes = policy.requiredScopes.filter(
-    (scope) => !identity.scopes.includes(scope),
-  );
+  const rateLimitResult =
+    await evaluateDistributedRateLimit({
+      clientId: identity.clientId,
+      routeId: route.routeId,
+      limitPerMinute: policy.rateLimitPerMinute,
+    });
 
-  if (missingScopes.length > 0) {
-    return {
+  if (!rateLimitResult.allowed) {
+  recordDenyDecision();
+  recordRateLimitExceeded();
+  recordAllowDecision();
+
+  return {
       decision: "DENY",
-      reasonCode: "SCOPE_MISSING",
-      explanation: `Missing required scopes: ${missingScopes.join(", ")}`,
+      reasonCode: "RATE_LIMIT_EXCEEDED",
+      explanation:
+        "Distributed rate limit exceeded.",
       routeId: route.routeId,
       policyId: policy.policyId,
     };
   }
 
+  const missingScopes = policy.requiredScopes.filter(
+    (scope) => !identity.scopes.includes(scope),
+  );
+
+  if (missingScopes.length > 0) {
+      recordDenyDecision();
+    return {
+      decision: "DENY",
+      reasonCode: "SCOPE_MISSING",
+      explanation:
+        `Missing required scopes: ${missingScopes.join(", ")}`,
+      routeId: route.routeId,
+      policyId: policy.policyId,
+    };
+  }
+
+  recordAllowDecision();
   return {
     decision: "ALLOW",
     reasonCode: "POLICY_PASSED",

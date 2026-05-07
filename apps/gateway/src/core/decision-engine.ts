@@ -1,37 +1,73 @@
-import { checkQuota } from "../services/quota-limiter";
+import { checkQuota } from "../services/quota-limiter"; 
 import { checkRateLimit } from "../services/rate-limiter";
-import { buildDecision } from "./decision-factory";
-import { findManagedRoute } from "./route-matcher";
-import { findMissingScopes } from "./scope-utils";
-import { Policy, RequestContext, Snapshot } from "./types";
+import {
+  Decision,
+  RequestContext,
+  Snapshot,
+  ManagedRoute,
+  Policy,
+} from "./types";
+import {
+  recordAllowDecision,
+  recordDenyDecision,
+  recordRateLimitExceeded,
+} from "../observability/runtime-metrics";
 
-function findPolicyForRoute(snapshot: Snapshot, routeId: string): Policy | undefined {
-  return snapshot.policies.find((policy) => policy.route_id === routeId);
+function buildDecision(
+  input: Omit<Decision, "decision_id" | "timestamp">,
+): Decision {
+  return {
+    decision_id: crypto.randomUUID(),
+    timestamp: new Date().toISOString(),
+    ...input,
+  };
 }
 
-export async function evaluateWithSnapshot(context: RequestContext, snapshot: Snapshot | null) {
-  if (!snapshot) {
-    return buildDecision({
-      decision: "DENY",
-      reason_code: "SNAPSHOT_MISSING",
-      explanation: "No active snapshot is loaded in the gateway runtime.",
-      matched_rule: "gateway.snapshot.required",
-    });
-  }
+function findRouteForRequest(
+  snapshot: Snapshot,
+  context: RequestContext,
+): ManagedRoute | null {
+  const route = snapshot.routes.find(
+    (candidate) =>
+      candidate.path === context.path &&
+      candidate.method.toUpperCase() === context.method.toUpperCase(),
+  );
 
-  const route = findManagedRoute(snapshot, context);
+  return route ?? null;
+}
+
+function findPolicyForRoute(
+  snapshot: Snapshot,
+  routeId: string,
+): Policy | null {
+  const policy = snapshot.policies.find(
+    (candidate) => candidate.route_id === routeId,
+  );
+
+  return policy ?? null;
+}
+
+export async function evaluateDecision(
+  snapshot: Snapshot,
+  context: RequestContext,
+): Promise<Decision> {
+  const route = findRouteForRequest(snapshot, context);
 
   if (!route) {
+    recordDenyDecision();
+
     return buildDecision({
       decision: "DENY",
       reason_code: "ROUTE_NOT_FOUND",
-      explanation: "No managed route matched the incoming request.",
+      explanation: "No enabled managed route matched this request.",
       snapshot_version: snapshot.version,
       matched_rule: "routing.route.match",
     });
   }
 
   if (!route.enabled) {
+    recordDenyDecision();
+
     return buildDecision({
       decision: "DENY",
       reason_code: "ROUTE_DISABLED",
@@ -45,6 +81,8 @@ export async function evaluateWithSnapshot(context: RequestContext, snapshot: Sn
   const policy = findPolicyForRoute(snapshot, route.id);
 
   if (!policy) {
+    recordDenyDecision();
+
     return buildDecision({
       decision: "DENY",
       reason_code: "POLICY_NOT_FOUND",
@@ -56,10 +94,13 @@ export async function evaluateWithSnapshot(context: RequestContext, snapshot: Sn
   }
 
   if (policy.require_api_key && !context.client_id) {
+    recordDenyDecision();
+
     return buildDecision({
       decision: "DENY",
       reason_code: "API_KEY_MISSING",
-      explanation: "This route requires a valid API key or authenticated client identity.",
+      explanation:
+        "This route requires a valid API key or authenticated client identity.",
       snapshot_version: snapshot.version,
       route_id: route.id,
       policy_id: policy.id,
@@ -67,11 +108,19 @@ export async function evaluateWithSnapshot(context: RequestContext, snapshot: Sn
     });
   }
 
-  if (policy.required_scopes.length > 0 && context.auth.bearer_present && !context.auth.jwt_valid) {
+  if (
+    policy.required_scopes.length > 0 &&
+    context.auth.bearer_present &&
+    !context.auth.jwt_valid
+  ) {
+    recordDenyDecision();
+
     return buildDecision({
       decision: "DENY",
       reason_code: "JWT_INVALID",
-      explanation: `The bearer token is invalid: ${context.auth.jwt_invalid_reason ?? "unknown reason"}`,
+      explanation: `The bearer token is invalid: ${
+        context.auth.jwt_invalid_reason ?? "unknown reason"
+      }.`,
       snapshot_version: snapshot.version,
       route_id: route.id,
       policy_id: policy.id,
@@ -80,6 +129,8 @@ export async function evaluateWithSnapshot(context: RequestContext, snapshot: Sn
   }
 
   if (policy.required_scopes.length > 0 && !context.auth.jwt_valid) {
+    recordDenyDecision();
+
     return buildDecision({
       decision: "DENY",
       reason_code: "JWT_INVALID",
@@ -91,9 +142,13 @@ export async function evaluateWithSnapshot(context: RequestContext, snapshot: Sn
     });
   }
 
-  const missingScopes = findMissingScopes(policy.required_scopes, context.scopes);
+  const missingScopes = policy.required_scopes.filter(
+    (scope) => !context.scopes.includes(scope),
+  );
 
   if (missingScopes.length > 0) {
+    recordDenyDecision();
+
     return buildDecision({
       decision: "DENY",
       reason_code: "SCOPE_MISSING",
@@ -105,9 +160,9 @@ export async function evaluateWithSnapshot(context: RequestContext, snapshot: Sn
     });
   }
 
-  const clientId = context.client_id ?? "anonymous";
-
   if (policy.rate_limit_per_minute !== null) {
+    const clientId = context.client_id ?? "anonymous";
+
     const rateLimit = await checkRateLimit({
       routeId: route.id,
       clientId,
@@ -115,6 +170,9 @@ export async function evaluateWithSnapshot(context: RequestContext, snapshot: Sn
     });
 
     if (!rateLimit.allowed) {
+      recordDenyDecision();
+      recordRateLimitExceeded();
+
       return buildDecision({
         decision: "THROTTLE",
         reason_code: "RATE_LIMIT_EXCEEDED",
@@ -133,6 +191,8 @@ export async function evaluateWithSnapshot(context: RequestContext, snapshot: Sn
   }
 
   if (policy.quota_per_day !== null) {
+    const clientId = context.client_id ?? "anonymous";
+
     const quota = await checkQuota({
       routeId: route.id,
       clientId,
@@ -140,6 +200,8 @@ export async function evaluateWithSnapshot(context: RequestContext, snapshot: Sn
     });
 
     if (!quota.allowed) {
+      recordDenyDecision();
+
       return buildDecision({
         decision: "THROTTLE",
         reason_code: "QUOTA_EXCEEDED",
@@ -157,13 +219,18 @@ export async function evaluateWithSnapshot(context: RequestContext, snapshot: Sn
     }
   }
 
+  recordAllowDecision();
+
   return buildDecision({
     decision: "ALLOW",
     reason_code: "OK",
-    explanation: "The request matched an enabled route and satisfied its active policy.",
+    explanation:
+      "The request matched an enabled route and satisfied its active policy.",
     snapshot_version: snapshot.version,
     route_id: route.id,
     policy_id: policy.id,
     matched_rule: "decision.allow.default",
   });
 }
+
+export const evaluateWithSnapshot = evaluateDecision;

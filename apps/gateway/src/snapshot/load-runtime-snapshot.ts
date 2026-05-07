@@ -4,7 +4,7 @@ import { env } from "../config/env";
 import {
   ActiveRuntimeSnapshot,
   setActiveSnapshot,
-} from "./runtime-snapshot-store";
+} from "../runtime/runtime-snapshot-store";
 
 type SnapshotRouteResponse = {
   route_id: string;
@@ -17,6 +17,7 @@ type SnapshotPolicyResponse = {
   route_id: string;
   require_api_key: boolean;
   required_scopes: string[];
+  rate_limit_per_minute?: number;
 };
 
 type SnapshotResponse = {
@@ -43,6 +44,7 @@ export async function loadRuntimeSnapshot(): Promise<void> {
       routeId: policy.route_id,
       requireApiKey: policy.require_api_key,
       requiredScopes: policy.required_scopes,
+      rateLimitPerMinute: policy.rate_limit_per_minute ?? 60,
     })),
   };
 

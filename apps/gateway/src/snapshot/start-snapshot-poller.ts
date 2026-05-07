@@ -1,5 +1,5 @@
 import { env } from "../config/env";
-import { loadRuntimeSnapshot } from "../runtime/load-runtime-snapshot";
+import { loadRuntimeSnapshot } from "./load-runtime-snapshot";
 
 export async function startSnapshotPoller() {
   await loadRuntimeSnapshot();

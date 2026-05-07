@@ -10,6 +10,9 @@ import { dispatchDecisionAudit } from "./services/audit-dispatcher";
 import { loadSnapshotOnStartup, startSnapshotPolling } from "./services/snapshot-sync";
 import { snapshotStore } from "./services/snapshot-store";
 import { startRuntimeInfrastructure } from "./bootstrap/start-runtime";
+import {
+  registerRuntimeMetricsRoute,
+} from "./routes/runtime-metrics-route";
 
 const app = Fastify({ logger: true });
 
@@ -20,7 +23,15 @@ async function registerRoutes() {
   app.all("/*", async (req, reply) => {
     const context = buildContext(req);
     const snapshot = snapshotStore.getSnapshot();
-    const decision = await evaluateWithSnapshot(context, snapshot);
+    if (!snapshot) {
+  return reply.code(503).send({
+    decision: "DENY",
+    reason_code: "SNAPSHOT_MISSING",
+    explanation: "No active runtime snapshot is loaded.",
+    timestamp: new Date().toISOString(),
+  });
+}
+    const decision = await evaluateWithSnapshot(snapshot, context);
 
     logRequest(req, decision);
     dispatchDecisionAudit(app.log, { context, decision });
@@ -55,6 +66,7 @@ async function start() {
     startSnapshotPolling();
     await registerRoutes();
     await startRuntimeInfrastructure();
+    await registerRuntimeMetricsRoute(app);
 
     await app.listen({ port: env.PORT });
 

@@ -11,6 +11,12 @@ const envSchema = z.object({
   SNAPSHOT_POLL_INTERVAL_MS: z.coerce.number().int().positive().default(5000),
 
   REDIS_URL: z.string().url().default("redis://127.0.0.1:56379"),
+
+ REDIS_HOST: z.string().default("127.0.0.1"),
+
+REDIS_PORT: z.coerce.number().int().positive().default(6379),
+
+RATE_LIMIT_WINDOW_SECONDS: z.coerce.number().int().positive().default(60),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);
@@ -33,4 +39,13 @@ export const env = {
   JWT_SECRET: parsed.JWT_SECRET,
   SNAPSHOT_POLL_INTERVAL_MS: parsed.SNAPSHOT_POLL_INTERVAL_MS,
   REDIS_URL: parsed.REDIS_URL,
+  REDIS_HOST: parsed.REDIS_HOST ?? "127.0.0.1",
+
+  REDIS_PORT: Number(
+    parsed.REDIS_PORT ?? "6379",
+  ),
+
+  RATE_LIMIT_WINDOW_SECONDS: Number(
+    parsed.RATE_LIMIT_WINDOW_SECONDS ?? "60",
+  ),
 };
