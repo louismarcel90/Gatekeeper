@@ -5,6 +5,10 @@ import {
   markSnapshotRefreshFailed,
   setRuntimeSnapshot,
 } from "./runtime-snapshot-store";
+import {
+  recordSnapshotRefreshFailure,
+  recordSnapshotRefreshSuccess,
+} from "../observability/runtime-metrics";
 
 type SnapshotApiResponse = Snapshot;
 
@@ -22,6 +26,7 @@ export async function loadRuntimeSnapshot(): Promise<Snapshot> {
     );
 
     setRuntimeSnapshot(response.data);
+    recordSnapshotRefreshSuccess();
 
     console.log(
       `[gateway-runtime] snapshot loaded version=${response.data.version}`,
@@ -35,6 +40,8 @@ export async function loadRuntimeSnapshot(): Promise<Snapshot> {
         : "Snapshot refresh failed.";
 
     markSnapshotRefreshFailed(message);
+    recordSnapshotRefreshFailure();
+    
 
     console.error("[gateway-runtime] snapshot refresh failed", message);
 

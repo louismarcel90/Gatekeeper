@@ -2,6 +2,7 @@ import { env } from "../config/env";
 import { runtimeLogger } from "../observability/runtime-logger";
 import { runtimeRedis } from "../runtime/runtime-redis";
 import { setDependencyStatus } from "../runtime/runtime-health-registry";
+import { recordRedisFailure } from "../observability/runtime-metrics";
 
 type QuotaInput = {
   routeId: string;
@@ -78,6 +79,8 @@ export async function checkQuota(input: QuotaInput): Promise<QuotaResult> {
       status: "UNAVAILABLE",
       reason: message,
     });
+
+    recordRedisFailure();
 
     runtimeLogger.error("Redis quota operation failed; failing open.", {
       client_id: input.clientId,

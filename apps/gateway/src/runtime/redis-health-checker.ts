@@ -1,6 +1,7 @@
 import { runtimeLogger } from "../observability/runtime-logger";
 import { runtimeRedis } from "./runtime-redis";
 import { setDependencyStatus } from "./runtime-health-registry";
+import { recordRedisFailure } from "../observability/runtime-metrics";
 
 export async function checkRedisHealth(): Promise<void> {
   try {
@@ -40,6 +41,8 @@ export async function checkRedisHealth(): Promise<void> {
       status: "UNAVAILABLE",
       reason: message,
     });
+
+    recordRedisFailure();
 
     runtimeLogger.error("Redis health check failed.", {
       dependency: "redis",

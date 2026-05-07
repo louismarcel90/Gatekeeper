@@ -148,3 +148,14 @@ Examples:
 Metrics answer:
 
 > “Is the system behaving correctly at scale?”
+
+
+---
+
+## Gateway Runtime Metrics Endpoint
+
+Gatekeeper exposes local runtime metrics at:
+
+```text
+GET /runtime/metrics
+```

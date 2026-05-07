@@ -12,6 +12,7 @@ import {
   recordDenyDecision,
   recordQuotaExceeded,
   recordRateLimitExceeded,
+  recordThrottleDecision,
 } from "../observability/runtime-metrics";
 import { runtimeLogger } from "../observability/runtime-logger";
 
@@ -171,6 +172,8 @@ export async function evaluateDecision(
     if (!rateLimit.allowed) {
       recordDenyDecision();
       recordRateLimitExceeded();
+      recordThrottleDecision();
+
 
       console.log("[DEBUG RATE LIMIT WARN SHOULD FIRE]");
 
@@ -209,6 +212,7 @@ export async function evaluateDecision(
     if (!quota.allowed) {
       recordDenyDecision();
       recordQuotaExceeded();
+      recordThrottleDecision();
 
       runtimeLogger.warn("Gateway decision throttled: quota exceeded.", {
         route_id: route.id,
