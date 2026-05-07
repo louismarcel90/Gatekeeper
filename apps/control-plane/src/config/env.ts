@@ -4,6 +4,8 @@ export const controlPlaneConfig = {
   databaseUrl:
     process.env.DATABASE_URL ??
     "postgresql://gatekeeper:gatekeeper@127.0.0.1:55432/gatekeeper",
+  CONTROL_PLANE_INSTANCE_ID:
+    process.env["CONTROL_PLANE_INSTANCE_ID"] ?? "control-plane-local-1",
 
   adminJwtSecret:
     process.env.ADMIN_JWT_SECRET ??
