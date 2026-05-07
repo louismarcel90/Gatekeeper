@@ -1,4 +1,5 @@
 import { RuntimePolicy, RuntimeRoute } from "../runtime/runtime-types";
+import { setDependencyStatus } from "../runtime/runtime-health-registry";
 
 export type ActiveRuntimeSnapshot = {
   version: number;
@@ -58,6 +59,12 @@ export function setRuntimeSnapshot(snapshot: Snapshot): void {
   cache.lastSuccessfulRefreshAt = now;
   cache.lastErrorMessage = null;
   cache.refreshCount += 1;
+
+  setDependencyStatus({
+  dependency: "snapshot-cache",
+  status: "HEALTHY",
+  reason: `Snapshot version ${snapshot.version} loaded successfully.`,
+});
 }
 
 export function markSnapshotRefreshFailed(errorMessage: string): void {
@@ -67,6 +74,20 @@ export function markSnapshotRefreshFailed(errorMessage: string): void {
   cache.lastFailedRefreshAt = now;
   cache.lastErrorMessage = errorMessage;
   cache.refreshFailureCount += 1;
+
+  setDependencyStatus({
+  dependency: "control-plane",
+  status: "DEGRADED",
+  reason: errorMessage,
+});
+
+setDependencyStatus({
+  dependency: "snapshot-cache",
+  status: cache.activeSnapshot ? "DEGRADED" : "UNAVAILABLE",
+  reason: cache.activeSnapshot
+    ? "Snapshot refresh failed, using last known good snapshot."
+    : "No runtime snapshot available.",
+});
 }
 
 export function markSnapshotStale(): void {

@@ -13,7 +13,7 @@ import { startRuntimeInfrastructure } from "./bootstrap/start-runtime";
 import {
   registerRuntimeMetricsRoute,
 } from "./routes/runtime-metrics-route";
-
+import { registerRuntimeHealthRoute } from "./routes/runtime-health-route";
 import { registerRuntimeSnapshotRoute } from "./routes/runtime-snapshot-route";
 
 const app = Fastify({ logger: true });
@@ -23,6 +23,7 @@ async function registerRoutes() {
   await registerDevAuthRoutes(app);
   await registerRuntimeSnapshotRoute(app);
   await registerRuntimeMetricsRoute(app);
+  await registerRuntimeHealthRoute(app);
 
   app.all("/*", async (req, reply) => {
     const context = buildContext(req);

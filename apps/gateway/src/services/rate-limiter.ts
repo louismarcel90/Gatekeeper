@@ -1,37 +1,76 @@
-import { redisClient } from "../infrastructure/redis-client";
+import { env } from "../config/env";
+import { runtimeRedis } from "../runtime/runtime-redis";
+import { setDependencyStatus } from "../runtime/runtime-health-registry";
 
-const WINDOW_SECONDS = 60;
-
-export type RateLimitResult = {
-  allowed: boolean;
-  current: number;
-  limit: number;
-  retry_after_seconds: number;
-};
-
-function buildRateLimitKey(routeId: string, clientId: string): string {
-  return `gatekeeper:ratelimit:${routeId}:${clientId}`;
-}
-
-export async function checkRateLimit(params: {
+type RateLimitInput = {
   routeId: string;
   clientId: string;
   limitPerMinute: number;
-}): Promise<RateLimitResult> {
-  const key = buildRateLimitKey(params.routeId, params.clientId);
+};
 
-  const current = await redisClient.incr(key);
+type RateLimitResult = {
+  allowed: boolean;
+  limit: number;
+  current: number;
+  retry_after_seconds: number;
+  degraded: boolean;
+};
 
-  if (current === 1) {
-    await redisClient.expire(key, WINDOW_SECONDS);
+export async function checkRateLimit(
+  input: RateLimitInput,
+): Promise<RateLimitResult> {
+  const currentWindow = Math.floor(
+    Date.now() / (env.RATE_LIMIT_WINDOW_SECONDS * 1000),
+  );
+
+  const redisKey = `rate-limit:${input.clientId}:${input.routeId}:${currentWindow}`;
+
+  try {
+    const current = await runtimeRedis.incr(redisKey);
+
+    if (current === 1) {
+      await runtimeRedis.expire(redisKey, env.RATE_LIMIT_WINDOW_SECONDS);
+    }
+
+    setDependencyStatus({
+      dependency: "redis",
+      status: "HEALTHY",
+      reason: "Redis rate-limit operation succeeded.",
+    });
+
+    if (current > input.limitPerMinute) {
+      return {
+        allowed: false,
+        limit: input.limitPerMinute,
+        current,
+        retry_after_seconds: env.RATE_LIMIT_WINDOW_SECONDS,
+        degraded: false,
+      };
+    }
+
+    return {
+      allowed: true,
+      limit: input.limitPerMinute,
+      current,
+      retry_after_seconds: 0,
+      degraded: false,
+    };
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Redis rate-limit operation failed.";
+
+    setDependencyStatus({
+      dependency: "redis",
+      status: "UNAVAILABLE",
+      reason: message,
+    });
+
+    return {
+      allowed: true,
+      limit: input.limitPerMinute,
+      current: 0,
+      retry_after_seconds: 0,
+      degraded: true,
+    };
   }
-
-  const ttl = await redisClient.ttl(key);
-
-  return {
-    allowed: current <= params.limitPerMinute,
-    current,
-    limit: params.limitPerMinute,
-    retry_after_seconds: ttl > 0 ? ttl : WINDOW_SECONDS,
-  };
 }
