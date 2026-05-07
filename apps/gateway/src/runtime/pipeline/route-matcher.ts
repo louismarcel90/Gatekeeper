@@ -1,4 +1,4 @@
-import { getActiveSnapshot } from "../runtime-snapshot-store"; 
+import { getActiveSnapshot } from "../../snapshot/runtime-snapshot-store"; 
 import { RuntimeRoute } from "../runtime-types";
 
 export function matchRoute(

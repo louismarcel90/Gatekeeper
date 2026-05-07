@@ -14,11 +14,15 @@ import {
   registerRuntimeMetricsRoute,
 } from "./routes/runtime-metrics-route";
 
+import { registerRuntimeSnapshotRoute } from "./routes/runtime-snapshot-route";
+
 const app = Fastify({ logger: true });
 
 async function registerRoutes() {
   await registerDebugRoutes(app);
   await registerDevAuthRoutes(app);
+  await registerRuntimeSnapshotRoute(app);
+  await registerRuntimeMetricsRoute(app);
 
   app.all("/*", async (req, reply) => {
     const context = buildContext(req);
@@ -66,7 +70,6 @@ async function start() {
     startSnapshotPolling();
     await registerRoutes();
     await startRuntimeInfrastructure();
-    await registerRuntimeMetricsRoute(app);
 
     await app.listen({ port: env.PORT });
 

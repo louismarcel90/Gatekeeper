@@ -1,4 +1,4 @@
-import { getActiveSnapshot } from "../runtime-snapshot-store";
+import { getActiveSnapshot } from "../../snapshot/runtime-snapshot-store";
 import { evaluateDistributedRateLimit } from "./distributed-rate-limiter";
 import {
   RuntimeEvaluationResult,

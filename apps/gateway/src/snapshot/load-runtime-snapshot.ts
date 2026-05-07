@@ -1,52 +1,43 @@
 import axios from "axios";
-
 import { env } from "../config/env";
+import { Snapshot } from "../core/types";
 import {
-  ActiveRuntimeSnapshot,
-  setActiveSnapshot,
-} from "../runtime/runtime-snapshot-store";
+  markSnapshotRefreshFailed,
+  setRuntimeSnapshot,
+} from "./runtime-snapshot-store";
 
-type SnapshotRouteResponse = {
-  route_id: string;
-  path: string;
-  method: string;
-};
+type SnapshotApiResponse = Snapshot;
 
-type SnapshotPolicyResponse = {
-  policy_id: string;
-  route_id: string;
-  require_api_key: boolean;
-  required_scopes: string[];
-  rate_limit_per_minute?: number;
-};
+function extractErrorMessage(error: Error): string {
+  return error.message;
+}
 
-type SnapshotResponse = {
-  version: number;
-  routes: SnapshotRouteResponse[];
-  policies: SnapshotPolicyResponse[];
-};
+export async function loadRuntimeSnapshot(): Promise<Snapshot> {
+  try {
+    const response = await axios.get<SnapshotApiResponse>(
+      `${env.CONTROL_PLANE_BASE_URL}/snapshots/active`,
+      {
+        timeout: 3000,
+      },
+    );
 
-export async function loadRuntimeSnapshot(): Promise<void> {
-  const response = await axios.get<SnapshotResponse>(
-    `${env.CONTROL_PLANE_BASE_URL}/runtime/active-snapshot`,
-  );
+    setRuntimeSnapshot(response.data);
 
-  const snapshot: ActiveRuntimeSnapshot = {
-    version: response.data.version,
-    loadedAt: new Date().toISOString(),
-    routes: response.data.routes.map((route: SnapshotRouteResponse) => ({
-      routeId: route.route_id,
-      method: route.method,
-      path: route.path,
-    })),
-    policies: response.data.policies.map((policy: SnapshotPolicyResponse) => ({
-      policyId: policy.policy_id,
-      routeId: policy.route_id,
-      requireApiKey: policy.require_api_key,
-      requiredScopes: policy.required_scopes,
-      rateLimitPerMinute: policy.rate_limit_per_minute ?? 60,
-    })),
-  };
+    console.log(
+      `[gateway-runtime] snapshot loaded version=${response.data.version}`,
+    );
 
-  setActiveSnapshot(snapshot);
+    return response.data;
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? extractErrorMessage(error)
+        : "Snapshot refresh failed.";
+
+    markSnapshotRefreshFailed(message);
+
+    console.error("[gateway-runtime] snapshot refresh failed", message);
+
+    throw new Error(message);
+  }
 }
