@@ -1,4 +1,5 @@
 import { FastifyInstance } from "fastify";
+import { env } from "../config/env";
 import { getRuntimeSnapshotCache } from "../snapshot/runtime-snapshot-store";
 
 export async function registerRuntimeSnapshotRoute(
@@ -8,6 +9,7 @@ export async function registerRuntimeSnapshotRoute(
     const cache = getRuntimeSnapshotCache();
 
     return {
+      instance_id: env.GATEWAY_INSTANCE_ID,
       status: cache.status,
       active_snapshot_version: cache.activeSnapshot?.version ?? null,
       last_loaded_at: cache.lastLoadedAt,

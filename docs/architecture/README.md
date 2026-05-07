@@ -178,3 +178,11 @@ Recommended order:
 1. `c4-context.md`
 2. `c4-container.md`
 3. `c4-component.md`
+
+
+### `runtime-consistency-model.md`
+Explains how the Gateway Runtime enforces snapshots using eventual runtime consistency and last-known-good behavior.
+
+
+### `gateway-horizontal-scaling.md`
+Explains how Gateway Runtime instances can scale horizontally using local snapshot caches and shared Redis coordination.

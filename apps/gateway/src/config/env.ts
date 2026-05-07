@@ -18,6 +18,7 @@ const envSchema = z.object({
 
   RATE_LIMIT_WINDOW_SECONDS: z.coerce.number().int().positive().default(60),
   QUOTA_WINDOW_SECONDS: z.coerce.number().int().positive().default(86400),
+  GATEWAY_INSTANCE_ID: z.string().default("gateway-local-1"),
 });
 
 
@@ -43,13 +44,11 @@ export const env = {
   REDIS_URL: parsed.REDIS_URL,
   REDIS_HOST: parsed.REDIS_HOST ?? "127.0.0.1",
 
-  REDIS_PORT: Number(
-    parsed.REDIS_PORT ?? "6379",
-  ),
+  REDIS_PORT: Number(parsed.REDIS_PORT ?? "6379"),
 
-  RATE_LIMIT_WINDOW_SECONDS: Number(
-    parsed.RATE_LIMIT_WINDOW_SECONDS ?? "60",
-  ),
+  RATE_LIMIT_WINDOW_SECONDS: Number(parsed.RATE_LIMIT_WINDOW_SECONDS ?? "60"),
 
   QUOTA_WINDOW_SECONDS: Number(parsed.QUOTA_WINDOW_SECONDS ?? "86400"),
+
+  GATEWAY_INSTANCE_ID: parsed.GATEWAY_INSTANCE_ID ?? "gateway-local-1",
 };

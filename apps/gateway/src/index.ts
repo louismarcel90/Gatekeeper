@@ -15,6 +15,8 @@ import {
 } from "./routes/runtime-metrics-route";
 import { registerRuntimeHealthRoute } from "./routes/runtime-health-route";
 import { registerRuntimeSnapshotRoute } from "./routes/runtime-snapshot-route";
+import { registerRuntimeConsistencyRoute } from "./routes/runtime-consistency-route";
+import { registerRuntimeInstanceRoute } from "./routes/runtime-instance-route";
 
 const app = Fastify({ logger: true });
 
@@ -24,6 +26,8 @@ async function registerRoutes() {
   await registerRuntimeSnapshotRoute(app);
   await registerRuntimeMetricsRoute(app);
   await registerRuntimeHealthRoute(app);
+  await registerRuntimeConsistencyRoute(app);
+  await registerRuntimeInstanceRoute(app);
 
   app.all("/*", async (req, reply) => {
     const context = buildContext(req);
