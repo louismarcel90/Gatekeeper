@@ -24,6 +24,11 @@ export async function registerRuntimeInstanceRoute(
         "runtime-health-registry",
         "runtime-metrics",
       ],
+      tracing: {
+  enabled: env.OTEL_TRACING_ENABLED,
+  service_name: env.OTEL_SERVICE_NAME,
+  exporter_endpoint: env.OTEL_EXPORTER_OTLP_ENDPOINT,
+},
     };
   });
 }

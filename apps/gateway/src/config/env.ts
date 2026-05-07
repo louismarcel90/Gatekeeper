@@ -19,6 +19,10 @@ const envSchema = z.object({
   RATE_LIMIT_WINDOW_SECONDS: z.coerce.number().int().positive().default(60),
   QUOTA_WINDOW_SECONDS: z.coerce.number().int().positive().default(86400),
   GATEWAY_INSTANCE_ID: z.string().default("gateway-local-1"),
+
+  OTEL_SERVICE_NAME: z.string().default("gatekeeper-gateway"),
+  OTEL_EXPORTER_OTLP_ENDPOINT: z.string().default("gatekeeper-gateway"),
+  OTEL_TRACING_ENABLED: z.string().default("false"),
 });
 
 
@@ -51,4 +55,10 @@ export const env = {
   QUOTA_WINDOW_SECONDS: Number(parsed.QUOTA_WINDOW_SECONDS ?? "86400"),
 
   GATEWAY_INSTANCE_ID: parsed.GATEWAY_INSTANCE_ID ?? "gateway-local-1",
+
+  OTEL_SERVICE_NAME: parsed.OTEL_SERVICE_NAME ?? "gatekeeper-gateway",
+
+  OTEL_EXPORTER_OTLP_ENDPOINT: parsed.OTEL_EXPORTER_OTLP_ENDPOINT ?? "http://localhost:4318/v1/traces",
+
+  OTEL_TRACING_ENABLED: parsed.OTEL_TRACING_ENABLED === "true",
 };

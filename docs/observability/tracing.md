@@ -78,3 +78,32 @@ Incoming API request evaluated
 ↓
 Audit log includes request_id = Y
 ```
+
+---
+
+## Gateway Runtime OpenTelemetry Tracing
+
+The Gateway Runtime includes a lightweight OpenTelemetry integration.
+
+Current traced operations:
+
+- incoming HTTP request
+- gateway decision evaluation
+
+Trace attributes include:
+
+- request path
+- request method
+- client id
+- snapshot version
+- route id
+- policy id
+- decision
+- reason code
+
+Tracing is controlled with:
+
+```env
+OTEL_TRACING_ENABLED=false
+OTEL_SERVICE_NAME=gatekeeper-gateway
+OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318/v1/traces

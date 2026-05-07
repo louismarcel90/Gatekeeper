@@ -1,34 +1,62 @@
-type LogLevel = "INFO" | "WARN" | "ERROR";
+import { env } from "../config/env";
+import { getCurrentTraceContext } from "./tracing";
 
-type LogMetadata = Record<string, string | number | boolean | null | undefined>;
+export type LogLevel = "INFO" | "WARN" | "ERROR";
 
-function writeLog(
+export type LogValue =
+  | string
+  | number
+  | boolean
+  | null
+  | string[]
+  | number[]
+  | boolean[];
+
+export type LogFields = Record<string, LogValue>;
+
+function writeStructuredLog(
   level: LogLevel,
   message: string,
-  metadata: LogMetadata = {},
+  fields: LogFields = {},
 ): void {
-  const payload = {
+  const traceContext = getCurrentTraceContext();
+
+  const entry = {
     timestamp: new Date().toISOString(),
     level,
     service: "gatekeeper-gateway",
-    instance_id: "gateway-local",
+    instance_id: env.GATEWAY_INSTANCE_ID,
+    trace_id: traceContext.trace_id,
+    span_id: traceContext.span_id,
     message,
-    ...metadata,
+    ...fields,
   };
 
-  console.log(JSON.stringify(payload));
+  const serialized = JSON.stringify(entry);
+
+  if (level === "ERROR") {
+    console.error(serialized);
+    return;
+  }
+
+  if (level === "WARN") {
+    console.warn(serialized);
+    return;
+  }
+
+  console.log(serialized);
 }
 
 export const runtimeLogger = {
-  info(message: string, metadata?: LogMetadata): void {
-    writeLog("INFO", message, metadata);
+  info(message: string, fields?: LogFields): void {
+    writeStructuredLog("INFO", message, fields);
   },
 
-  warn(message: string, metadata?: LogMetadata): void {
-    writeLog("WARN", message, metadata);
+  warn(message: string, fields?: LogFields): void {
+    writeStructuredLog("WARN", message, fields);
   },
 
-  error(message: string, metadata?: LogMetadata): void {
-    writeLog("ERROR", message, metadata);
+  error(message: string, fields?: LogFields): void {
+    writeStructuredLog("ERROR", message, fields);
   },
 };

@@ -15,6 +15,7 @@ import {
   recordThrottleDecision,
 } from "../observability/runtime-metrics";
 import { runtimeLogger } from "../observability/runtime-logger";
+// import { withSpan } from "../observability/tracing";
 
 function buildDecision(
   input: Omit<Decision, "decision_id" | "timestamp">,
@@ -47,7 +48,7 @@ function findPolicyForRoute(snapshot: Snapshot, routeId: string): Policy | null 
   return policy ?? null;
 }
 
-export async function evaluateDecision(
+export async function evaluateDecisionInternal(
   snapshot: Snapshot,
   context: RequestContext,
 ): Promise<Decision> {
@@ -259,4 +260,4 @@ export async function evaluateDecision(
   });
 }
 
-export const evaluateWithSnapshot = evaluateDecision;
+export const evaluateWithSnapshot = evaluateDecisionInternal;

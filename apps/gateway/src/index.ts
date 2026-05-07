@@ -17,8 +17,13 @@ import { registerRuntimeHealthRoute } from "./routes/runtime-health-route";
 import { registerRuntimeSnapshotRoute } from "./routes/runtime-snapshot-route";
 import { registerRuntimeConsistencyRoute } from "./routes/runtime-consistency-route";
 import { registerRuntimeInstanceRoute } from "./routes/runtime-instance-route";
+import { startTracing } from "./observability/tracing";
+import { attachRequestTraceContext } from "./observability/request-tracing";
 
+startTracing();
 const app = Fastify({ logger: true });
+
+app.addHook("onRequest", attachRequestTraceContext);
 
 async function registerRoutes() {
   await registerDebugRoutes(app);
