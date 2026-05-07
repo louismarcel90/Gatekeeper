@@ -1,4 +1,5 @@
 import { env } from "../config/env";
+import { runtimeLogger } from "../observability/runtime-logger";
 import { runtimeRedis } from "../runtime/runtime-redis";
 import { setDependencyStatus } from "../runtime/runtime-health-registry";
 
@@ -44,6 +45,14 @@ export async function checkQuota(input: QuotaInput): Promise<QuotaResult> {
     });
 
     if (current > input.limitPerDay) {
+      runtimeLogger.warn("Distributed quota exceeded.", {
+        client_id: input.clientId,
+        route_id: input.routeId,
+        limit: input.limitPerDay,
+        current,
+        retry_after_seconds: env.QUOTA_WINDOW_SECONDS,
+      });
+
       return {
         allowed: false,
         limit: input.limitPerDay,
@@ -68,6 +77,12 @@ export async function checkQuota(input: QuotaInput): Promise<QuotaResult> {
       dependency: "redis",
       status: "UNAVAILABLE",
       reason: message,
+    });
+
+    runtimeLogger.error("Redis quota operation failed; failing open.", {
+      client_id: input.clientId,
+      route_id: input.routeId,
+      error_message: message,
     });
 
     return {

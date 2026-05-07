@@ -59,3 +59,47 @@ Examples:
   "snapshot_version": 12
 }
 ```
+
+---
+
+## Gateway Runtime Structured Logging
+
+The Gateway Runtime emits structured JSON logs for operational events.
+
+Examples:
+
+- snapshot load success
+- snapshot refresh failure
+- Redis health check failures
+- rate limit exceeded
+- quota exceeded
+- allow / deny / throttle decisions
+
+### Standard Runtime Fields
+
+- `timestamp`
+- `level`
+- `service`
+- `instance_id`
+- `message`
+- `route_id`
+- `policy_id`
+- `client_id`
+- `snapshot_version`
+- `error_message`
+
+### Example
+
+```json
+{
+  "timestamp": "2026-05-07T12:00:00.000Z",
+  "level": "WARN",
+  "service": "gatekeeper-gateway",
+  "instance_id": "gateway-local-1",
+  "message": "Distributed rate limit exceeded.",
+  "client_id": "partner-x",
+  "route_id": "route_search_get",
+  "limit": 50,
+  "current": 51,
+  "retry_after_seconds": 60
+}

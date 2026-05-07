@@ -1,4 +1,5 @@
 import { env } from "../config/env";
+import { runtimeLogger } from "../observability/runtime-logger";
 import { runtimeRedis } from "../runtime/runtime-redis";
 import { setDependencyStatus } from "../runtime/runtime-health-registry";
 
@@ -39,6 +40,14 @@ export async function checkRateLimit(
     });
 
     if (current > input.limitPerMinute) {
+      runtimeLogger.warn("Distributed rate limit exceeded.", {
+        client_id: input.clientId,
+        route_id: input.routeId,
+        limit: input.limitPerMinute,
+        current,
+        retry_after_seconds: env.RATE_LIMIT_WINDOW_SECONDS,
+      });
+
       return {
         allowed: false,
         limit: input.limitPerMinute,
@@ -63,6 +72,12 @@ export async function checkRateLimit(
       dependency: "redis",
       status: "UNAVAILABLE",
       reason: message,
+    });
+
+    runtimeLogger.error("Redis rate-limit operation failed; failing open.", {
+      client_id: input.clientId,
+      route_id: input.routeId,
+      error_message: message,
     });
 
     return {

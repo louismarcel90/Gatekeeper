@@ -1,3 +1,4 @@
+import { runtimeLogger } from "../observability/runtime-logger";
 import { runtimeRedis } from "./runtime-redis";
 import { setDependencyStatus } from "./runtime-health-registry";
 
@@ -11,6 +12,12 @@ export async function checkRedisHealth(): Promise<void> {
         status: "HEALTHY",
         reason: "Redis ping succeeded.",
       });
+
+      runtimeLogger.info("Redis health check succeeded.", {
+        dependency: "redis",
+        redis_response: pong,
+      });
+
       return;
     }
 
@@ -18,6 +25,11 @@ export async function checkRedisHealth(): Promise<void> {
       dependency: "redis",
       status: "DEGRADED",
       reason: "Redis ping returned unexpected response.",
+    });
+
+    runtimeLogger.warn("Redis health check returned unexpected response.", {
+      dependency: "redis",
+      redis_response: pong,
     });
   } catch (error) {
     const message =
@@ -27,6 +39,11 @@ export async function checkRedisHealth(): Promise<void> {
       dependency: "redis",
       status: "UNAVAILABLE",
       reason: message,
+    });
+
+    runtimeLogger.error("Redis health check failed.", {
+      dependency: "redis",
+      error_message: message,
     });
   }
 }

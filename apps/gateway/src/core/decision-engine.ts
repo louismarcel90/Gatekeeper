@@ -1,11 +1,11 @@
-import { checkQuota } from "../services/quota-limiter"; 
+import { checkQuota } from "../services/quota-limiter";
 import { checkRateLimit } from "../services/rate-limiter";
-import {
+import type {
   Decision,
-  RequestContext,
-  Snapshot,
   ManagedRoute,
   Policy,
+  RequestContext,
+  Snapshot,
 } from "./types";
 import {
   recordAllowDecision,
@@ -13,6 +13,7 @@ import {
   recordQuotaExceeded,
   recordRateLimitExceeded,
 } from "../observability/runtime-metrics";
+import { runtimeLogger } from "../observability/runtime-logger";
 
 function buildDecision(
   input: Omit<Decision, "decision_id" | "timestamp">,
@@ -37,10 +38,7 @@ function findRouteForRequest(
   return route ?? null;
 }
 
-function findPolicyForRoute(
-  snapshot: Snapshot,
-  routeId: string,
-): Policy | null {
+function findPolicyForRoute(snapshot: Snapshot, routeId: string): Policy | null {
   const policy = snapshot.policies.find(
     (candidate) => candidate.route_id === routeId,
   );
@@ -161,9 +159,9 @@ export async function evaluateDecision(
     });
   }
 
-  if (policy.rate_limit_per_minute !== null) {
-    const clientId = context.client_id ?? "anonymous";
+  const clientId = context.client_id ?? "anonymous";
 
+  if (policy.rate_limit_per_minute !== null) {
     const rateLimit = await checkRateLimit({
       routeId: route.id,
       clientId,
@@ -173,6 +171,16 @@ export async function evaluateDecision(
     if (!rateLimit.allowed) {
       recordDenyDecision();
       recordRateLimitExceeded();
+
+      console.log("[DEBUG RATE LIMIT WARN SHOULD FIRE]");
+
+
+      runtimeLogger.warn("Gateway decision throttled: rate limit exceeded.", {
+        route_id: route.id,
+        policy_id: policy.id,
+        client_id: clientId,
+        snapshot_version: snapshot.version,
+      });
 
       return buildDecision({
         decision: "THROTTLE",
@@ -192,8 +200,6 @@ export async function evaluateDecision(
   }
 
   if (policy.quota_per_day !== null) {
-    const clientId = context.client_id ?? "anonymous";
-
     const quota = await checkQuota({
       routeId: route.id,
       clientId,
@@ -204,6 +210,12 @@ export async function evaluateDecision(
       recordDenyDecision();
       recordQuotaExceeded();
 
+      runtimeLogger.warn("Gateway decision throttled: quota exceeded.", {
+        route_id: route.id,
+        policy_id: policy.id,
+        client_id: clientId,
+        snapshot_version: snapshot.version,
+      });
 
       return buildDecision({
         decision: "THROTTLE",
@@ -221,6 +233,13 @@ export async function evaluateDecision(
       });
     }
   }
+
+  runtimeLogger.info("Gateway decision allowed.", {
+    route_id: route.id,
+    policy_id: policy.id,
+    client_id: clientId,
+    snapshot_version: snapshot.version,
+  });
 
   recordAllowDecision();
 
