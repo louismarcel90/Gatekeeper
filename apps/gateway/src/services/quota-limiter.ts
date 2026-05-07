@@ -1,46 +1,59 @@
-import { redisClient } from "../infrastructure/redis-client";
+import { env } from "../config/env";
+import { runtimeRedis } from "../runtime/runtime-redis";
 
-const WINDOW_SECONDS = 24 * 60 * 60;
+type QuotaInput = {
+  routeId: string;
+  clientId: string;
+  limitPerDay: number;
+};
 
 export type QuotaResult = {
   allowed: boolean;
-  current: number;
   limit: number;
+  current: number;
   retry_after_seconds: number;
 };
 
 function getUtcDayKey(): string {
   const now = new Date();
+
   const year = now.getUTCFullYear();
   const month = String(now.getUTCMonth() + 1).padStart(2, "0");
   const day = String(now.getUTCDate()).padStart(2, "0");
 
-  return `${year}${month}${day}`;
+  return `${year}-${month}-${day}`;
 }
 
-function buildQuotaKey(routeId: string, clientId: string): string {
-  return `gatekeeper:quota:${getUtcDayKey()}:${routeId}:${clientId}`;
-}
+export async function checkQuota(
+  input: QuotaInput,
+): Promise<QuotaResult> {
+  const dayKey = getUtcDayKey();
 
-export async function checkQuota(params: {
-  routeId: string;
-  clientId: string;
-  limitPerDay: number;
-}): Promise<QuotaResult> {
-  const key = buildQuotaKey(params.routeId, params.clientId);
+  const redisKey =
+    `quota:${input.clientId}:${input.routeId}:${dayKey}`;
 
-  const current = await redisClient.incr(key);
+  const current = await runtimeRedis.incr(redisKey);
 
   if (current === 1) {
-    await redisClient.expire(key, WINDOW_SECONDS);
+    await runtimeRedis.expire(
+      redisKey,
+      env.QUOTA_WINDOW_SECONDS,
+    );
   }
 
-  const ttl = await redisClient.ttl(key);
+  if (current > input.limitPerDay) {
+    return {
+      allowed: false,
+      limit: input.limitPerDay,
+      current,
+      retry_after_seconds: env.QUOTA_WINDOW_SECONDS,
+    };
+  }
 
   return {
-    allowed: current <= params.limitPerDay,
+    allowed: true,
+    limit: input.limitPerDay,
     current,
-    limit: params.limitPerDay,
-    retry_after_seconds: ttl > 0 ? ttl : WINDOW_SECONDS,
+    retry_after_seconds: 0,
   };
 }

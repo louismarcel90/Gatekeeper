@@ -12,4 +12,5 @@ export const controlPlaneConfig = {
 
   adminSeedEmail: process.env.ADMIN_SEED_EMAIL ?? "admin@gatekeeper.local",
   adminSeedPassword: process.env.ADMIN_SEED_PASSWORD ?? "admin123456",
+  QUOTA_WINDOW_SECONDS: Number(process.env.QUOTA_WINDOW_SECONDS ?? "86400"),
 };

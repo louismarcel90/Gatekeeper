@@ -11,6 +11,8 @@ type RuntimePolicySnapshot = {
   route_id: string;
   require_api_key: boolean;
   required_scopes: string[];
+  rate_limit_per_minute: number;
+  quota_per_day: number;
 };
 
 type RuntimeSnapshotResponse = {
@@ -43,12 +45,16 @@ export async function registerRuntimeRoutes(
           route_id: "route_search",
           require_api_key: false,
           required_scopes: ["search:read"],
+          rate_limit_per_minute: 1000,
+          quota_per_day: 2,
         },
         {
           policy_id: "policy_orders_read",
           route_id: "route_orders",
           require_api_key: false,
           required_scopes: ["orders:read"],
+          rate_limit_per_minute: 1000,
+          quota_per_day: 2,
         },
       ],
     };

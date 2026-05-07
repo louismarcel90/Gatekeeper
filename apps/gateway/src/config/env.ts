@@ -12,12 +12,14 @@ const envSchema = z.object({
 
   REDIS_URL: z.string().url().default("redis://127.0.0.1:56379"),
 
- REDIS_HOST: z.string().default("127.0.0.1"),
+  REDIS_HOST: z.string().default("127.0.0.1"),
 
-REDIS_PORT: z.coerce.number().int().positive().default(6379),
+  REDIS_PORT: z.coerce.number().int().positive().default(6379),
 
-RATE_LIMIT_WINDOW_SECONDS: z.coerce.number().int().positive().default(60),
+  RATE_LIMIT_WINDOW_SECONDS: z.coerce.number().int().positive().default(60),
+  QUOTA_WINDOW_SECONDS: z.coerce.number().int().positive().default(86400),
 });
+
 
 const parsedEnv = envSchema.safeParse(process.env);
 
@@ -48,4 +50,6 @@ export const env = {
   RATE_LIMIT_WINDOW_SECONDS: Number(
     parsed.RATE_LIMIT_WINDOW_SECONDS ?? "60",
   ),
+
+  QUOTA_WINDOW_SECONDS: Number(parsed.QUOTA_WINDOW_SECONDS ?? "86400"),
 };

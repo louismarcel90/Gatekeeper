@@ -10,6 +10,7 @@ import {
 import {
   recordAllowDecision,
   recordDenyDecision,
+  recordQuotaExceeded,
   recordRateLimitExceeded,
 } from "../observability/runtime-metrics";
 
@@ -201,6 +202,8 @@ export async function evaluateDecision(
 
     if (!quota.allowed) {
       recordDenyDecision();
+      recordQuotaExceeded();
+
 
       return buildDecision({
         decision: "THROTTLE",

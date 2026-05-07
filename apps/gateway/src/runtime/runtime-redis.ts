@@ -1,7 +1,8 @@
-import  Redis from "ioredis";
+import Redis from "ioredis";
+
 import { env } from "../config/env";
 
-export const runtimeRedis = new Redis({
-  host: env.REDIS_HOST,
-  port: env.REDIS_PORT,
+export const runtimeRedis = new Redis(env.REDIS_URL, {
+  lazyConnect: false,
+  maxRetriesPerRequest: 3,
 });
