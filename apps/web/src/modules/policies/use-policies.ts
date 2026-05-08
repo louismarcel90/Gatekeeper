@@ -74,3 +74,50 @@ export function useCreatePolicy() {
     },
   });
 }
+
+export function useUpdatePolicy() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (payload: PolicyInput) => {
+      logUiEvent({
+        level: "info",
+        scope: "policies.update",
+        message: `Updating policy ${payload.id}`,
+        meta: {
+          policy_id: payload.id,
+          route_id: payload.route_id,
+        },
+      });
+
+      const response = await apiClient.put(`/policies/${payload.id}`, payload);
+      return response.data;
+    },
+    onSuccess: async (data) => {
+      logUiEvent({
+        level: "success",
+        scope: "policies.update",
+        message: `Policy ${data.id} updated successfully`,
+        meta: {
+          policy_id: data.id,
+        },
+      });
+
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["policies"] }),
+        queryClient.invalidateQueries({ queryKey: ["policy-document", "export"] }),
+        queryClient.invalidateQueries({ queryKey: ["snapshots"] }),
+      ]);
+    },
+    onError: (error) => {
+      logUiEvent({
+        level: "error",
+        scope: "policies.update",
+        message: "Policy update failed",
+        meta: {
+          error: error instanceof Error ? error.message : "unexpected error",
+        },
+      });
+    },
+  });
+}

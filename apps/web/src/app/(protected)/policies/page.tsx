@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type CSSProperties } from "react";
 import { PageHeader } from "@/src/components/app-shell/page-header";
 import { DataTable, DataTableRow } from "@/src/components/data-display/data-table";
 import { FilterInput, FilterSelect, FiltersBar } from "@/src/components/data-display/filters-bar";
@@ -17,7 +17,8 @@ import { TableToolbar } from "@/src/components/data-explorer/table-toolbar";
 import { SystemPage } from "@/src/components/page-layout/system-page";
 import { PageStack } from "@/src/components/page-layout/page-stack";
 import { useCapability } from "@/src/modules/permissions/use-capability";
-import { PolicyInput, useCreatePolicy, usePolicies } from "@/src/modules/policies/use-policies";
+import {  PolicyInput, useCreatePolicy, usePolicies, useUpdatePolicy} from "@/src/modules/policies/use-policies";
+
 
 type PolicyItem = {
   id: string;
@@ -30,114 +31,215 @@ type PolicyItem = {
 
 type SortMode = "id" | "route" | "rate";
 
-const EMPTY_FORM: PolicyInput = {
+type PolicyFormState = {
+  id: string;
+  route_id: string;
+  require_api_key: boolean;
+  required_scopes: string;
+  rate_limit_per_minute: string;
+  quota_per_day: string;
+};
+
+const EMPTY_CREATE_FORM: PolicyFormState = {
   id: "",
   route_id: "",
   require_api_key: true,
-  required_scopes: [],
-  rate_limit_per_minute: 60,
-  quota_per_day: 1000,
+  required_scopes: "",
+  rate_limit_per_minute: "60",
+  quota_per_day: "1000",
 };
+
+const EMPTY_EDIT_FORM: PolicyFormState = {
+  id: "",
+  route_id: "",
+  require_api_key: true,
+  required_scopes: "",
+  rate_limit_per_minute: "",
+  quota_per_day: "",
+};
+
+const inputStyle: CSSProperties = {
+  padding: 12,
+  borderRadius: 12,
+  border: "1px solid #E7E5E4",
+  background: "#FFFFFF",
+};
+
+function parseNullablePositiveNumber(value: string): number | null {
+  if (value.trim() === "") {
+    return null;
+  }
+
+  const parsed = Number(value);
+
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return null;
+  }
+
+  return parsed;
+}
+
+function parseScopes(value: string): string[] {
+  return value
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function renderComparisonValue(value: string | number | boolean | null): string {
+  if (value === null) {
+    return "—";
+  }
+
+  if (typeof value === "boolean") {
+    return value ? "true" : "false";
+  }
+
+  return String(value);
+}
+
+function getChangedTextStyle(changed: boolean): CSSProperties {
+  return {
+    fontWeight: changed ? 700 : 400,
+    color: changed ? "#9A6A2C" : "#111111",
+  };
+}
 
 export default function PoliciesPage() {
   const query = usePolicies();
   const createMutation = useCreatePolicy();
+  const updateMutation = useUpdatePolicy();
   const canCreate = useCapability("snapshots.publish");
 
   const [message, setMessage] = useState("");
   const [selectedItem, setSelectedItem] = useState<PolicyItem | null>(null);
-
   const [routeFilter, setRouteFilter] = useState("");
   const [sortMode, setSortMode] = useState<SortMode>("id");
   const [page, setPage] = useState(0);
-  const pageSize = 10;
+  const [form, setForm] = useState<PolicyFormState>(EMPTY_CREATE_FORM);
+  const [editingPolicyId, setEditingPolicyId] = useState<string | null>(null);
+  const [originalPolicy, setOriginalPolicy] = useState<PolicyItem | null>(null);
+  const [editForm, setEditForm] = useState<PolicyFormState>(EMPTY_EDIT_FORM);
 
-  const [form, setForm] = useState({
-    id: EMPTY_FORM.id,
-    route_id: EMPTY_FORM.route_id,
-    require_api_key: EMPTY_FORM.require_api_key,
-    required_scopes: "",
-    rate_limit_per_minute: String(EMPTY_FORM.rate_limit_per_minute ?? ""),
-    quota_per_day: String(EMPTY_FORM.quota_per_day ?? ""),
-  });
+  const pageSize = 10;
+const items = useMemo(
+  () => (query.data ?? []) as PolicyItem[],
+  [query.data],
+);
 
   const filteredItems = useMemo(() => {
-    const items = (query.data ?? []) as PolicyItem[];
     let result = [...items];
 
     if (routeFilter.trim()) {
       const needle = routeFilter.trim().toLowerCase();
-      result = result.filter((item) => item.route_id.toLowerCase().includes(needle));
+      result = result.filter((item) =>
+        item.route_id.toLowerCase().includes(needle),
+      );
     }
 
     if (sortMode === "route") {
       result.sort((a, b) => a.route_id.localeCompare(b.route_id));
     } else if (sortMode === "rate") {
-      result.sort((a, b) => (a.rate_limit_per_minute ?? 0) - (b.rate_limit_per_minute ?? 0));
+      result.sort(
+        (a, b) => (a.rate_limit_per_minute ?? 0) - (b.rate_limit_per_minute ?? 0),
+      );
     } else {
       result.sort((a, b) => a.id.localeCompare(b.id));
     }
 
     return result;
-  }, [query.data, routeFilter, sortMode]);
+  }, [items, routeFilter, sortMode]);
+
   const pagedItems = filteredItems.slice(page * pageSize, (page + 1) * pageSize);
+
+  function buildPolicyPayload(source: PolicyFormState): PolicyInput | null {
+    if (!source.id.trim()) {
+      setMessage("Policy ID is required.");
+      return null;
+    }
+
+    if (!source.route_id.trim()) {
+      setMessage("Route ID is required.");
+      return null;
+    }
+
+    const rateLimit = parseNullablePositiveNumber(source.rate_limit_per_minute);
+    const quota = parseNullablePositiveNumber(source.quota_per_day);
+
+    if (source.rate_limit_per_minute.trim() !== "" && rateLimit === null) {
+      setMessage("Rate limit must be a positive number or empty.");
+      return null;
+    }
+
+    if (source.quota_per_day.trim() !== "" && quota === null) {
+      setMessage("Quota must be a positive number or empty.");
+      return null;
+    }
+
+    return {
+      id: source.id.trim(),
+      route_id: source.route_id.trim(),
+      require_api_key: source.require_api_key,
+      required_scopes: parseScopes(source.required_scopes),
+      rate_limit_per_minute: rateLimit,
+      quota_per_day: quota,
+    };
+  }
+
+  function startEditingPolicy(policy: PolicyItem) {
+    setEditingPolicyId(policy.id);
+    setOriginalPolicy(policy);
+    setEditForm({
+      id: policy.id,
+      route_id: policy.route_id,
+      require_api_key: policy.require_api_key,
+      required_scopes: policy.required_scopes.join(", "),
+      rate_limit_per_minute:
+        policy.rate_limit_per_minute === null ? "" : String(policy.rate_limit_per_minute),
+      quota_per_day: policy.quota_per_day === null ? "" : String(policy.quota_per_day),
+    });
+  }
 
   async function handleCreatePolicy() {
     setMessage("");
 
-    if (!form.id.trim()) {
-      setMessage("Policy ID is required.");
-      return;
-    }
+    const payload = buildPolicyPayload(form);
 
-    if (!form.route_id.trim()) {
-      setMessage("Route ID is required.");
-      return;
-    }
-
-    const scopes = form.required_scopes
-      .split(",")
-      .map((item) => item.trim())
-      .filter(Boolean);
-
-    const parsedRate =
-      form.rate_limit_per_minute.trim() === "" ? null : Number(form.rate_limit_per_minute);
-
-    const parsedQuota = form.quota_per_day.trim() === "" ? null : Number(form.quota_per_day);
-
-    if (parsedRate !== null && Number.isNaN(parsedRate)) {
-      setMessage("Rate limit must be a valid number.");
-      return;
-    }
-
-    if (parsedQuota !== null && Number.isNaN(parsedQuota)) {
-      setMessage("Quota per day must be a valid number.");
+    if (!payload) {
       return;
     }
 
     try {
-      await createMutation.mutateAsync({
-        id: form.id.trim(),
-        route_id: form.route_id.trim(),
-        require_api_key: form.require_api_key,
-        required_scopes: scopes,
-        rate_limit_per_minute: parsedRate,
-        quota_per_day: parsedQuota,
-      });
-
+      await createMutation.mutateAsync(payload);
       setMessage("Policy created successfully.");
-      setForm({
-        id: "",
-        route_id: "",
-        require_api_key: true,
-        required_scopes: "",
-        rate_limit_per_minute: "60",
-        quota_per_day: "1000",
-      });
+      setForm(EMPTY_CREATE_FORM);
     } catch {
       setMessage("Failed to create policy.");
     }
   }
+
+  async function handleUpdatePolicy() {
+    setMessage("");
+
+    const payload = buildPolicyPayload(editForm);
+
+    if (!payload) {
+      return;
+    }
+
+    try {
+      await updateMutation.mutateAsync(payload);
+      setMessage("Policy updated successfully.");
+      setEditingPolicyId(null);
+      setOriginalPolicy(null);
+      setEditForm(EMPTY_EDIT_FORM);
+    } catch {
+      setMessage("Failed to update policy.");
+    }
+  }
+
+  const editRateLimit = parseNullablePositiveNumber(editForm.rate_limit_per_minute);
+  const editQuota = parseNullablePositiveNumber(editForm.quota_per_day);
 
   return (
     <SystemPage>
@@ -163,8 +265,8 @@ export default function PoliciesPage() {
 
         {!canCreate ? (
           <CapabilityHint>
-            Your role can inspect policies, but creating a new policy requires a security or admin
-            role.
+            Your role can inspect policies, but creating or editing a policy requires
+            a security or admin role.
           </CapabilityHint>
         ) : null}
 
@@ -174,8 +276,8 @@ export default function PoliciesPage() {
               <FilterInput
                 placeholder="Filter by route ID"
                 value={routeFilter}
-                onChange={(e) => {
-                  setRouteFilter(e.target.value);
+                onChange={(event) => {
+                  setRouteFilter(event.target.value);
                   setPage(0);
                 }}
               />
@@ -183,7 +285,7 @@ export default function PoliciesPage() {
             right={
               <FilterSelect
                 value={sortMode}
-                onChange={(e) => setSortMode(e.target.value as SortMode)}
+                onChange={(event) => setSortMode(event.target.value as SortMode)}
               >
                 <option value="id">Sort by policy ID</option>
                 <option value="route">Sort by route ID</option>
@@ -209,7 +311,9 @@ export default function PoliciesPage() {
             />
           ) : (
             <>
-              <DataTable columns={["Policy ID", "Route ID", "Scopes", "Rate", "Quota"]}>
+              <DataTable
+                columns={["Policy ID", "Route ID", "Scopes", "Rate", "Quota", "Actions"]}
+              >
                 {pagedItems.map((item) => (
                   <div
                     key={item.id}
@@ -220,9 +324,27 @@ export default function PoliciesPage() {
                       columns={[
                         item.id,
                         item.route_id,
-                        item.required_scopes.length > 0 ? item.required_scopes.join(", ") : "—",
+                        item.required_scopes.length > 0
+                          ? item.required_scopes.join(", ")
+                          : "—",
                         item.rate_limit_per_minute ?? "—",
                         item.quota_per_day ?? "—",
+                        <div
+                          key={`${item.id}-actions`}
+                          style={{ display: "flex", gap: 8, flexWrap: "wrap" }}
+                          onClick={(event) => event.stopPropagation()}
+                        >
+                          {canCreate ? (
+                            <ActionButton
+                              tone="neutral"
+                              onClick={() => startEditingPolicy(item)}
+                            >
+                              Edit
+                            </ActionButton>
+                          ) : (
+                            "—"
+                          )}
+                        </div>,
                       ]}
                     />
                   </div>
@@ -233,9 +355,13 @@ export default function PoliciesPage() {
                 page={page}
                 pageSize={pageSize}
                 itemCount={filteredItems.length}
-                onPrevious={() => setPage((p) => Math.max(0, p - 1))}
+                onPrevious={() => setPage((current) => Math.max(0, current - 1))}
                 onNext={() =>
-                  setPage((p) => ((p + 1) * pageSize < filteredItems.length ? p + 1 : p))
+                  setPage((current) =>
+                    (current + 1) * pageSize < filteredItems.length
+                      ? current + 1
+                      : current,
+                  )
                 }
               />
             </>
@@ -264,9 +390,187 @@ export default function PoliciesPage() {
                   : "—"
               }
             />
-            <DetailRow label="Rate Limit / Min" value={selectedItem.rate_limit_per_minute ?? "—"} />
+            <DetailRow
+              label="Rate Limit / Min"
+              value={selectedItem.rate_limit_per_minute ?? "—"}
+            />
             <DetailRow label="Quota / Day" value={selectedItem.quota_per_day ?? "—"} />
           </DetailPanel>
+        ) : null}
+
+        {editingPolicyId ? (
+          <SectionCard title={`Edit Policy: ${editingPolicyId}`}>
+            <div style={{ display: "grid", gap: 12 }}>
+              <input
+                value={editForm.route_id}
+                onChange={(event) =>
+                  setEditForm((current) => ({
+                    ...current,
+                    route_id: event.target.value,
+                  }))
+                }
+                placeholder="Route ID"
+                style={inputStyle}
+              />
+
+              <input
+                value={editForm.required_scopes}
+                onChange={(event) =>
+                  setEditForm((current) => ({
+                    ...current,
+                    required_scopes: event.target.value,
+                  }))
+                }
+                placeholder="Required scopes, comma separated"
+                style={inputStyle}
+              />
+
+              <input
+                value={editForm.rate_limit_per_minute}
+                onChange={(event) =>
+                  setEditForm((current) => ({
+                    ...current,
+                    rate_limit_per_minute: event.target.value,
+                  }))
+                }
+                placeholder="Rate limit per minute"
+                style={inputStyle}
+              />
+
+              <input
+                value={editForm.quota_per_day}
+                onChange={(event) =>
+                  setEditForm((current) => ({
+                    ...current,
+                    quota_per_day: event.target.value,
+                  }))
+                }
+                placeholder="Quota per day"
+                style={inputStyle}
+              />
+
+              <label
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  fontSize: 14,
+                  color: "#111111",
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={editForm.require_api_key}
+                  onChange={(event) =>
+                    setEditForm((current) => ({
+                      ...current,
+                      require_api_key: event.target.checked,
+                    }))
+                  }
+                />
+                Require API key
+              </label>
+
+              {originalPolicy ? (
+                <SectionCard title="Before / After Preview">
+                  <DataTable columns={["Field", "Before", "After"]}>
+                    <DataTableRow
+                      columns={[
+                        "route_id",
+                        originalPolicy.route_id,
+                        <span
+                          key="route_id-after"
+                          style={getChangedTextStyle(
+                            originalPolicy.route_id !== editForm.route_id,
+                          )}
+                        >
+                          {editForm.route_id || "—"}
+                        </span>,
+                      ]}
+                    />
+                    <DataTableRow
+                      columns={[
+                        "required_scopes",
+                        originalPolicy.required_scopes.join(", ") || "—",
+                        <span
+                          key="required_scopes-after"
+                          style={getChangedTextStyle(
+                            originalPolicy.required_scopes.join(", ") !==
+                              editForm.required_scopes,
+                          )}
+                        >
+                          {editForm.required_scopes || "—"}
+                        </span>,
+                      ]}
+                    />
+                    <DataTableRow
+                      columns={[
+                        "rate_limit_per_minute",
+                        renderComparisonValue(originalPolicy.rate_limit_per_minute),
+                        <span
+                          key="rate_limit-after"
+                          style={getChangedTextStyle(
+                            originalPolicy.rate_limit_per_minute !== editRateLimit,
+                          )}
+                        >
+                          {renderComparisonValue(editRateLimit)}
+                        </span>,
+                      ]}
+                    />
+                    <DataTableRow
+                      columns={[
+                        "quota_per_day",
+                        renderComparisonValue(originalPolicy.quota_per_day),
+                        <span
+                          key="quota-after"
+                          style={getChangedTextStyle(
+                            originalPolicy.quota_per_day !== editQuota,
+                          )}
+                        >
+                          {renderComparisonValue(editQuota)}
+                        </span>,
+                      ]}
+                    />
+                    <DataTableRow
+                      columns={[
+                        "require_api_key",
+                        renderComparisonValue(originalPolicy.require_api_key),
+                        <span
+                          key="require_api_key-after"
+                          style={getChangedTextStyle(
+                            originalPolicy.require_api_key !== editForm.require_api_key,
+                          )}
+                        >
+                          {renderComparisonValue(editForm.require_api_key)}
+                        </span>,
+                      ]}
+                    />
+                  </DataTable>
+                </SectionCard>
+              ) : null}
+
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                <ActionButton
+                  tone="violet"
+                  onClick={handleUpdatePolicy}
+                  disabled={updateMutation.isPending}
+                >
+                  {updateMutation.isPending ? "Saving..." : "Save Changes"}
+                </ActionButton>
+
+                <ActionButton
+                  tone="neutral"
+                  onClick={() => {
+                    setEditingPolicyId(null);
+                    setOriginalPolicy(null);
+                    setEditForm(EMPTY_EDIT_FORM);
+                  }}
+                >
+                  Cancel
+                </ActionButton>
+              </div>
+            </div>
+          </SectionCard>
         ) : null}
 
         {canCreate ? (
@@ -274,77 +578,59 @@ export default function PoliciesPage() {
             <div style={{ display: "grid", gap: 12 }}>
               <input
                 value={form.id}
-                onChange={(e) => setForm((current) => ({ ...current, id: e.target.value }))}
+                onChange={(event) =>
+                  setForm((current) => ({ ...current, id: event.target.value }))
+                }
                 placeholder="Policy ID"
-                style={{
-                  padding: 12,
-                  borderRadius: 12,
-                  border: "1px solid #E7E5E4",
-                  background: "#FFFFFF",
-                }}
+                style={inputStyle}
               />
 
               <input
                 value={form.route_id}
-                onChange={(e) => setForm((current) => ({ ...current, route_id: e.target.value }))}
+                onChange={(event) =>
+                  setForm((current) => ({
+                    ...current,
+                    route_id: event.target.value,
+                  }))
+                }
                 placeholder="Route ID"
-                style={{
-                  padding: 12,
-                  borderRadius: 12,
-                  border: "1px solid #E7E5E4",
-                  background: "#FFFFFF",
-                }}
+                style={inputStyle}
               />
 
               <input
                 value={form.required_scopes}
-                onChange={(e) =>
+                onChange={(event) =>
                   setForm((current) => ({
                     ...current,
-                    required_scopes: e.target.value,
+                    required_scopes: event.target.value,
                   }))
                 }
                 placeholder="Required scopes (comma separated)"
-                style={{
-                  padding: 12,
-                  borderRadius: 12,
-                  border: "1px solid #E7E5E4",
-                  background: "#FFFFFF",
-                }}
+                style={inputStyle}
               />
 
               <input
                 value={form.rate_limit_per_minute}
-                onChange={(e) =>
+                onChange={(event) =>
                   setForm((current) => ({
                     ...current,
-                    rate_limit_per_minute: e.target.value,
+                    rate_limit_per_minute: event.target.value,
                   }))
                 }
                 placeholder="Rate limit per minute"
-                style={{
-                  padding: 12,
-                  borderRadius: 12,
-                  border: "1px solid #E7E5E4",
-                  background: "#FFFFFF",
-                }}
+                style={inputStyle}
               />
 
               <input
                 value={form.quota_per_day}
-                onChange={(e) =>
+                onChange={(event) =>
                   setForm((current) => ({
                     ...current,
-                    quota_per_day: e.target.value,
+                    quota_per_day: event.target.value,
                   }))
                 }
                 placeholder="Quota per day"
-                style={{
-                  padding: 12,
-                  borderRadius: 12,
-                  border: "1px solid #E7E5E4",
-                  background: "#FFFFFF",
-                }}
+                style={inputStyle}
               />
 
               <label
@@ -359,10 +645,10 @@ export default function PoliciesPage() {
                 <input
                   type="checkbox"
                   checked={form.require_api_key}
-                  onChange={(e) =>
+                  onChange={(event) =>
                     setForm((current) => ({
                       ...current,
-                      require_api_key: e.target.checked,
+                      require_api_key: event.target.checked,
                     }))
                   }
                 />
