@@ -159,3 +159,13 @@ Gatekeeper exposes local runtime metrics at:
 ```text
 GET /runtime/metrics
 ```
+
+---
+
+## Runtime Dashboard Endpoint
+
+Gatekeeper exposes an operational dashboard endpoint:
+
+```text
+GET /runtime/dashboard
+``` 

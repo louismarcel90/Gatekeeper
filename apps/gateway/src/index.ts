@@ -19,6 +19,7 @@ import { registerRuntimeConsistencyRoute } from "./routes/runtime-consistency-ro
 import { registerRuntimeInstanceRoute } from "./routes/runtime-instance-route";
 import { startTracing } from "./observability/tracing";
 import { attachRequestTraceContext } from "./observability/request-tracing";
+import { registerRuntimeDashboardRoute } from "./routes/runtime-dashboard-route";
 
 startTracing();
 const app = Fastify({ logger: true });
@@ -33,6 +34,7 @@ async function registerRoutes() {
   await registerRuntimeHealthRoute(app);
   await registerRuntimeConsistencyRoute(app);
   await registerRuntimeInstanceRoute(app);
+  await registerRuntimeDashboardRoute(app);
 
   app.all("/*", async (req, reply) => {
     const context = buildContext(req);
