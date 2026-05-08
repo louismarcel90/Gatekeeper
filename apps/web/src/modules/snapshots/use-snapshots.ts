@@ -2,6 +2,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/src/core/api/client";
 import { useAuthStore } from "@/src/core/state/auth-store";
 import { logUiEvent } from "@/src/modules/observability/logger";
+import {
+  notifyError,
+  notifySuccess,
+  notifyWarning,
+} from '../notifications/domain-notifications';
 
 export function useSnapshots() {
   const status = useAuthStore((state) => state.status);
@@ -62,6 +67,10 @@ export function usePublishSnapshot() {
         queryClient.invalidateQueries({ queryKey: ["snapshots", "active"] }),
         queryClient.invalidateQueries({ queryKey: ["deployments"] }),
       ]);
+      notifySuccess(
+  "Snapshot published",
+  "A new snapshot was published successfully.",
+);
     },
     onError: (error) => {
       logUiEvent({
@@ -72,6 +81,11 @@ export function usePublishSnapshot() {
           error: error instanceof Error ? error.message : "unknown error",
         },
       });
+
+      notifyError(
+  "Snapshot publish failed",
+  "The snapshot could not be published.",
+);
     },
   });
 }
@@ -104,6 +118,11 @@ export function useActivateSnapshot() {
         queryClient.invalidateQueries({ queryKey: ["snapshots", "active"] }),
         queryClient.invalidateQueries({ queryKey: ["deployments"] }),
       ]);
+
+      notifySuccess(
+  "Snapshot activated",
+  "The selected snapshot is now active.",
+);
     },
     onError: (error, version) => {
       logUiEvent({
@@ -115,6 +134,11 @@ export function useActivateSnapshot() {
           error: error instanceof Error ? error.message : "unknown error",
         },
       });
+
+      notifyError(
+  "Snapshot activation failed",
+  "The selected snapshot could not be activated.",
+);
     },
   });
 }
@@ -147,6 +171,10 @@ export function useRollbackSnapshot() {
         queryClient.invalidateQueries({ queryKey: ["snapshots", "active"] }),
         queryClient.invalidateQueries({ queryKey: ["deployments"] }),
       ]);
+      notifyWarning(
+  "Rollback completed",
+  "The runtime configuration was rolled back to a previous snapshot.",
+);
     },
     onError: (error, version) => {
       logUiEvent({
@@ -158,6 +186,10 @@ export function useRollbackSnapshot() {
           error: error instanceof Error ? error.message : "unknown error",
         },
       });
+      notifyError(
+  "Rollback failed",
+  "The rollback operation could not be completed.",
+);
     },
   });
 }

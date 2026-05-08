@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import { Sidebar } from "./sidebar";
 import { Topbar } from "./topbar";
+import { NotificationCenter } from "../feedback/notification-center";
 
 export function AppShell({ children }: { children: ReactNode }) {
   return (
@@ -38,6 +39,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           {children}
         </main>
       </div>
+      <NotificationCenter />
     </div>
   );
 }

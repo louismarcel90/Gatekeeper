@@ -2,6 +2,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/src/core/api/client";
 import { useAuthStore } from "@/src/core/state/auth-store";
 import { logUiEvent } from "@/src/modules/observability/logger";
+import {
+  notifyError,
+  notifySuccess,
+  notifyWarning,
+} from '../notifications/domain-notifications';
 
 export type RouteInput = {
   id: string;
@@ -60,6 +65,11 @@ export function useCreateRoute() {
         queryClient.invalidateQueries({ queryKey: ["routes"] }),
         queryClient.invalidateQueries({ queryKey: ["policy-document", "export"] }),
       ]);
+
+      notifySuccess(
+  "Route created",
+  `Route ${data.id} was created in the control plane.`,
+);
     },
     onError: (error) => {
       logUiEvent({
@@ -70,6 +80,11 @@ export function useCreateRoute() {
           error: error instanceof Error ? error.message : "unknown error",
         },
       });
+
+      notifyError(
+  "Route creation failed",
+  "The route could not be created. Check the input and try again.",
+);
     },
   });
 }
@@ -145,6 +160,11 @@ export function useSetRouteEnabled() {
         queryClient.invalidateQueries({ queryKey: ["policy-document", "export"] }),
         queryClient.invalidateQueries({ queryKey: ["snapshots"] }),
       ]);
+
+      notifyWarning(
+  "Route lifecycle changed",
+  data.message ?? "Route lifecycle was updated.",
+);
     },
     onError: (error) => {
       logUiEvent({
