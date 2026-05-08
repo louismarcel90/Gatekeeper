@@ -17,6 +17,7 @@ import { registerSimulationRoutes } from "./routes/simulation";
 import { registerSnapshotRoutes } from "./routes/snapshots";
 import { registerRuntimeRoutes } from "./routes/runtime";
 import { registerControlPlaneInstanceRoutes } from "./routes/control-plane-instance";
+import { registerSnapshotDiffRoutes } from "./routes/snapshot-diff";
 
 const app = Fastify({
   logger: true,
@@ -40,6 +41,7 @@ async function buildServer() {
   await registerDeploymentRoutes(app);
   await registerRuntimeRoutes(app);
   await registerControlPlaneInstanceRoutes(app);
+  await registerSnapshotDiffRoutes(app);
 
   return app;
 }

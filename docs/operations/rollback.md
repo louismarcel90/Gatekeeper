@@ -60,3 +60,21 @@ POST /snapshots/:id/rollback
 → create deployment_history record
 → emit audit event
 ```
+
+---
+
+## Snapshot Diff Before Rollback
+
+Before triggering rollback, operators should compare the current active snapshot with the target rollback snapshot.
+
+Recommended flow:
+
+```text
+open Snapshot Diff
+  ↓
+compare current active version with target rollback version
+  ↓
+review route and policy changes
+  ↓
+rollback only after confirming expected differences
+```

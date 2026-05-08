@@ -33,6 +33,11 @@ export const NAV_ITEMS: NavItemConfig[] = [
     roles: ["viewer", "security", "admin"],
   },
   {
+  label: "Snapshot Diff",
+  href: "/snapshot-diff",
+  roles: ["viewer", "security", "admin"],
+},
+  {
     label: "Audit Log",
     href: "/audit",
     roles: ["viewer", "security", "admin"],

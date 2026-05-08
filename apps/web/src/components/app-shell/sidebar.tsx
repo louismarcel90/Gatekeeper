@@ -11,6 +11,7 @@ import {
   FileText,
   Rocket,
   UserStar,
+  GitCompareArrows,
 } from "lucide-react";
 
 import { useAuthStore } from "@/src/core/state/auth-store";
@@ -27,7 +28,8 @@ type NavLabel =
   | "Audit Log"
   | "Policy Documents"
   | "Deployments"
-  | "Admin Users";
+  | "Admin Users"
+  | "Snapshot Diff"
 
 type IconType = ComponentType<{ className?: string }>;
 
@@ -41,6 +43,7 @@ const navIcons: Record<NavLabel, IconType> = {
   "Policy Documents": FileText,
   Deployments: Rocket,
   "Admin Users": UserStar,
+  "Snapshot Diff": GitCompareArrows,
 };
 
 export function Sidebar() {
