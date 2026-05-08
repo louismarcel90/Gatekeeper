@@ -78,3 +78,26 @@ review route and policy changes
   ↓
 rollback only after confirming expected differences
 ```
+
+---
+
+## Route Enable / Disable Safety
+
+Route lifecycle changes are controlled actions.
+
+Disabling a route does not immediately guarantee runtime behavior changes until the configuration is published into a snapshot and activated.
+
+Recommended flow:
+
+```text
+disable / enable route
+  ↓
+review route state
+  ↓
+publish snapshot
+  ↓
+compare snapshot diff
+  ↓
+activate snapshot
+  ↓
+verify gateway decisions

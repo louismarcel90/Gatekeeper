@@ -83,7 +83,13 @@ app.patch(
         enabled: body.enabled,
       });
 
-      return reply.code(200).send(updated);
+      return reply.code(200).send({
+  route: updated,
+  lifecycle_action: updated.enabled ? "ROUTE_ENABLED" : "ROUTE_DISABLED",
+  message: updated.enabled
+    ? "Route enabled in control plane configuration."
+    : "Route disabled in control plane configuration.",
+});
     } catch (error) {
       const message =
         error instanceof Error

@@ -115,18 +115,46 @@ export function useSetRouteEnabled() {
 
   return useMutation({
     mutationFn: async (payload: { id: string; enabled: boolean }) => {
+      logUiEvent({
+        level: "info",
+        scope: "routes.lifecycle",
+        message: payload.enabled
+          ? `Enabling route ${payload.id}`
+          : `Disabling route ${payload.id}`,
+        meta: {
+          route_id: payload.id,
+          next_enabled: payload.enabled,
+        },
+      });
+
       const response = await apiClient.patch(`/routes/${payload.id}/enabled`, {
         enabled: payload.enabled,
       });
 
       return response.data;
     },
-    onSuccess: async () => {
+    onSuccess: async (data) => {
+      logUiEvent({
+        level: "success",
+        scope: "routes.lifecycle",
+        message: data.message ?? "Route lifecycle updated successfully",
+      });
+
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["routes"] }),
         queryClient.invalidateQueries({ queryKey: ["policy-document", "export"] }),
         queryClient.invalidateQueries({ queryKey: ["snapshots"] }),
       ]);
+    },
+    onError: (error) => {
+      logUiEvent({
+        level: "error",
+        scope: "routes.lifecycle",
+        message: "Route lifecycle update failed",
+        meta: {
+          error: error instanceof Error ? error.message : "unexpected error",
+        },
+      });
     },
   });
 }
