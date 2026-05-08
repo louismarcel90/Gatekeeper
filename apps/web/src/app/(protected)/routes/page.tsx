@@ -17,7 +17,13 @@ import { TableToolbar } from "@/src/components/data-explorer/table-toolbar";
 import { SystemPage } from "@/src/components/page-layout/system-page";
 import { PageStack } from "@/src/components/page-layout/page-stack";
 import { useCapability } from "@/src/modules/permissions/use-capability";
-import { RouteInput, useCreateRoute, useRoutes } from "@/src/modules/routes/use-routes";
+import {
+  RouteInput,
+  useCreateRoute,
+  useRoutes,
+  useSetRouteEnabled,
+  useUpdateRoute,
+} from '../../../modules/routes/use-routes'; 
 
 type RouteItem = {
   id: string;
@@ -40,11 +46,14 @@ const EMPTY_FORM: RouteInput = {
 export default function RoutesPage() {
   const query = useRoutes();
   const createMutation = useCreateRoute();
+  const updateMutation = useUpdateRoute();
+  const lifecycleMutation = useSetRouteEnabled();
   const canCreate = useCapability("snapshots.publish");
 
   const [message, setMessage] = useState("");
   const [selectedItem, setSelectedItem] = useState<RouteItem | null>(null);
-
+  const [editingRouteId, setEditingRouteId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState<RouteInput>(EMPTY_FORM);
   const [pathFilter, setPathFilter] = useState("");
   const [methodFilter, setMethodFilter] = useState("");
   const [sortMode, setSortMode] = useState<SortMode>("path");
@@ -120,6 +129,67 @@ export default function RoutesPage() {
       setMessage("Failed to create route.");
     }
   }
+
+  function startEditingRoute(route: RouteItem) {
+  setEditingRouteId(route.id);
+  setEditForm({
+    id: route.id,
+    path: route.path,
+    method: route.method,
+    upstream_url: route.upstream_url,
+    enabled: route.enabled,
+  });
+}
+
+async function handleUpdateRoute() {
+  setMessage("");
+
+  if (!editingRouteId) {
+    setMessage("No route selected for editing.");
+    return;
+  }
+
+  if (!editForm.path.trim().startsWith("/")) {
+    setMessage("Route path must start with '/'.");
+    return;
+  }
+
+  try {
+    new URL(editForm.upstream_url);
+  } catch {
+    setMessage("Upstream URL must be a valid absolute URL.");
+    return;
+  }
+
+  try {
+    await updateMutation.mutateAsync({
+      ...editForm,
+      path: editForm.path.trim(),
+      upstream_url: editForm.upstream_url.trim(),
+    });
+
+    setMessage("Route updated successfully.");
+    setEditingRouteId(null);
+    setEditForm(EMPTY_FORM);
+  } catch {
+    setMessage("Failed to update route.");
+  }
+}
+
+async function handleToggleRoute(route: RouteItem) {
+  setMessage("");
+
+  try {
+    await lifecycleMutation.mutateAsync({
+      id: route.id,
+      enabled: !route.enabled,
+    });
+
+    setMessage(route.enabled ? "Route disabled successfully." : "Route enabled successfully.");
+  } catch {
+    setMessage("Failed to update route lifecycle.");
+  }
+}
 
   return (
     <SystemPage>
@@ -208,25 +278,55 @@ export default function RoutesPage() {
             />
           ) : (
             <>
-              <DataTable columns={["Path", "Method", "Upstream", "Status"]}>
-                {pagedItems.map((item) => (
+              <DataTable columns={["Path", "Method", "Upstream", "Status", "Actions"]}>                {pagedItems.map((item) => (
                   <div
                     key={item.id}
                     onClick={() => setSelectedItem(item)}
                     style={{ cursor: "pointer" }}
                   >
                     <DataTableRow
-                      columns={[
-                        item.path,
-                        item.method,
-                        item.upstream_url,
-                        item.enabled ? (
-                          <StatusBadge tone="green">Enabled</StatusBadge>
-                        ) : (
-                          <StatusBadge tone="red">Disabled</StatusBadge>
-                        ),
-                      ]}
-                    />
+  columns={[
+    item.path,
+    item.method,
+    item.upstream_url,
+
+    item.enabled ? (
+      <StatusBadge tone="green">Enabled</StatusBadge>
+    ) : (
+      <StatusBadge tone="red">Disabled</StatusBadge>
+    ),
+
+    <div
+      key={`actions-${item.id}`}
+      style={{
+        display: "flex",
+        gap: 8,
+        flexWrap: "wrap",
+      }}
+    >
+      {canCreate ? (
+        <>
+          <ActionButton
+            tone="neutral"
+            onClick={() => startEditingRoute(item)}
+          >
+            Edit
+          </ActionButton>
+
+          <ActionButton
+            tone={item.enabled ? "gold" : "violet"}
+            onClick={() => handleToggleRoute(item)}
+            disabled={lifecycleMutation.isPending}
+          >
+            {item.enabled ? "Disable" : "Enable"}
+          </ActionButton>
+        </>
+      ) : (
+        "-"
+      )}
+    </div>,
+  ]}
+/>
                   </div>
                 ))}
               </DataTable>
@@ -262,6 +362,107 @@ export default function RoutesPage() {
             />
           </DetailPanel>
         ) : null}
+
+        {canCreate && editingRouteId ? (
+  <SectionCard title="Edit Route">
+    <div style={{ display: "grid", gap: 12 }}>
+      <input
+        value={editForm.path}
+        onChange={(e) => setEditForm((current) => ({
+  ...current,
+  path: e.target.value,
+}))}
+        placeholder="Path"
+        style={{
+          padding: 12,
+          borderRadius: 12,
+          border: "1px solid #E7E5E4",
+          background: "#FFFFFF",
+        }}
+      />
+
+      <select
+        value={editForm.method}
+        onChange={(e) =>
+  setEditForm((current) => ({
+    ...current,
+    method: e.target.value as RouteInput["method"],
+  }))
+}
+        style={{
+          padding: 12,
+          borderRadius: 12,
+          border: "1px solid #E7E5E4",
+          background: "#FFFFFF",
+        }}
+      >
+        <option value="GET">GET</option>
+        <option value="POST">POST</option>
+        <option value="PUT">PUT</option>
+        <option value="PATCH">PATCH</option>
+        <option value="DELETE">DELETE</option>
+      </select>
+
+      <input
+        value={editForm.upstream_url}
+        onChange={(e) => setEditForm((current) => ({
+  ...current,
+  path: e.target.value,
+}))}
+        placeholder="Upstream URL"
+        style={{
+          padding: 12,
+          borderRadius: 12,
+          border: "1px solid #E7E5E4",
+          background: "#FFFFFF",
+        }}
+      />
+
+      <label
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          fontSize: 14,
+          color: "#111111",
+        }}
+      >
+        <input
+          type="checkbox"
+          checked={editForm.enabled}
+          onChange={(e) =>
+  setEditForm((current) => ({
+    ...current,
+    method: e.target.value as RouteInput["method"],
+  }))
+}
+        />
+        Enabled
+      </label>
+
+      <div style={{ display: "flex", gap: 8 }}>
+        <ActionButton
+          tone="violet"
+          onClick={() => {
+            void handleUpdateRoute();
+          }}
+          disabled={updateMutation.isPending}
+        >
+          {updateMutation.isPending ? "Saving..." : "Save Changes"}
+        </ActionButton>
+
+        <ActionButton
+          tone="neutral"
+          onClick={() => {
+            setEditingRouteId(null);
+          }}
+        >
+          Cancel
+        </ActionButton>
+      </div>
+    </div>
+  </SectionCard>
+) : null}
 
         {canCreate ? (
           <SectionCard title="Create Route">

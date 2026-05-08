@@ -73,3 +73,60 @@ export function useCreateRoute() {
     },
   });
 }
+
+export function useUpdateRoute() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (payload: RouteInput) => {
+      logUiEvent({
+        level: "info",
+        scope: "routes.update",
+        message: `Updating route ${payload.id}`,
+        meta: {
+          route_id: payload.id,
+        },
+      });
+
+      const response = await apiClient.put(`/routes/${payload.id}`, payload);
+      return response.data;
+    },
+    onSuccess: async (data) => {
+      logUiEvent({
+        level: "success",
+        scope: "routes.update",
+        message: `Route ${data.id} updated successfully`,
+        meta: {
+          route_id: data.id,
+        },
+      });
+
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["routes"] }),
+        queryClient.invalidateQueries({ queryKey: ["policy-document", "export"] }),
+        queryClient.invalidateQueries({ queryKey: ["snapshots"] }),
+      ]);
+    },
+  });
+}
+
+export function useSetRouteEnabled() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (payload: { id: string; enabled: boolean }) => {
+      const response = await apiClient.patch(`/routes/${payload.id}/enabled`, {
+        enabled: payload.enabled,
+      });
+
+      return response.data;
+    },
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["routes"] }),
+        queryClient.invalidateQueries({ queryKey: ["policy-document", "export"] }),
+        queryClient.invalidateQueries({ queryKey: ["snapshots"] }),
+      ]);
+    },
+  });
+}

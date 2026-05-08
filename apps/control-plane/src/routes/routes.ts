@@ -2,7 +2,11 @@ import { FastifyInstance } from "fastify";
 import { createRoute, listRoutes } from "../application/route-service";
 import { createRouteSchema } from "../domain/validators";
 import { requireAdminAuth, requireRole } from "../middleware/admin-auth";
-import { sendBadRequest, sendInternalError } from "../shared/http";
+import { sendBadRequest, sendNotFound, sendInternalError } from "../shared/http";
+import {
+  updateManagedRoute,
+  updateManagedRouteEnabled,
+} from "../application/route-service";
 
 export async function registerManagedRouteRoutes(app: FastifyInstance) {
   app.get("/routes", { preHandler: [requireAdminAuth] }, async () => {
@@ -31,4 +35,67 @@ export async function registerManagedRouteRoutes(app: FastifyInstance) {
       }
     },
   );
+
+  app.put(
+  "/routes/:id",
+  { preHandler: [requireAdminAuth, requireRole(["security", "admin"])] },
+  async (req, reply) => {
+    const params = req.params as { id: string };
+    const parsed = createRouteSchema.safeParse({
+      ...(req.body as Record<string, string | boolean>),
+      id: params.id,
+    });
+
+    if (!parsed.success) {
+      return sendBadRequest(reply, parsed.error.message);
+    }
+
+    try {
+      const updated = await updateManagedRoute(parsed.data);
+      return reply.code(200).send(updated);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Unexpected error while updating route.";
+
+      if (message.includes("was not found")) {
+        return sendNotFound(reply, message);
+      }
+
+      return sendInternalError(reply, message);
+    }
+  },
+);
+
+app.patch(
+  "/routes/:id/enabled",
+  { preHandler: [requireAdminAuth, requireRole(["security", "admin"])] },
+  async (req, reply) => {
+    const params = req.params as { id: string };
+    const body = req.body as { enabled?: boolean };
+
+    if (typeof body.enabled !== "boolean") {
+      return sendBadRequest(reply, "Field enabled must be a boolean.");
+    }
+
+    try {
+      const updated = await updateManagedRouteEnabled({
+        id: params.id,
+        enabled: body.enabled,
+      });
+
+      return reply.code(200).send(updated);
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Unexpected error while updating route lifecycle.";
+
+      if (message.includes("was not found")) {
+        return sendNotFound(reply, message);
+      }
+
+      return sendInternalError(reply, message);
+    }
+  },
+);
 }
