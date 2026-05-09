@@ -18,10 +18,14 @@ import { registerSnapshotRoutes } from "./routes/snapshots";
 import { registerRuntimeRoutes } from "./routes/runtime";
 import { registerControlPlaneInstanceRoutes } from "./routes/control-plane-instance";
 import { registerSnapshotDiffRoutes } from "./routes/snapshot-diff";
+import { registerDomainEventLogger } from "./events/domain-event-logger";
+import { registerDevEventRoutes } from "./routes/dev-events";
 
 const app = Fastify({
   logger: true,
 });
+
+registerDomainEventLogger();
 
 async function buildServer() {
   app.addHook("onRequest", attachRequestContext);
@@ -42,6 +46,7 @@ async function buildServer() {
   await registerRuntimeRoutes(app);
   await registerControlPlaneInstanceRoutes(app);
   await registerSnapshotDiffRoutes(app);
+  await registerDevEventRoutes(app);
 
   return app;
 }

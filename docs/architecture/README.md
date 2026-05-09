@@ -186,3 +186,7 @@ Explains how the Gateway Runtime enforces snapshots using eventual runtime consi
 
 ### `gateway-horizontal-scaling.md`
 Explains how Gateway Runtime instances can scale horizontally using local snapshot caches and shared Redis coordination.
+
+
+### `event-driven-architecture.md`
+Explains the internal domain event model used to make critical control-plane actions observable and extensible.
