@@ -12,6 +12,7 @@ import { RecentUiEvents } from "@/src/components/feedback/recent-ui-events";
 import { useAuthStore } from "@/src/core/state/auth-store";
 import { useRoutes } from "@/src/modules/routes/use-routes";
 import { useActiveSnapshot } from "@/src/modules/snapshots/use-snapshots";
+import { RecentDomainEvents } from "@/src/components/realtime/recent-domain-events";
 
 type RouteItem = {
   id: string;
@@ -36,6 +37,8 @@ export default function DashboardPage() {
           subtitle="Operate, investigate, and govern API access decisions across Gatekeeper with a calm, auditable, and deployment-safe control plane."
           action={<StatusBadge tone="gold">{user?.role ?? "unknown"}</StatusBadge>}
         />
+        
+        <RecentDomainEvents />
 
         <PageSectionGrid>
           <StatCard label="Managed Routes" value={routes.length} />

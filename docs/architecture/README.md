@@ -190,3 +190,7 @@ Explains how Gateway Runtime instances can scale horizontally using local snapsh
 
 ### `event-driven-architecture.md`
 Explains the internal domain event model used to make critical control-plane actions observable and extensible.
+
+
+### `realtime-frontend-streaming.md`
+Explains how Control Plane domain events are streamed to the frontend using SSE.

@@ -20,12 +20,15 @@ import { registerControlPlaneInstanceRoutes } from "./routes/control-plane-insta
 import { registerSnapshotDiffRoutes } from "./routes/snapshot-diff";
 import { registerDomainEventLogger } from "./events/domain-event-logger";
 import { registerDevEventRoutes } from "./routes/dev-events";
+import { registerDomainEventStreamSubscriber } from "./events/domain-event-stream-subscriber";
+import { registerDomainEventStreamRoutes } from "./routes/domain-events-stream";
 
 const app = Fastify({
   logger: true,
 });
 
 registerDomainEventLogger();
+registerDomainEventStreamSubscriber();
 
 async function buildServer() {
   app.addHook("onRequest", attachRequestContext);
@@ -47,6 +50,7 @@ async function buildServer() {
   await registerControlPlaneInstanceRoutes(app);
   await registerSnapshotDiffRoutes(app);
   await registerDevEventRoutes(app);
+  await registerDomainEventStreamRoutes(app);
 
   return app;
 }
