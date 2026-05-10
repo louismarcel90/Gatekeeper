@@ -1,6 +1,6 @@
 import { randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
-import { controlPlaneConfig } from "../config/env";
+import { env } from "../config/env";
 import { pool } from "./client";
 
 export async function initDatabase(): Promise<void> {
@@ -126,18 +126,18 @@ export async function initDatabase(): Promise<void> {
     WHERE email = $1
     LIMIT 1
     `,
-    [controlPlaneConfig.adminSeedEmail],
+    [env.ADMIN_SEED_EMAIL],
   );
 
   if (existingAdmin.rows.length === 0) {
-    const passwordHash = await bcrypt.hash(controlPlaneConfig.adminSeedPassword, 10);
+    const passwordHash = await bcrypt.hash(env.ADMIN_SEED_PASSWORD, 10);
 
     await pool.query(
       `
       INSERT INTO admin_users (id, email, role, password_hash)
       VALUES ($1, $2, $3, $4)
       `,
-      [randomUUID(), controlPlaneConfig.adminSeedEmail, "admin", passwordHash],
+      [randomUUID(), env.ADMIN_SEED_EMAIL, "admin", passwordHash],
     );
   }
 }

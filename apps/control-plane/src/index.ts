@@ -1,6 +1,6 @@
 import cors from "@fastify/cors";
 import Fastify from "fastify";
-import { controlPlaneConfig } from "./config/env";
+import { runStartupSecurityAudit } from "./config/startup-security-audit";
 import { initDatabase } from "./db/init";
 import { attachRequestContext } from "./middleware/request-context";
 import { registerAdminUserRoutes } from "./routes/admin-users";
@@ -22,6 +22,7 @@ import { registerDomainEventLogger } from "./events/domain-event-logger";
 import { registerDevEventRoutes } from "./routes/dev-events";
 import { registerDomainEventStreamSubscriber } from "./events/domain-event-stream-subscriber";
 import { registerDomainEventStreamRoutes } from "./routes/domain-events-stream";
+import { env } from "./config/env";
 
 const app = Fastify({
   logger: true,
@@ -29,6 +30,7 @@ const app = Fastify({
 
 registerDomainEventLogger();
 registerDomainEventStreamSubscriber();
+runStartupSecurityAudit();
 
 async function buildServer() {
   app.addHook("onRequest", attachRequestContext);
@@ -55,12 +57,20 @@ async function buildServer() {
   return app;
 }
 
+app.addHook("onSend", async (_, reply) => {
+  reply.header("X-Frame-Options", "DENY");
+  reply.header("X-Content-Type-Options", "nosniff");
+  reply.header("Referrer-Policy", "no-referrer");
+  reply.header("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+  reply.header("X-XSS-Protection", "0");
+});
+
 async function start() {
   try {
     await buildServer();
 
     await app.register(cors, {
-      origin: "http://localhost:3000",
+      origin: env.CORS_ORIGIN,
       credentials: true,
       methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
       allowedHeaders: ["Content-Type", "Authorization", "x-request-id", "x-client-name", "Accept"],
@@ -70,18 +80,18 @@ async function start() {
     });
 
     await app.listen({
-      port: controlPlaneConfig.port,
-      host: controlPlaneConfig.host,
-    });
+  port: env.PORT,
+  host: env.HOST,
+});
 
     app.log.info(
-      {
-        port: controlPlaneConfig.port,
-        host: controlPlaneConfig.host,
-        databaseUrl: controlPlaneConfig.databaseUrl,
-      },
-      "Control Plane running",
-    );
+  {
+    port: env.PORT,
+    host: env.HOST,
+    databaseUrl: env.DATABASE_URL,
+  },
+  "Control Plane running",
+);
   } catch (error) {
     app.log.error(error, "Failed to start Control Plane");
     process.exit(1);

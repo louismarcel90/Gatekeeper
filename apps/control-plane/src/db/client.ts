@@ -1,7 +1,7 @@
 import { Pool } from "pg";
-import { controlPlaneConfig } from "../config/env";
+import { env } from "../config/env";
 
-const databaseUrl = new URL(controlPlaneConfig.databaseUrl);
+const databaseUrl = new URL(env.DATABASE_URL);
 
 console.log("DB CONFIG USED BY NODE =", {
   host: databaseUrl.hostname,

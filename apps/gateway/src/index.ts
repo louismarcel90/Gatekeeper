@@ -23,6 +23,13 @@ startTracing();
 const app = Fastify({ logger: true });
 
 app.addHook("onRequest", attachRequestTraceContext);
+app.addHook("onSend", async (_, reply) => {
+  reply.header("X-Frame-Options", "DENY");
+  reply.header("X-Content-Type-Options", "nosniff");
+  reply.header("Referrer-Policy", "no-referrer");
+  reply.header("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+  reply.header("X-XSS-Protection", "0");
+});
 
 async function registerRoutes() {
   await registerDebugRoutes(app);

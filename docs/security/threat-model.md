@@ -299,3 +299,23 @@ Gatekeeper enforces:
 ## Key Principle
 
 > Security is not a feature — it is the foundation of Gatekeeper.
+>
+
+---
+
+## Configuration Risks
+
+Critical operational risks include:
+
+- weak JWT secrets
+- permissive CORS
+- leaked Redis credentials
+- leaked database credentials
+- unsafe production defaults
+
+Gatekeeper mitigates these through:
+
+- startup environment validation
+- startup security audits
+- fail-fast configuration parsing
+- explicit environment schemas

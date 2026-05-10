@@ -1,61 +1,38 @@
 import { z } from "zod";
+import "dotenv/config";
 
-const envSchema = z.object({
-  GATEWAY_PORT: z.coerce.number().default(3002),
-  GATEWAY_HOST: z.string().default("0.0.0.0"),
+const gatewayEnvSchema = z.object({
+  NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
 
-  CONTROL_PLANE_BASE_URL: z.string().url().default("http://127.0.0.1:3001"),
+  PORT: z.coerce.number().int().positive().default(3002),
 
-  JWT_SECRET: z.string().min(1).default("super-secret-development-key"),
+  REDIS_URL: z.string().min(1),
 
-  SNAPSHOT_POLL_INTERVAL_MS: z.coerce.number().int().positive().default(5000),
+  SNAPSHOT_FILE_PATH: z.string().min(1),
 
-  REDIS_URL: z.string().url().default("redis://127.0.0.1:56379"),
+  GATEWAY_INSTANCE_ID: z.string().min(1),
 
-  REDIS_HOST: z.string().default("127.0.0.1"),
+  CONTROL_PLANE_BASE_URL: z.string().min(1),
 
-  REDIS_PORT: z.coerce.number().int().positive().default(6379),
-
-  RATE_LIMIT_WINDOW_SECONDS: z.coerce.number().int().positive().default(60),
-  QUOTA_WINDOW_SECONDS: z.coerce.number().int().positive().default(86400),
-  GATEWAY_INSTANCE_ID: z.string().default("gateway-local-1"),
-
-  OTEL_SERVICE_NAME: z.string().default("gatekeeper-gateway"),
-  OTEL_EXPORTER_OTLP_ENDPOINT: z.string().default("gatekeeper-gateway"),
-  OTEL_TRACING_ENABLED: z.string().default("false"),
+  SNAPSHOT_POLL_INTERVAL_MS: z.coerce
+  .number()
+  .int()
+  .positive()
+  .default(5000),
 });
 
-const parsedEnv = envSchema.safeParse(process.env);
+type GatewayEnv = z.infer<typeof gatewayEnvSchema>;
 
-if (!parsedEnv.success) {
-  console.error("Invalid gateway environment variables", parsedEnv.error.flatten().fieldErrors);
+function parseEnv(): GatewayEnv {
+  const result = gatewayEnvSchema.safeParse(process.env);
 
-  process.exit(1);
+  if (!result.success) {
+    console.error("Invalid Gateway environment configuration.");
+    console.error(result.error.flatten().fieldErrors);
+    process.exit(1);
+  }
+
+  return result.data;
 }
 
-const parsed = parsedEnv.data;
-
-export const env = {
-  PORT: parsed.GATEWAY_PORT,
-  HOST: parsed.GATEWAY_HOST,
-  CONTROL_PLANE_BASE_URL: parsed.CONTROL_PLANE_BASE_URL,
-  JWT_SECRET: parsed.JWT_SECRET,
-  SNAPSHOT_POLL_INTERVAL_MS: parsed.SNAPSHOT_POLL_INTERVAL_MS,
-  REDIS_URL: parsed.REDIS_URL,
-  REDIS_HOST: parsed.REDIS_HOST ?? "127.0.0.1",
-
-  REDIS_PORT: Number(parsed.REDIS_PORT ?? "6379"),
-
-  RATE_LIMIT_WINDOW_SECONDS: Number(parsed.RATE_LIMIT_WINDOW_SECONDS ?? "60"),
-
-  QUOTA_WINDOW_SECONDS: Number(parsed.QUOTA_WINDOW_SECONDS ?? "86400"),
-
-  GATEWAY_INSTANCE_ID: parsed.GATEWAY_INSTANCE_ID ?? "gateway-local-1",
-
-  OTEL_SERVICE_NAME: parsed.OTEL_SERVICE_NAME ?? "gatekeeper-gateway",
-
-  OTEL_EXPORTER_OTLP_ENDPOINT:
-    parsed.OTEL_EXPORTER_OTLP_ENDPOINT ?? "http://localhost:4318/v1/traces",
-
-  OTEL_TRACING_ENABLED: parsed.OTEL_TRACING_ENABLED === "true",
-};
+export const env = parseEnv();
