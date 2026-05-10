@@ -21,8 +21,30 @@ function getTone(eventName: string): "green" | "gold" | "red" | "violet" {
   return "violet";
 }
 
+function getConnectionTone(
+  state: "connected" | "disconnected" | "reconnecting" | "degraded",
+): "green" | "gold" | "red" | "violet" {
+  if (state === "connected") {
+    return "green";
+  }
+
+  if (state === "reconnecting") {
+    return "violet";
+  }
+
+  if (state === "degraded") {
+    return "gold";
+  }
+
+  return "red";
+}
+
 export function RecentDomainEvents() {
-  const connected = useRealtimeEventStore((state) => state.connected);
+  const connectionState = useRealtimeEventStore((state) => state.connectionState);
+  const lastEventAt = useRealtimeEventStore((state) => state.lastEventAt);
+  const lastRejectedEventReason = useRealtimeEventStore(
+    (state) => state.lastRejectedEventReason,
+  );
   const events = useRealtimeEventStore((state) => state.events);
   const clearEvents = useRealtimeEventStore((state) => state.clearEvents);
 
@@ -35,11 +57,26 @@ export function RecentDomainEvents() {
             justifyContent: "space-between",
             gap: 12,
             alignItems: "center",
+            flexWrap: "wrap",
           }}
         >
-          <StatusBadge tone={connected ? "green" : "gold"}>
-            {connected ? "Connected" : "Disconnected"}
-          </StatusBadge>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <StatusBadge tone={getConnectionTone(connectionState)}>
+              {connectionState}
+            </StatusBadge>
+
+            {lastEventAt ? (
+              <span style={{ fontSize: 13, color: "#6B665F" }}>
+                Last event: {new Date(lastEventAt).toLocaleString()}
+              </span>
+            ) : null}
+
+            {lastRejectedEventReason ? (
+              <span style={{ fontSize: 13, color: "#9A6A2C" }}>
+                Rejected: {lastRejectedEventReason}
+              </span>
+            ) : null}
+          </div>
 
           <ActionButton tone="neutral" onClick={clearEvents}>
             Clear

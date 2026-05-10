@@ -3,27 +3,50 @@
 import { create } from "zustand";
 import { RealtimeDomainEvent } from "@/src/modules/realtime/domain-event-stream"; 
 
+type RealtimeConnectionState =
+  | "connected"
+  | "disconnected"
+  | "reconnecting"
+  | "degraded";
+
 type RealtimeEventState = {
-  connected: boolean;
+  connectionState: RealtimeConnectionState;
+  lastEventAt: string | null;
+  lastRejectedEventReason: string | null;
   events: RealtimeDomainEvent[];
-  setConnected: (connected: boolean) => void;
+  setConnectionState: (connectionState: RealtimeConnectionState) => void;
   pushEvent: (event: RealtimeDomainEvent) => void;
+  setRejectedEventReason: (reason: string | null) => void;
   clearEvents: () => void;
 };
 
 export const useRealtimeEventStore = create<RealtimeEventState>((set) => ({
-  connected: false,
+  connectionState: "disconnected",
+  lastEventAt: null,
+  lastRejectedEventReason: null,
   events: [],
 
-  setConnected: (connected) =>
+  setConnectionState: (connectionState) =>
     set({
-      connected,
+      connectionState,
     }),
 
   pushEvent: (event) =>
     set((state) => ({
-      events: [event, ...state.events].slice(0, 30),
+      lastEventAt: event.occurred_at,
+      events: [event, ...state.events]
+        .sort(
+          (a, b) =>
+            new Date(b.occurred_at).getTime() -
+            new Date(a.occurred_at).getTime(),
+        )
+        .slice(0, 30),
     })),
+
+  setRejectedEventReason: (reason) =>
+    set({
+      lastRejectedEventReason: reason,
+    }),
 
   clearEvents: () =>
     set({

@@ -28,3 +28,47 @@ The current implementation uses:
 ```text
 Server-Sent Events
 GET /events/stream
+```
+
+---
+
+## Frontend Reconciliation Strategy
+
+The frontend treats realtime events as signals, not as the source of truth.
+
+When an event is received:
+
+1. the event id is checked for duplication
+2. invalid timestamps are rejected
+3. the event is stored locally for operator visibility
+4. related React Query caches are invalidated
+5. the authoritative state is re-fetched from the Control Plane
+
+This avoids trusting stale or partial event payloads.
+
+---
+
+## Event Ordering
+
+Events are displayed by `occurred_at` descending.
+
+The UI does not assume that SSE delivery order is perfectly ordered.
+
+---
+
+## Duplicate Handling
+
+Processed event ids are tracked in memory.
+
+Duplicate events are rejected and do not trigger cache invalidation.
+
+---
+
+## State Ownership
+
+Authoritative state remains in:
+
+- Control Plane API
+- PostgreSQL
+
+Frontend state is only a projection.

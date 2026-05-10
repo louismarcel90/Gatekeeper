@@ -2,6 +2,7 @@
 
 import { ReactNode, useEffect } from "react";
 import { useRealtimeEventStore } from "@/src/core/state/realtime-event-store";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   startDomainEventStream,
   stopDomainEventStream,
@@ -11,6 +12,11 @@ import {
   notifySuccess,
   notifyWarning,
 } from '../../modules/notifications/domain-notifications';
+
+import {
+  reconcileQueryCacheFromEvent,
+  shouldAcceptRealtimeEvent,
+} from '../../modules/realtime/realtime-reconciliation';
 
 type RealtimeEventsProviderProps = {
   children: ReactNode;
@@ -35,27 +41,49 @@ function notifyFromEvent(eventName: string, resourceId: string): void {
 }
 
 export function RealtimeEventsProvider({ children }: RealtimeEventsProviderProps) {
-  const setConnected = useRealtimeEventStore((state) => state.setConnected);
+  const queryClient = useQueryClient();
+  const setConnectionState = useRealtimeEventStore(
+    (state) => state.setConnectionState,
+  );
   const pushEvent = useRealtimeEventStore((state) => state.pushEvent);
+  const setRejectedEventReason = useRealtimeEventStore(
+    (state) => state.setRejectedEventReason,
+  );
 
   useEffect(() => {
+    setConnectionState("reconnecting");
+
     startDomainEventStream({
       baseUrl: getControlPlaneBaseUrl(),
       onEvent: (event) => {
-        setConnected(true);
+        const decision = shouldAcceptRealtimeEvent(event);
+
+        if (!decision.shouldAccept) {
+          setRejectedEventReason(decision.reason);
+          return;
+        }
+
+        setConnectionState("connected");
+        setRejectedEventReason(null);
         pushEvent(event);
+
+        void reconcileQueryCacheFromEvent({
+          queryClient,
+          event,
+        });
+
         notifyFromEvent(event.name, event.payload.resource_id);
       },
       onError: () => {
-        setConnected(false);
+        setConnectionState("degraded");
       },
     });
 
     return () => {
       stopDomainEventStream();
-      setConnected(false);
+      setConnectionState("disconnected");
     };
-  }, [pushEvent, setConnected]);
+  }, [pushEvent, queryClient, setConnectionState, setRejectedEventReason]);
 
   return <>{children}</>;
 }
