@@ -29,7 +29,10 @@
     "format:check": "prettier . --check",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "test:e2e:headed": "playwright test --headed"
+    "test:e2e:headed": "playwright test --headed",
+    "load:gateway:smoke": "k6 run tests/load/gateway-smoke.js",
+"load:gateway:rate-limit": "k6 run tests/load/gateway-rate-limit.js",
+"load:gateway:dashboard": "k6 run tests/load/runtime-dashboard.js"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",

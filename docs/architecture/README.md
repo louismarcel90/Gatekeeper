@@ -211,3 +211,12 @@ Gatekeeper uses Playwright for E2E smoke tests.
 ```bash
 pnpm test:e2e
 ```
+
+### Load Testing
+
+Gatekeeper includes k6 load tests for the Gateway Runtime.
+
+```bash
+pnpm load:gateway:smoke
+pnpm load:gateway:rate-limit
+pnpm load:gateway:dashboard
