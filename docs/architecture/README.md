@@ -198,3 +198,7 @@ Explains how Control Plane domain events are streamed to the frontend using SSE.
 
 ### `frontend-failure-aware-modes.md`
 Explains how the frontend detects degraded dependencies and keeps the UI understandable under failure.
+
+
+### `frontend-performance-engineering.md`
+Explains memoization, pagination, virtualization, and frontend performance trade-offs.

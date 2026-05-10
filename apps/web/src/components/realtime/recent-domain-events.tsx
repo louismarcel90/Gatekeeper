@@ -4,6 +4,11 @@ import { useRealtimeEventStore } from "@/src/core/state/realtime-event-store";
 import { SectionCard } from "../data-display/section-card";
 import { StatusBadge } from "../data-display/status-badge";
 import { ActionButton } from "../controls/action-button";
+import { useMemo } from "react";
+import { PerformanceNote } from "../performance/performance-note";
+import { VirtualList } from "../performance/virtual-list";
+
+type ConnectionState = "connected" | "disconnected" | "reconnecting" | "degraded";
 
 function getTone(eventName: string): "green" | "gold" | "red" | "violet" {
   if (eventName.includes("rollback")) {
@@ -21,9 +26,7 @@ function getTone(eventName: string): "green" | "gold" | "red" | "violet" {
   return "violet";
 }
 
-function getConnectionTone(
-  state: "connected" | "disconnected" | "reconnecting" | "degraded",
-): "green" | "gold" | "red" | "violet" {
+function getConnectionTone(state: ConnectionState): "green" | "gold" | "red" | "violet" {
   if (state === "connected") {
     return "green";
   }
@@ -47,6 +50,16 @@ export function RecentDomainEvents() {
   );
   const events = useRealtimeEventStore((state) => state.events);
   const clearEvents = useRealtimeEventStore((state) => state.clearEvents);
+
+  const sortedEvents = useMemo(
+    () =>
+      [...events].sort(
+        (a, b) =>
+          new Date(b.occurred_at).getTime() -
+          new Date(a.occurred_at).getTime(),
+      ),
+    [events],
+  );
 
   return (
     <SectionCard title="Realtime Events">
@@ -83,18 +96,24 @@ export function RecentDomainEvents() {
           </ActionButton>
         </div>
 
-        {events.length === 0 ? (
+        <PerformanceNote>
+          Realtime events are rendered through a virtualized list so the dashboard
+          remains usable when operational activity grows.
+        </PerformanceNote>
+
+        {sortedEvents.length === 0 ? (
           <div style={{ color: "#6B665F", fontSize: 14 }}>
             No realtime events yet.
           </div>
         ) : (
-          <div style={{ display: "grid", gap: 8 }}>
-            {events.map((event) => (
+          <VirtualList
+            items={sortedEvents}
+            height={360}
+            estimateSize={96}
+            renderItem={(event) => (
               <div
-                key={event.id}
                 style={{
-                  border: "1px solid #E7E5E4",
-                  borderRadius: 14,
+                  borderBottom: "1px solid #F1EFED",
                   padding: 12,
                   background: "#FFFFFF",
                   display: "grid",
@@ -116,8 +135,8 @@ export function RecentDomainEvents() {
                   {event.payload.resource_type} · {event.payload.action}
                 </div>
               </div>
-            ))}
-          </div>
+            )}
+          />
         )}
       </div>
     </SectionCard>

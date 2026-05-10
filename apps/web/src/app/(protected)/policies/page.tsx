@@ -18,7 +18,13 @@ import { SystemPage } from "@/src/components/page-layout/system-page";
 import { PageStack } from "@/src/components/page-layout/page-stack";
 import { useCapability } from "@/src/modules/permissions/use-capability";
 import {  PolicyInput, useCreatePolicy, usePolicies, useUpdatePolicy} from "@/src/modules/policies/use-policies";
-
+import {
+  includesNormalized,
+  paginateItems,
+  stableSortByNumber,
+  stableSortByString
+} from '../../../core/performance/array-utils';
+import { PerformanceNote } from "@/src/components/performance/performance-note";
 
 type PolicyItem = {
   id: string;
@@ -128,29 +134,32 @@ const items = useMemo(
 );
 
   const filteredItems = useMemo(() => {
-    let result = [...items];
+  let result = [...items];
 
-    if (routeFilter.trim()) {
-      const needle = routeFilter.trim().toLowerCase();
-      result = result.filter((item) =>
-        item.route_id.toLowerCase().includes(needle),
-      );
-    }
+  if (routeFilter.trim()) {
+    result = result.filter((item) => includesNormalized(item.route_id, routeFilter));
+  }
 
-    if (sortMode === "route") {
-      result.sort((a, b) => a.route_id.localeCompare(b.route_id));
-    } else if (sortMode === "rate") {
-      result.sort(
-        (a, b) => (a.rate_limit_per_minute ?? 0) - (b.rate_limit_per_minute ?? 0),
-      );
-    } else {
-      result.sort((a, b) => a.id.localeCompare(b.id));
-    }
+  if (sortMode === "route") {
+    return stableSortByString(result, (item) => item.route_id);
+  }
 
-    return result;
-  }, [items, routeFilter, sortMode]);
+  if (sortMode === "rate") {
+    return stableSortByNumber(result, (item) => item.rate_limit_per_minute ?? 0);
+  }
 
-  const pagedItems = filteredItems.slice(page * pageSize, (page + 1) * pageSize);
+  return stableSortByString(result, (item) => item.id);
+}, [items, routeFilter, sortMode]);
+
+ const pagedItems = useMemo(
+  () =>
+    paginateItems({
+      items: filteredItems,
+      page,
+      pageSize,
+    }),
+  [filteredItems, page],
+);
 
   function buildPolicyPayload(source: PolicyFormState): PolicyInput | null {
     if (!source.id.trim()) {
@@ -299,6 +308,11 @@ const items = useMemo(
               Click a policy row to inspect scopes, limits, and quota configuration.
             </div>
           </FiltersBar>
+
+          <PerformanceNote>
+  Policies are filtered, sorted, and paginated through memoized selectors to keep
+  rendering predictable as policy count grows.
+</PerformanceNote>
 
           {query.isLoading ? (
             <div style={{ color: "#6B665F" }}>Loading policies...</div>

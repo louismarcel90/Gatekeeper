@@ -18,13 +18,19 @@ import { SystemPage } from "@/src/components/page-layout/system-page";
 import { PageStack } from "@/src/components/page-layout/page-stack";
 import { useCapability } from "@/src/modules/permissions/use-capability";
 import {
-  // RouteInput,
   useCreateRoute,
   useRoutes,
   useSetRouteEnabled,
   useUpdateRoute,
 } from '../../../modules/routes/use-routes'; 
 import { ConfirmationPanel } from "@/src/components/feedback/confirmation-panel";
+import {
+  includesNormalized,
+  paginateItems,
+  stableSortByString
+} from '../../../core/performance/array-utils';
+
+import { PerformanceNote } from "@/src/components/performance/performance-note";
 
 type RouteMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
@@ -79,34 +85,41 @@ export default function RoutesPage() {
     useState<PendingLifecycleAction>(null);
 
   const pageSize = 10;
+  const items = useMemo(() => {
+  return (query.data ?? []) as RouteItem[];
+}, [query.data]);
 
-  const filteredItems = useMemo(() => {
-    const items = (query.data ?? []) as RouteItem[];
-    let result = [...items];
+const filteredItems = useMemo(() => {
+  let result = [...items];
 
-    if (pathFilter.trim()) {
-      const needle = pathFilter.trim().toLowerCase();
-      result = result.filter((item) =>
-        item.path.toLowerCase().includes(needle),
-      );
-    }
+  if (pathFilter.trim()) {
+    result = result.filter((item) => includesNormalized(item.path, pathFilter));
+  }
 
-    if (methodFilter) {
-      result = result.filter((item) => item.method === methodFilter);
-    }
+  if (methodFilter) {
+    result = result.filter((item) => item.method === methodFilter);
+  }
 
-    if (sortMode === "method") {
-      result.sort((a, b) => a.method.localeCompare(b.method));
-    } else if (sortMode === "enabled") {
-      result.sort((a, b) => Number(b.enabled) - Number(a.enabled));
-    } else {
-      result.sort((a, b) => a.path.localeCompare(b.path));
-    }
+  if (sortMode === "method") {
+    return stableSortByString(result, (item) => item.method);
+  }
 
-    return result;
-  }, [query.data, pathFilter, methodFilter, sortMode]);
+  if (sortMode === "enabled") {
+    return [...result].sort((a, b) => Number(b.enabled) - Number(a.enabled));
+  }
 
-  const pagedItems = filteredItems.slice(page * pageSize, (page + 1) * pageSize);
+  return stableSortByString(result, (item) => item.path);
+}, [items, pathFilter, methodFilter, sortMode]);
+
+  const pagedItems = useMemo(
+  () =>
+    paginateItems({
+      items: filteredItems,
+      page,
+      pageSize,
+    }),
+  [filteredItems, page],
+);
 
   function updateForm<K extends keyof RouteInput>(key: K, value: RouteInput[K]) {
     setForm((current) => ({
@@ -303,6 +316,11 @@ export default function RoutesPage() {
               Click a route row to inspect its details.
             </div>
           </FiltersBar>
+
+          <PerformanceNote>
+  Routes use memoized filtering, sorting, and pagination to avoid unnecessary
+  rendering work as the managed API surface grows.
+</PerformanceNote>
 
           {query.isLoading ? (
             <div style={{ color: "#6B665F" }}>Loading routes...</div>

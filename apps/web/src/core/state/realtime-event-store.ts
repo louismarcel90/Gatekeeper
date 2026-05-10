@@ -40,7 +40,7 @@ export const useRealtimeEventStore = create<RealtimeEventState>((set) => ({
             new Date(b.occurred_at).getTime() -
             new Date(a.occurred_at).getTime(),
         )
-        .slice(0, 30),
+        .slice(0, 500),
     })),
 
   setRejectedEventReason: (reason) =>
