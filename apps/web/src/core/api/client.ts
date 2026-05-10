@@ -1,14 +1,27 @@
-import axios from "axios";
-import { createRequestId } from "@/src/core/observability/request-id";
+import axios, { AxiosError, type AxiosRequestConfig } from "axios";
+
+import { createRequestId } from "../observability/request-id";
+import { useFrontendHealthStore } from "../state/frontend-health-store";
 import { logUiEvent } from "@/src/modules/observability/logger";
 
+type RequestMetadata = {
+  request_id: string;
+  started_at: number;
+};
+
+type RequestConfigWithMetadata = AxiosRequestConfig & {
+  metadata?: RequestMetadata;
+};
+
 export const apiClient = axios.create({
-  baseURL: "http://localhost:3001",
+  baseURL:
+    process.env.NEXT_PUBLIC_CONTROL_PLANE_BASE_URL ?? "http://localhost:3001",
 });
 
 apiClient.interceptors.request.use((config) => {
   const requestId = createRequestId();
 
+  config.headers = config.headers ?? {};
   config.headers["x-request-id"] = requestId;
   config.headers["x-client-name"] = "gatekeeper-web";
 
@@ -20,7 +33,9 @@ apiClient.interceptors.request.use((config) => {
     }
   }
 
-  (config as typeof config & { metadata?: Record<string, unknown> }).metadata = {
+  const configWithMetadata = config as RequestConfigWithMetadata;
+
+  configWithMetadata.metadata = {
     request_id: requestId,
     started_at: Date.now(),
   };
@@ -37,19 +52,19 @@ apiClient.interceptors.request.use((config) => {
 
 apiClient.interceptors.response.use(
   (response) => {
-    const metadata = (
-      response.config as typeof response.config & {
-        metadata?: { request_id?: string; started_at?: number };
-      }
-    ).metadata;
+    const metadata = (response.config as RequestConfigWithMetadata).metadata;
 
     const durationMs =
-      typeof metadata?.started_at === "number" ? Date.now() - metadata.started_at : undefined;
+      typeof metadata?.started_at === "number"
+        ? Date.now() - metadata.started_at
+        : undefined;
 
     logUiEvent({
       level: "success",
       scope: "http.response",
-      message: `${response.config.method?.toUpperCase()} ${response.config.url} → ${response.status}`,
+      message: `${response.config.method?.toUpperCase()} ${
+        response.config.url
+      } -> ${response.status}`,
       request_id: metadata?.request_id,
       meta: {
         status: response.status,
@@ -57,16 +72,16 @@ apiClient.interceptors.response.use(
       },
     });
 
+    useFrontendHealthStore.getState().setDependencyStatus({
+      name: "control-plane",
+      status: "healthy",
+      reason: "Control Plane API request succeeded.",
+    });
+
     return response;
   },
-  (error) => {
-    const config = error.config as
-      | {
-          url?: string;
-          method?: string;
-          metadata?: { request_id?: string; started_at?: number };
-        }
-      | undefined;
+  (error: AxiosError) => {
+    const config = error.config as RequestConfigWithMetadata | undefined;
 
     const durationMs =
       typeof config?.metadata?.started_at === "number"
@@ -76,13 +91,21 @@ apiClient.interceptors.response.use(
     logUiEvent({
       level: "error",
       scope: "http.response",
-      message: `${config?.method?.toUpperCase() ?? "UNKNOWN"} ${config?.url ?? "unknown"} → error`,
+      message: `${config?.method?.toUpperCase() ?? "UNKNOWN"} ${
+        config?.url ?? "unknown"
+      } -> error`,
       request_id: config?.metadata?.request_id,
       meta: {
         duration_ms: durationMs,
-        status: error?.response?.status,
-        error: error?.message,
+        status: error.response?.status,
+        error: error.message,
       },
+    });
+
+    useFrontendHealthStore.getState().setDependencyStatus({
+      name: "control-plane",
+      status: "degraded",
+      reason: "A Control Plane API request failed.",
     });
 
     return Promise.reject(error);

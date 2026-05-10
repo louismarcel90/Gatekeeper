@@ -1,29 +1,32 @@
 "use client";
 
 import { ReactNode, useEffect } from "react";
-import { useRealtimeEventStore } from "@/src/core/state/realtime-event-store";
 import { useQueryClient } from "@tanstack/react-query";
+
+import { useRealtimeEventStore } from "@/src/core/state/realtime-event-store"; 
+import { useFrontendHealthStore } from "@/src/core/state/frontend-health-store";
 import {
   startDomainEventStream,
   stopDomainEventStream,
-} from '../../modules/realtime/domain-event-stream';
+} from "../../modules/realtime/domain-event-stream";
 import {
   notifyInfo,
   notifySuccess,
   notifyWarning,
-} from '../../modules/notifications/domain-notifications';
-
+} from "../../modules/notifications/domain-notifications";
 import {
   reconcileQueryCacheFromEvent,
   shouldAcceptRealtimeEvent,
-} from '../../modules/realtime/realtime-reconciliation';
+} from "../../modules/realtime/realtime-reconciliation";
 
 type RealtimeEventsProviderProps = {
   children: ReactNode;
 };
 
 function getControlPlaneBaseUrl(): string {
-  return process.env.NEXT_PUBLIC_CONTROL_PLANE_BASE_URL ?? "http://localhost:3001";
+  return (
+    process.env.NEXT_PUBLIC_CONTROL_PLANE_BASE_URL ?? "http://localhost:3001"
+  );
 }
 
 function notifyFromEvent(eventName: string, resourceId: string): void {
@@ -40,14 +43,23 @@ function notifyFromEvent(eventName: string, resourceId: string): void {
   notifyInfo("Realtime event", `${eventName} for ${resourceId}.`);
 }
 
-export function RealtimeEventsProvider({ children }: RealtimeEventsProviderProps) {
+export function RealtimeEventsProvider({
+  children,
+}: RealtimeEventsProviderProps) {
   const queryClient = useQueryClient();
+
   const setConnectionState = useRealtimeEventStore(
     (state) => state.setConnectionState,
   );
+
   const pushEvent = useRealtimeEventStore((state) => state.pushEvent);
+
   const setRejectedEventReason = useRealtimeEventStore(
     (state) => state.setRejectedEventReason,
+  );
+
+  const setDependencyStatus = useFrontendHealthStore(
+    (state) => state.setDependencyStatus,
   );
 
   useEffect(() => {
@@ -55,6 +67,7 @@ export function RealtimeEventsProvider({ children }: RealtimeEventsProviderProps
 
     startDomainEventStream({
       baseUrl: getControlPlaneBaseUrl(),
+
       onEvent: (event) => {
         const decision = shouldAcceptRealtimeEvent(event);
 
@@ -64,6 +77,13 @@ export function RealtimeEventsProvider({ children }: RealtimeEventsProviderProps
         }
 
         setConnectionState("connected");
+
+        setDependencyStatus({
+          name: "realtime-stream",
+          status: "healthy",
+          reason: "Realtime stream is receiving events.",
+        });
+
         setRejectedEventReason(null);
         pushEvent(event);
 
@@ -74,16 +94,34 @@ export function RealtimeEventsProvider({ children }: RealtimeEventsProviderProps
 
         notifyFromEvent(event.name, event.payload.resource_id);
       },
+
       onError: () => {
-        setConnectionState("degraded");
+        setConnectionState("reconnecting");
+
+        setDependencyStatus({
+          name: "realtime-stream",
+          status: "degraded",
+          reason: "Realtime stream connection failed or is reconnecting.",
+        });
       },
     });
 
     return () => {
       stopDomainEventStream();
-      setConnectionState("disconnected");
+
+      setDependencyStatus({
+        name: "realtime-stream",
+        status: "degraded",
+        reason: "Realtime stream disconnected.",
+      });
     };
-  }, [pushEvent, queryClient, setConnectionState, setRejectedEventReason]);
+  }, [
+    pushEvent,
+    queryClient,
+    setConnectionState,
+    setDependencyStatus,
+    setRejectedEventReason,
+  ]);
 
   return <>{children}</>;
 }

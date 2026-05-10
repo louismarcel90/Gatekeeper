@@ -13,6 +13,7 @@ import { useAuthStore } from "@/src/core/state/auth-store";
 import { useRoutes } from "@/src/modules/routes/use-routes";
 import { useActiveSnapshot } from "@/src/modules/snapshots/use-snapshots";
 import { RecentDomainEvents } from "@/src/components/realtime/recent-domain-events";
+import { FrontendHealthPanel } from "@/src/components/health/frontend-health-panel";
 
 type RouteItem = {
   id: string;
@@ -39,6 +40,7 @@ export default function DashboardPage() {
         />
         
         <RecentDomainEvents />
+        <FrontendHealthPanel />
 
         <PageSectionGrid>
           <StatCard label="Managed Routes" value={routes.length} />

@@ -3,6 +3,8 @@ import { Sidebar } from "./sidebar";
 import { Topbar } from "./topbar";
 import { NotificationCenter } from "../feedback/notification-center";
 import { RealtimeEventsProvider } from "../realtime/realtime-events-provider";
+import { SystemHealthBanner } from "../feedback/system-health-banner";
+import { ControlPlaneHealthProbe } from "../health/control-plane-health-probe";
 
 export function AppShell({ children }: { children: ReactNode }) {
   return (
@@ -38,11 +40,13 @@ export function AppShell({ children }: { children: ReactNode }) {
             padding: "24px",
           }}
         >
+          <SystemHealthBanner />
           {children}
         </main>
       </div>
 
       <NotificationCenter />
+      <ControlPlaneHealthProbe />
     </div>
   </RealtimeEventsProvider>
 );
