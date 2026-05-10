@@ -3,22 +3,11 @@ import { getCurrentTraceContext } from "./tracing";
 
 export type LogLevel = "INFO" | "WARN" | "ERROR";
 
-export type LogValue =
-  | string
-  | number
-  | boolean
-  | null
-  | string[]
-  | number[]
-  | boolean[];
+export type LogValue = string | number | boolean | null | string[] | number[] | boolean[];
 
 export type LogFields = Record<string, LogValue>;
 
-function writeStructuredLog(
-  level: LogLevel,
-  message: string,
-  fields: LogFields = {},
-): void {
+function writeStructuredLog(level: LogLevel, message: string, fields: LogFields = {}): void {
   const traceContext = getCurrentTraceContext();
 
   const entry = {

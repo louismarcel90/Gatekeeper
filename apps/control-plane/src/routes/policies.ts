@@ -1,9 +1,5 @@
 import { FastifyInstance } from "fastify";
-import {
-  createPolicy,
-  listPolicies,
-  updateManagedPolicy,
-} from "../application/policy-service";
+import { createPolicy, listPolicies, updateManagedPolicy } from "../application/policy-service";
 import { createPolicySchema } from "../domain/validators";
 import { requireAdminAuth, requireRole } from "../middleware/admin-auth";
 import { sendBadRequest, sendInternalError, sendNotFound } from "../shared/http";
@@ -47,9 +43,7 @@ export async function registerPolicyRoutes(app: FastifyInstance) {
         return reply.code(201).send(created);
       } catch (error) {
         const message =
-          error instanceof Error
-            ? error.message
-            : "Unexpected error while creating policy.";
+          error instanceof Error ? error.message : "Unexpected error while creating policy.";
 
         return sendInternalError(reply, message);
       }
@@ -98,9 +92,7 @@ export async function registerPolicyRoutes(app: FastifyInstance) {
         return reply.code(200).send(updated);
       } catch (error) {
         const message =
-          error instanceof Error
-            ? error.message
-            : "Unexpected error while updating policy.";
+          error instanceof Error ? error.message : "Unexpected error while updating policy.";
 
         if (message.includes("was not found")) {
           return sendNotFound(reply, message);

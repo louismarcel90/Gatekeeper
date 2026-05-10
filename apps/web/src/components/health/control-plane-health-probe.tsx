@@ -17,9 +17,7 @@ async function checkControlPlaneHealth(): Promise<boolean> {
 }
 
 export function ControlPlaneHealthProbe() {
-  const setDependencyStatus = useFrontendHealthStore(
-    (state) => state.setDependencyStatus,
-  );
+  const setDependencyStatus = useFrontendHealthStore((state) => state.setDependencyStatus);
 
   useEffect(() => {
     let cancelled = false;

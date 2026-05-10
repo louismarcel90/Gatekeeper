@@ -8,46 +8,46 @@ import { ControlPlaneHealthProbe } from "../health/control-plane-health-probe";
 
 export function AppShell({ children }: { children: ReactNode }) {
   return (
-  <RealtimeEventsProvider>
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "stretch",
-        background: "#F7F7F5",
-        overflow: "hidden",
-      }}
-    >
-      <Sidebar />
-
+    <RealtimeEventsProvider>
       <div
         style={{
-          flex: 1,
-          minWidth: 0,
+          minHeight: "100vh",
           display: "flex",
-          flexDirection: "column",
+          alignItems: "stretch",
+          background: "#F7F7F5",
           overflow: "hidden",
         }}
       >
-        <Topbar />
+        <Sidebar />
 
-        <main
+        <div
           style={{
             flex: 1,
             minWidth: 0,
-            overflowX: "hidden",
-            overflowY: "auto",
-            padding: "24px",
+            display: "flex",
+            flexDirection: "column",
+            overflow: "hidden",
           }}
         >
-          <SystemHealthBanner />
-          {children}
-        </main>
-      </div>
+          <Topbar />
 
-      <NotificationCenter />
-      <ControlPlaneHealthProbe />
-    </div>
-  </RealtimeEventsProvider>
-);
+          <main
+            style={{
+              flex: 1,
+              minWidth: 0,
+              overflowX: "hidden",
+              overflowY: "auto",
+              padding: "24px",
+            }}
+          >
+            <SystemHealthBanner />
+            {children}
+          </main>
+        </div>
+
+        <NotificationCenter />
+        <ControlPlaneHealthProbe />
+      </div>
+    </RealtimeEventsProvider>
+  );
 }

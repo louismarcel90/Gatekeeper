@@ -25,14 +25,10 @@ const envSchema = z.object({
   OTEL_TRACING_ENABLED: z.string().default("false"),
 });
 
-
 const parsedEnv = envSchema.safeParse(process.env);
 
 if (!parsedEnv.success) {
-  console.error(
-    "Invalid gateway environment variables",
-    parsedEnv.error.flatten().fieldErrors,
-  );
+  console.error("Invalid gateway environment variables", parsedEnv.error.flatten().fieldErrors);
 
   process.exit(1);
 }
@@ -58,7 +54,8 @@ export const env = {
 
   OTEL_SERVICE_NAME: parsed.OTEL_SERVICE_NAME ?? "gatekeeper-gateway",
 
-  OTEL_EXPORTER_OTLP_ENDPOINT: parsed.OTEL_EXPORTER_OTLP_ENDPOINT ?? "http://localhost:4318/v1/traces",
+  OTEL_EXPORTER_OTLP_ENDPOINT:
+    parsed.OTEL_EXPORTER_OTLP_ENDPOINT ?? "http://localhost:4318/v1/traces",
 
   OTEL_TRACING_ENABLED: parsed.OTEL_TRACING_ENABLED === "true",
 };

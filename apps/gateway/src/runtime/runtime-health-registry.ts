@@ -1,16 +1,10 @@
-import {
-  GatewayDependencyName,
-  GatewayDependencyStatus,
-  GatewayFailureMode,
-} from "./failure-mode";
+import { GatewayDependencyName, GatewayDependencyStatus, GatewayFailureMode } from "./failure-mode";
 
 type RuntimeHealthState = {
   dependencies: Record<GatewayDependencyName, GatewayFailureMode>;
 };
 
-function createInitialDependency(
-  dependency: GatewayDependencyName,
-): GatewayFailureMode {
+function createInitialDependency(dependency: GatewayDependencyName): GatewayFailureMode {
   return {
     dependency,
     status: "HEALTHY",
@@ -41,9 +35,7 @@ export function setDependencyStatus(params: {
   };
 }
 
-export function getDependencyStatus(
-  dependency: GatewayDependencyName,
-): GatewayFailureMode {
+export function getDependencyStatus(dependency: GatewayDependencyName): GatewayFailureMode {
   return state.dependencies[dependency];
 }
 

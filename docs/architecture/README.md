@@ -179,26 +179,35 @@ Recommended order:
 2. `c4-container.md`
 3. `c4-component.md`
 
-
 ### `runtime-consistency-model.md`
+
 Explains how the Gateway Runtime enforces snapshots using eventual runtime consistency and last-known-good behavior.
 
-
 ### `gateway-horizontal-scaling.md`
+
 Explains how Gateway Runtime instances can scale horizontally using local snapshot caches and shared Redis coordination.
 
-
 ### `event-driven-architecture.md`
+
 Explains the internal domain event model used to make critical control-plane actions observable and extensible.
 
-
 ### `realtime-frontend-streaming.md`
+
 Explains how Control Plane domain events are streamed to the frontend using SSE.
 
-
 ### `frontend-failure-aware-modes.md`
+
 Explains how the frontend detects degraded dependencies and keeps the UI understandable under failure.
 
-
 ### `frontend-performance-engineering.md`
+
 Explains memoization, pagination, virtualization, and frontend performance trade-offs.
+
+
+### End-to-End Tests
+
+Gatekeeper uses Playwright for E2E smoke tests.
+
+```bash
+pnpm test:e2e
+```

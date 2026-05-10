@@ -2,11 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/src/core/api/client";
 import { useAuthStore } from "@/src/core/state/auth-store";
 import { logUiEvent } from "@/src/modules/observability/logger";
-import {
-  notifyError,
-  notifySuccess,
-  notifyWarning,
-} from '../notifications/domain-notifications';
+import { notifyError, notifySuccess, notifyWarning } from "../notifications/domain-notifications";
 
 export type RouteInput = {
   id: string;
@@ -66,10 +62,7 @@ export function useCreateRoute() {
         queryClient.invalidateQueries({ queryKey: ["policy-document", "export"] }),
       ]);
 
-      notifySuccess(
-  "Route created",
-  `Route ${data.id} was created in the control plane.`,
-);
+      notifySuccess("Route created", `Route ${data.id} was created in the control plane.`);
     },
     onError: (error) => {
       logUiEvent({
@@ -82,9 +75,9 @@ export function useCreateRoute() {
       });
 
       notifyError(
-  "Route creation failed",
-  "The route could not be created. Check the input and try again.",
-);
+        "Route creation failed",
+        "The route could not be created. Check the input and try again.",
+      );
     },
   });
 }
@@ -133,9 +126,7 @@ export function useSetRouteEnabled() {
       logUiEvent({
         level: "info",
         scope: "routes.lifecycle",
-        message: payload.enabled
-          ? `Enabling route ${payload.id}`
-          : `Disabling route ${payload.id}`,
+        message: payload.enabled ? `Enabling route ${payload.id}` : `Disabling route ${payload.id}`,
         meta: {
           route_id: payload.id,
           next_enabled: payload.enabled,
@@ -161,10 +152,7 @@ export function useSetRouteEnabled() {
         queryClient.invalidateQueries({ queryKey: ["snapshots"] }),
       ]);
 
-      notifyWarning(
-  "Route lifecycle changed",
-  data.message ?? "Route lifecycle was updated.",
-);
+      notifyWarning("Route lifecycle changed", data.message ?? "Route lifecycle was updated.");
     },
     onError: (error) => {
       logUiEvent({

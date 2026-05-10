@@ -13,9 +13,7 @@ function readInstanceId(): string {
   return "control-plane-local-1";
 }
 
-export async function registerControlPlaneInstanceRoutes(
-  app: FastifyInstance,
-): Promise<void> {
+export async function registerControlPlaneInstanceRoutes(app: FastifyInstance): Promise<void> {
   app.get("/control-plane/instance", async () => {
     return {
       instance_id: readInstanceId(),

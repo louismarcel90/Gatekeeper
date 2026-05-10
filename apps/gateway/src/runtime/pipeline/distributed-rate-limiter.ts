@@ -12,26 +12,17 @@ export async function evaluateDistributedRateLimit(params: {
   routeId: string;
   limitPerMinute: number;
 }): Promise<RateLimitResult> {
-  const currentWindow = Math.floor(
-    Date.now() / (env.RATE_LIMIT_WINDOW_SECONDS * 1000),
-  );
+  const currentWindow = Math.floor(Date.now() / (env.RATE_LIMIT_WINDOW_SECONDS * 1000));
 
-  const redisKey =
-    `rate-limit:${params.clientId}:${params.routeId}:${currentWindow}`;
+  const redisKey = `rate-limit:${params.clientId}:${params.routeId}:${currentWindow}`;
 
   const currentCount = await runtimeRedis.incr(redisKey);
 
   if (currentCount === 1) {
-    await runtimeRedis.expire(
-      redisKey,
-      env.RATE_LIMIT_WINDOW_SECONDS,
-    );
+    await runtimeRedis.expire(redisKey, env.RATE_LIMIT_WINDOW_SECONDS);
   }
 
-  const remaining = Math.max(
-    params.limitPerMinute - currentCount,
-    0,
-  );
+  const remaining = Math.max(params.limitPerMinute - currentCount, 0);
 
   if (currentCount > params.limitPerMinute) {
     return {

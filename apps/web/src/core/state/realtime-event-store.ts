@@ -1,13 +1,9 @@
 "use client";
 
 import { create } from "zustand";
-import { RealtimeDomainEvent } from "@/src/modules/realtime/domain-event-stream"; 
+import { RealtimeDomainEvent } from "@/src/modules/realtime/domain-event-stream";
 
-type RealtimeConnectionState =
-  | "connected"
-  | "disconnected"
-  | "reconnecting"
-  | "degraded";
+type RealtimeConnectionState = "connected" | "disconnected" | "reconnecting" | "degraded";
 
 type RealtimeEventState = {
   connectionState: RealtimeConnectionState;
@@ -35,11 +31,7 @@ export const useRealtimeEventStore = create<RealtimeEventState>((set) => ({
     set((state) => ({
       lastEventAt: event.occurred_at,
       events: [event, ...state.events]
-        .sort(
-          (a, b) =>
-            new Date(b.occurred_at).getTime() -
-            new Date(a.occurred_at).getTime(),
-        )
+        .sort((a, b) => new Date(b.occurred_at).getTime() - new Date(a.occurred_at).getTime())
         .slice(0, 500),
     })),
 

@@ -20,13 +20,10 @@ export function getActiveSnapshot(): ActiveRuntimeSnapshot {
   }
 
   return activeSnapshot;
-}import { Snapshot } from "../core/types";
+}
+import { Snapshot } from "../core/types";
 
-export type RuntimeSnapshotCacheStatus =
-  | "EMPTY"
-  | "READY"
-  | "STALE"
-  | "REFRESH_FAILED";
+export type RuntimeSnapshotCacheStatus = "EMPTY" | "READY" | "STALE" | "REFRESH_FAILED";
 
 export type RuntimeSnapshotCache = {
   status: RuntimeSnapshotCacheStatus;
@@ -61,10 +58,10 @@ export function setRuntimeSnapshot(snapshot: Snapshot): void {
   cache.refreshCount += 1;
 
   setDependencyStatus({
-  dependency: "snapshot-cache",
-  status: "HEALTHY",
-  reason: `Snapshot version ${snapshot.version} loaded successfully.`,
-});
+    dependency: "snapshot-cache",
+    status: "HEALTHY",
+    reason: `Snapshot version ${snapshot.version} loaded successfully.`,
+  });
 }
 
 export function markSnapshotRefreshFailed(errorMessage: string): void {
@@ -76,18 +73,18 @@ export function markSnapshotRefreshFailed(errorMessage: string): void {
   cache.refreshFailureCount += 1;
 
   setDependencyStatus({
-  dependency: "control-plane",
-  status: "DEGRADED",
-  reason: errorMessage,
-});
+    dependency: "control-plane",
+    status: "DEGRADED",
+    reason: errorMessage,
+  });
 
-setDependencyStatus({
-  dependency: "snapshot-cache",
-  status: cache.activeSnapshot ? "DEGRADED" : "UNAVAILABLE",
-  reason: cache.activeSnapshot
-    ? "Snapshot refresh failed, using last known good snapshot."
-    : "No runtime snapshot available.",
-});
+  setDependencyStatus({
+    dependency: "snapshot-cache",
+    status: cache.activeSnapshot ? "DEGRADED" : "UNAVAILABLE",
+    reason: cache.activeSnapshot
+      ? "Snapshot refresh failed, using last known good snapshot."
+      : "No runtime snapshot available.",
+  });
 }
 
 export function markSnapshotStale(): void {

@@ -14,14 +14,11 @@ export async function executeRuntimePipeline(params: {
     return {
       decision: "DENY",
       reasonCode: "ROUTE_NOT_FOUND",
-      explanation:
-        "No managed route matched request.",
+      explanation: "No managed route matched request.",
     };
   }
 
-  const identity = resolveIdentity(
-    params.authorizationHeader,
-  );
+  const identity = resolveIdentity(params.authorizationHeader);
 
   return evaluatePolicy(route, identity);
 }

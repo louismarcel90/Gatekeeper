@@ -17,13 +17,18 @@ import { TableToolbar } from "@/src/components/data-explorer/table-toolbar";
 import { SystemPage } from "@/src/components/page-layout/system-page";
 import { PageStack } from "@/src/components/page-layout/page-stack";
 import { useCapability } from "@/src/modules/permissions/use-capability";
-import {  PolicyInput, useCreatePolicy, usePolicies, useUpdatePolicy} from "@/src/modules/policies/use-policies";
+import {
+  PolicyInput,
+  useCreatePolicy,
+  usePolicies,
+  useUpdatePolicy,
+} from "@/src/modules/policies/use-policies";
 import {
   includesNormalized,
   paginateItems,
   stableSortByNumber,
-  stableSortByString
-} from '../../../core/performance/array-utils';
+  stableSortByString,
+} from "../../../core/performance/array-utils";
 import { PerformanceNote } from "@/src/components/performance/performance-note";
 
 type PolicyItem = {
@@ -128,38 +133,35 @@ export default function PoliciesPage() {
   const [editForm, setEditForm] = useState<PolicyFormState>(EMPTY_EDIT_FORM);
 
   const pageSize = 10;
-const items = useMemo(
-  () => (query.data ?? []) as PolicyItem[],
-  [query.data],
-);
+  const items = useMemo(() => (query.data ?? []) as PolicyItem[], [query.data]);
 
   const filteredItems = useMemo(() => {
-  let result = [...items];
+    let result = [...items];
 
-  if (routeFilter.trim()) {
-    result = result.filter((item) => includesNormalized(item.route_id, routeFilter));
-  }
+    if (routeFilter.trim()) {
+      result = result.filter((item) => includesNormalized(item.route_id, routeFilter));
+    }
 
-  if (sortMode === "route") {
-    return stableSortByString(result, (item) => item.route_id);
-  }
+    if (sortMode === "route") {
+      return stableSortByString(result, (item) => item.route_id);
+    }
 
-  if (sortMode === "rate") {
-    return stableSortByNumber(result, (item) => item.rate_limit_per_minute ?? 0);
-  }
+    if (sortMode === "rate") {
+      return stableSortByNumber(result, (item) => item.rate_limit_per_minute ?? 0);
+    }
 
-  return stableSortByString(result, (item) => item.id);
-}, [items, routeFilter, sortMode]);
+    return stableSortByString(result, (item) => item.id);
+  }, [items, routeFilter, sortMode]);
 
- const pagedItems = useMemo(
-  () =>
-    paginateItems({
-      items: filteredItems,
-      page,
-      pageSize,
-    }),
-  [filteredItems, page],
-);
+  const pagedItems = useMemo(
+    () =>
+      paginateItems({
+        items: filteredItems,
+        page,
+        pageSize,
+      }),
+    [filteredItems, page],
+  );
 
   function buildPolicyPayload(source: PolicyFormState): PolicyInput | null {
     if (!source.id.trim()) {
@@ -274,8 +276,8 @@ const items = useMemo(
 
         {!canCreate ? (
           <CapabilityHint>
-            Your role can inspect policies, but creating or editing a policy requires
-            a security or admin role.
+            Your role can inspect policies, but creating or editing a policy requires a security or
+            admin role.
           </CapabilityHint>
         ) : null}
 
@@ -310,9 +312,9 @@ const items = useMemo(
           </FiltersBar>
 
           <PerformanceNote>
-  Policies are filtered, sorted, and paginated through memoized selectors to keep
-  rendering predictable as policy count grows.
-</PerformanceNote>
+            Policies are filtered, sorted, and paginated through memoized selectors to keep
+            rendering predictable as policy count grows.
+          </PerformanceNote>
 
           {query.isLoading ? (
             <div style={{ color: "#6B665F" }}>Loading policies...</div>
@@ -325,9 +327,7 @@ const items = useMemo(
             />
           ) : (
             <>
-              <DataTable
-                columns={["Policy ID", "Route ID", "Scopes", "Rate", "Quota", "Actions"]}
-              >
+              <DataTable columns={["Policy ID", "Route ID", "Scopes", "Rate", "Quota", "Actions"]}>
                 {pagedItems.map((item) => (
                   <div
                     key={item.id}
@@ -338,9 +338,7 @@ const items = useMemo(
                       columns={[
                         item.id,
                         item.route_id,
-                        item.required_scopes.length > 0
-                          ? item.required_scopes.join(", ")
-                          : "—",
+                        item.required_scopes.length > 0 ? item.required_scopes.join(", ") : "—",
                         item.rate_limit_per_minute ?? "—",
                         item.quota_per_day ?? "—",
                         <div
@@ -349,10 +347,7 @@ const items = useMemo(
                           onClick={(event) => event.stopPropagation()}
                         >
                           {canCreate ? (
-                            <ActionButton
-                              tone="neutral"
-                              onClick={() => startEditingPolicy(item)}
-                            >
+                            <ActionButton tone="neutral" onClick={() => startEditingPolicy(item)}>
                               Edit
                             </ActionButton>
                           ) : (
@@ -372,9 +367,7 @@ const items = useMemo(
                 onPrevious={() => setPage((current) => Math.max(0, current - 1))}
                 onNext={() =>
                   setPage((current) =>
-                    (current + 1) * pageSize < filteredItems.length
-                      ? current + 1
-                      : current,
+                    (current + 1) * pageSize < filteredItems.length ? current + 1 : current,
                   )
                 }
               />
@@ -404,10 +397,7 @@ const items = useMemo(
                   : "—"
               }
             />
-            <DetailRow
-              label="Rate Limit / Min"
-              value={selectedItem.rate_limit_per_minute ?? "—"}
-            />
+            <DetailRow label="Rate Limit / Min" value={selectedItem.rate_limit_per_minute ?? "—"} />
             <DetailRow label="Quota / Day" value={selectedItem.quota_per_day ?? "—"} />
           </DetailPanel>
         ) : null}
@@ -494,9 +484,7 @@ const items = useMemo(
                         originalPolicy.route_id,
                         <span
                           key="route_id-after"
-                          style={getChangedTextStyle(
-                            originalPolicy.route_id !== editForm.route_id,
-                          )}
+                          style={getChangedTextStyle(originalPolicy.route_id !== editForm.route_id)}
                         >
                           {editForm.route_id || "—"}
                         </span>,
@@ -509,8 +497,7 @@ const items = useMemo(
                         <span
                           key="required_scopes-after"
                           style={getChangedTextStyle(
-                            originalPolicy.required_scopes.join(", ") !==
-                              editForm.required_scopes,
+                            originalPolicy.required_scopes.join(", ") !== editForm.required_scopes,
                           )}
                         >
                           {editForm.required_scopes || "—"}
@@ -537,9 +524,7 @@ const items = useMemo(
                         renderComparisonValue(originalPolicy.quota_per_day),
                         <span
                           key="quota-after"
-                          style={getChangedTextStyle(
-                            originalPolicy.quota_per_day !== editQuota,
-                          )}
+                          style={getChangedTextStyle(originalPolicy.quota_per_day !== editQuota)}
                         >
                           {renderComparisonValue(editQuota)}
                         </span>,
@@ -592,9 +577,7 @@ const items = useMemo(
             <div style={{ display: "grid", gap: 12 }}>
               <input
                 value={form.id}
-                onChange={(event) =>
-                  setForm((current) => ({ ...current, id: event.target.value }))
-                }
+                onChange={(event) => setForm((current) => ({ ...current, id: event.target.value }))}
                 placeholder="Policy ID"
                 style={inputStyle}
               />

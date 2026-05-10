@@ -47,9 +47,7 @@ export async function registerManagedRouteRoutes(app: FastifyInstance) {
         return reply.code(201).send(created);
       } catch (error) {
         const message =
-          error instanceof Error
-            ? error.message
-            : "Unexpected error while creating route.";
+          error instanceof Error ? error.message : "Unexpected error while creating route.";
 
         return sendInternalError(reply, message);
       }
@@ -91,9 +89,7 @@ export async function registerManagedRouteRoutes(app: FastifyInstance) {
         return reply.code(200).send(updated);
       } catch (error) {
         const message =
-          error instanceof Error
-            ? error.message
-            : "Unexpected error while updating route.";
+          error instanceof Error ? error.message : "Unexpected error while updating route.";
 
         if (message.includes("was not found")) {
           return sendNotFound(reply, message);

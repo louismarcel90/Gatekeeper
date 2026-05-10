@@ -1,10 +1,7 @@
 import { ManagedRoute } from "../domain/types";
 import { CreateRouteInput } from "../domain/validators";
 import { insertRoute, getAllRoutes } from "../infrastructure/route-repository";
-import {
-  setRouteEnabled,
-  updateRoute,
-} from "../infrastructure/route-repository";
+import { setRouteEnabled, updateRoute } from "../infrastructure/route-repository";
 
 export async function listRoutes(): Promise<ManagedRoute[]> {
   return getAllRoutes();
@@ -30,10 +27,7 @@ export async function updateManagedRoute(input: CreateRouteInput) {
   return updated;
 }
 
-export async function updateManagedRouteEnabled(input: {
-  id: string;
-  enabled: boolean;
-}) {
+export async function updateManagedRouteEnabled(input: { id: string; enabled: boolean }) {
   const updated = await setRouteEnabled(input);
 
   if (!updated) {

@@ -30,9 +30,11 @@ Gatekeeper frontend uses:
 ## Dependencies Tracked
 
 ### Control Plane
+
 The API that provides authoritative state.
 
 If unavailable:
+
 - mutations cannot complete
 - data may become stale
 - UI displays a system health banner
@@ -40,18 +42,22 @@ If unavailable:
 ---
 
 ### Realtime Stream
+
 The SSE connection used for domain events.
 
 If degraded:
+
 - UI still works through polling and manual refresh
 - realtime updates may be delayed or missed
 
 ---
 
 ### Auth Session
+
 The local authenticated user/session projection.
 
 If unavailable:
+
 - protected UI should redirect or block access
 
 ---

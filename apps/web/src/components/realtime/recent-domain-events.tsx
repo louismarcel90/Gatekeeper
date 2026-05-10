@@ -45,18 +45,14 @@ function getConnectionTone(state: ConnectionState): "green" | "gold" | "red" | "
 export function RecentDomainEvents() {
   const connectionState = useRealtimeEventStore((state) => state.connectionState);
   const lastEventAt = useRealtimeEventStore((state) => state.lastEventAt);
-  const lastRejectedEventReason = useRealtimeEventStore(
-    (state) => state.lastRejectedEventReason,
-  );
+  const lastRejectedEventReason = useRealtimeEventStore((state) => state.lastRejectedEventReason);
   const events = useRealtimeEventStore((state) => state.events);
   const clearEvents = useRealtimeEventStore((state) => state.clearEvents);
 
   const sortedEvents = useMemo(
     () =>
       [...events].sort(
-        (a, b) =>
-          new Date(b.occurred_at).getTime() -
-          new Date(a.occurred_at).getTime(),
+        (a, b) => new Date(b.occurred_at).getTime() - new Date(a.occurred_at).getTime(),
       ),
     [events],
   );
@@ -74,9 +70,7 @@ export function RecentDomainEvents() {
           }}
         >
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <StatusBadge tone={getConnectionTone(connectionState)}>
-              {connectionState}
-            </StatusBadge>
+            <StatusBadge tone={getConnectionTone(connectionState)}>{connectionState}</StatusBadge>
 
             {lastEventAt ? (
               <span style={{ fontSize: 13, color: "#6B665F" }}>
@@ -97,14 +91,12 @@ export function RecentDomainEvents() {
         </div>
 
         <PerformanceNote>
-          Realtime events are rendered through a virtualized list so the dashboard
-          remains usable when operational activity grows.
+          Realtime events are rendered through a virtualized list so the dashboard remains usable
+          when operational activity grows.
         </PerformanceNote>
 
         {sortedEvents.length === 0 ? (
-          <div style={{ color: "#6B665F", fontSize: 14 }}>
-            No realtime events yet.
-          </div>
+          <div style={{ color: "#6B665F", fontSize: 14 }}>No realtime events yet.</div>
         ) : (
           <VirtualList
             items={sortedEvents}
@@ -127,9 +119,7 @@ export function RecentDomainEvents() {
                   </span>
                 </div>
 
-                <div style={{ fontSize: 14, fontWeight: 700 }}>
-                  {event.payload.resource_id}
-                </div>
+                <div style={{ fontSize: 14, fontWeight: 700 }}>{event.payload.resource_id}</div>
 
                 <div style={{ fontSize: 13, color: "#6B665F" }}>
                   {event.payload.resource_type} · {event.payload.action}

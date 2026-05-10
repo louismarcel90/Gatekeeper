@@ -1,10 +1,6 @@
 import { getActiveSnapshot } from "../../snapshot/runtime-snapshot-store";
 import { evaluateDistributedRateLimit } from "./distributed-rate-limiter";
-import {
-  RuntimeEvaluationResult,
-  RuntimeIdentity,
-  RuntimeRoute,
-} from "../runtime-types";
+import { RuntimeEvaluationResult, RuntimeIdentity, RuntimeRoute } from "../runtime-types";
 
 import {
   recordAllowDecision,
@@ -18,9 +14,7 @@ export async function evaluatePolicy(
 ): Promise<RuntimeEvaluationResult> {
   const snapshot = getActiveSnapshot();
 
-  const policy = snapshot.policies.find(
-    (candidate) => candidate.routeId === route.routeId,
-  );
+  const policy = snapshot.policies.find((candidate) => candidate.routeId === route.routeId);
 
   if (!policy) {
     return {
@@ -31,39 +25,34 @@ export async function evaluatePolicy(
     };
   }
 
-  const rateLimitResult =
-    await evaluateDistributedRateLimit({
-      clientId: identity.clientId,
-      routeId: route.routeId,
-      limitPerMinute: policy.rateLimitPerMinute,
-    });
+  const rateLimitResult = await evaluateDistributedRateLimit({
+    clientId: identity.clientId,
+    routeId: route.routeId,
+    limitPerMinute: policy.rateLimitPerMinute,
+  });
 
   if (!rateLimitResult.allowed) {
-  recordDenyDecision();
-  recordRateLimitExceeded();
-  recordAllowDecision();
+    recordDenyDecision();
+    recordRateLimitExceeded();
+    recordAllowDecision();
 
-  return {
+    return {
       decision: "DENY",
       reasonCode: "RATE_LIMIT_EXCEEDED",
-      explanation:
-        "Distributed rate limit exceeded.",
+      explanation: "Distributed rate limit exceeded.",
       routeId: route.routeId,
       policyId: policy.policyId,
     };
   }
 
-  const missingScopes = policy.requiredScopes.filter(
-    (scope) => !identity.scopes.includes(scope),
-  );
+  const missingScopes = policy.requiredScopes.filter((scope) => !identity.scopes.includes(scope));
 
   if (missingScopes.length > 0) {
-      recordDenyDecision();
+    recordDenyDecision();
     return {
       decision: "DENY",
       reasonCode: "SCOPE_MISSING",
-      explanation:
-        `Missing required scopes: ${missingScopes.join(", ")}`,
+      explanation: `Missing required scopes: ${missingScopes.join(", ")}`,
       routeId: route.routeId,
       policyId: policy.policyId,
     };

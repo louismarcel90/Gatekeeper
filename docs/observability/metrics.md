@@ -149,7 +149,6 @@ Metrics answer:
 
 > “Is the system behaving correctly at scale?”
 
-
 ---
 
 ## Gateway Runtime Metrics Endpoint
@@ -168,4 +167,4 @@ Gatekeeper exposes an operational dashboard endpoint:
 
 ```text
 GET /runtime/dashboard
-``` 
+```

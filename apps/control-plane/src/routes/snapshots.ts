@@ -68,9 +68,7 @@ export async function registerSnapshotRoutes(app: FastifyInstance) {
         return reply.code(201).send(snapshot);
       } catch (error) {
         const message =
-          error instanceof Error
-            ? error.message
-            : "Unexpected error while publishing snapshot.";
+          error instanceof Error ? error.message : "Unexpected error while publishing snapshot.";
 
         return sendInternalError(reply, message);
       }
@@ -116,9 +114,7 @@ export async function registerSnapshotRoutes(app: FastifyInstance) {
         return reply.code(200).send(snapshot);
       } catch (error) {
         const message =
-          error instanceof Error
-            ? error.message
-            : "Unexpected error while activating snapshot.";
+          error instanceof Error ? error.message : "Unexpected error while activating snapshot.";
 
         if (message.includes("was not found")) {
           return sendNotFound(reply, message);
@@ -168,9 +164,7 @@ export async function registerSnapshotRoutes(app: FastifyInstance) {
         return reply.code(200).send(snapshot);
       } catch (error) {
         const message =
-          error instanceof Error
-            ? error.message
-            : "Unexpected error while rolling back snapshot.";
+          error instanceof Error ? error.message : "Unexpected error while rolling back snapshot.";
 
         if (message.includes("was not found")) {
           return sendNotFound(reply, message);

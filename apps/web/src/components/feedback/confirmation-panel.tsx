@@ -26,11 +26,9 @@ export function ConfirmationPanel({
   onConfirm,
   onCancel,
 }: ConfirmationPanelProps) {
-  const borderColor =
-    tone === "danger" ? "#F2B8B5" : tone === "violet" ? "#D8D2FF" : "#E8D1A8";
+  const borderColor = tone === "danger" ? "#F2B8B5" : tone === "violet" ? "#D8D2FF" : "#E8D1A8";
 
-  const background =
-    tone === "danger" ? "#FFF7F7" : tone === "violet" ? "#F7F5FF" : "#FFF9EF";
+  const background = tone === "danger" ? "#FFF7F7" : tone === "violet" ? "#F7F5FF" : "#FFF9EF";
 
   return (
     <div

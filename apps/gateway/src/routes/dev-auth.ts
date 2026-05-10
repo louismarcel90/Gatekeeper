@@ -10,9 +10,7 @@ type DevTokenRequestBody = {
   expires_in_seconds?: number;
 };
 
-export async function registerDevAuthRoutes(
-  app: FastifyInstance,
-): Promise<void> {
+export async function registerDevAuthRoutes(app: FastifyInstance): Promise<void> {
   app.post<{ Body: DevTokenRequestBody }>("/_dev/token", async (req, reply) => {
     const body = req.body;
 

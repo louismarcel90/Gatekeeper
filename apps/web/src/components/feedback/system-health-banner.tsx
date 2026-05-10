@@ -40,9 +40,7 @@ export function SystemHealthBanner() {
   }
 
   const style = getBannerStyle(status);
-  const affected = dependencies.filter(
-    (dependency) => dependency.status !== "healthy",
-  );
+  const affected = dependencies.filter((dependency) => dependency.status !== "healthy");
 
   return (
     <div

@@ -4,7 +4,7 @@
     "lib": ["ES2022"],
     "module": "NodeNext",
     "moduleResolution": "node16",
-    "types": ["node"], // ensure process, Buffer, etc. are known
+    "types": ["node", "vitest/globals"], // ensure process, Buffer, etc. are known
 
     "strict": true,
     "noUncheckedIndexedAccess": true,

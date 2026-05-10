@@ -36,12 +36,8 @@ function getToneStyles(tone: "success" | "info" | "warning" | "error") {
 
 export function NotificationCenter() {
   const notifications = useNotificationStore((state) => state.notifications);
-  const dismissNotification = useNotificationStore(
-    (state) => state.dismissNotification,
-  );
-  const clearNotifications = useNotificationStore(
-    (state) => state.clearNotifications,
-  );
+  const dismissNotification = useNotificationStore((state) => state.dismissNotification);
+  const clearNotifications = useNotificationStore((state) => state.clearNotifications);
 
   if (notifications.length === 0) {
     return null;

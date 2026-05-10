@@ -2,9 +2,7 @@ import { FastifyInstance } from "fastify";
 import { env } from "../config/env";
 import { getRuntimeSnapshotCache } from "../snapshot/runtime-snapshot-store";
 
-export async function registerRuntimeSnapshotRoute(
-  app: FastifyInstance,
-): Promise<void> {
+export async function registerRuntimeSnapshotRoute(app: FastifyInstance): Promise<void> {
   app.get("/runtime/snapshot", async () => {
     const cache = getRuntimeSnapshotCache();
 

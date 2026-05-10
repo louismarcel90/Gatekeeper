@@ -18,39 +18,35 @@ function parseVersion(value: string | undefined): number | null {
 }
 
 export async function registerSnapshotDiffRoutes(app: FastifyInstance): Promise<void> {
-  app.get(
-    "/snapshots/diff",
-    { preHandler: [requireAdminAuth] },
-    async (req, reply) => {
-      const query = req.query as {
-        from?: string;
-        to?: string;
-      };
+  app.get("/snapshots/diff", { preHandler: [requireAdminAuth] }, async (req, reply) => {
+    const query = req.query as {
+      from?: string;
+      to?: string;
+    };
 
-      const fromVersion = parseVersion(query.from);
-      const toVersion = parseVersion(query.to);
+    const fromVersion = parseVersion(query.from);
+    const toVersion = parseVersion(query.to);
 
-      if (fromVersion === null || toVersion === null) {
-        return sendBadRequest(reply, "Query params from and to must be positive integers.");
+    if (fromVersion === null || toVersion === null) {
+      return sendBadRequest(reply, "Query params from and to must be positive integers.");
+    }
+
+    try {
+      const diff = await compareSnapshots({
+        fromVersion,
+        toVersion,
+      });
+
+      return reply.code(200).send(diff);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Unexpected error while comparing snapshots.";
+
+      if (message.includes("was not found")) {
+        return sendNotFound(reply, message);
       }
 
-      try {
-        const diff = await compareSnapshots({
-          fromVersion,
-          toVersion,
-        });
-
-        return reply.code(200).send(diff);
-      } catch (error) {
-        const message =
-          error instanceof Error ? error.message : "Unexpected error while comparing snapshots.";
-
-        if (message.includes("was not found")) {
-          return sendNotFound(reply, message);
-        }
-
-        return sendInternalError(reply, message);
-      }
-    },
-  );
+      return sendInternalError(reply, message);
+    }
+  });
 }

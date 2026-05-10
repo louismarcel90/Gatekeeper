@@ -38,10 +38,7 @@ export type SnapshotDiffResult = {
   policies: SnapshotPolicyDiffEntry[];
 };
 
-export function useSnapshotDiff(params: {
-  fromVersion: number | null;
-  toVersion: number | null;
-}) {
+export function useSnapshotDiff(params: { fromVersion: number | null; toVersion: number | null }) {
   const status = useAuthStore((state) => state.status);
 
   return useQuery({
@@ -56,10 +53,7 @@ export function useSnapshotDiff(params: {
 
       return response.data;
     },
-    enabled:
-      status === "authenticated" &&
-      params.fromVersion !== null &&
-      params.toVersion !== null,
+    enabled: status === "authenticated" && params.fromVersion !== null && params.toVersion !== null,
     staleTime: 5000,
   });
 }

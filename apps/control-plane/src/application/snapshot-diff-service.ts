@@ -133,13 +133,7 @@ function comparePolicy(before: Policy, after: Policy): FieldChange[] {
     after: after.quota_per_day,
   });
 
-  for (const change of [
-    routeChange,
-    apiKeyChange,
-    scopesChange,
-    rateLimitChange,
-    quotaChange,
-  ]) {
+  for (const change of [routeChange, apiKeyChange, scopesChange, rateLimitChange, quotaChange]) {
     if (change) {
       changes.push(change);
     }

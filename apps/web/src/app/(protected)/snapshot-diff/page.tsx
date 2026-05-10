@@ -120,11 +120,7 @@ export default function SnapshotDiffPage() {
               }}
             />
 
-            <ActionButton
-              tone="violet"
-              onClick={handleCompare}
-              disabled={query.isFetching}
-            >
+            <ActionButton tone="violet" onClick={handleCompare} disabled={query.isFetching}>
               {query.isFetching ? "Comparing..." : "Compare"}
             </ActionButton>
           </div>
@@ -157,50 +153,52 @@ export default function SnapshotDiffPage() {
             </SectionCard>
 
             <SectionCard title="Route Changes">
-  {query.data.routes.length === 0 ? (
-    <div style={{ color: "#6B665F" }}>No route changes.</div>
-  ) : (
-    <DataTable columns={["Change", "Route ID", "Fields"]}>
-      {query.data.routes.map((entry: RouteDiffEntry) => (
-        <DataTableRow
-          key={`${entry.change_type}-${entry.route_id}`}
-          columns={[
-            <StatusBadge key="change" tone={getTone(entry.change_type)}>
-              {entry.change_type}
-            </StatusBadge>,
-            entry.route_id,
-            entry.changed_fields.length > 0
-              ? entry.changed_fields.map((field) => field.field).join(", ")
-              : "-",
-          ]}
-        />
-      ))}
-    </DataTable>
-  )}
-</SectionCard>
+              {query.data.routes.length === 0 ? (
+                <div style={{ color: "#6B665F" }}>No route changes.</div>
+              ) : (
+                <DataTable columns={["Change", "Route ID", "Fields"]}>
+                  {query.data.routes.map((entry: RouteDiffEntry) => (
+                    <DataTableRow
+                      key={`${entry.change_type}-${entry.route_id}`}
+                      columns={[
+                        <StatusBadge key="change" tone={getTone(entry.change_type)}>
+                          {entry.change_type}
+                        </StatusBadge>,
+                        entry.route_id,
+                        entry.changed_fields.length > 0
+                          ? entry.changed_fields.map((field) => field.field).join(", ")
+                          : "-",
+                      ]}
+                    />
+                  ))}
+                </DataTable>
+              )}
+            </SectionCard>
 
-<SectionCard title="Policy Changes">
-  {query.data.policies.length === 0 ? (
-    <div style={{ color: "#6B665F" }}>No policy changes.</div>
-  ) : (
-    <DataTable columns={["Change", "Policy ID", "Fields"]}>
-      {query.data.policies.map((entry: PolicyDiffEntry) => (
-        <DataTableRow
-          key={`${entry.change_type}-${entry.policy_id}`}
-          columns={[
-            <StatusBadge key="change" tone={getTone(entry.change_type)}>
-              {entry.change_type}
-            </StatusBadge>,
-            entry.policy_id,
-            entry.changed_fields.length > 0
-              ? entry.changed_fields.map((field: SnapshotChangedField) => field.field).join(", ")
-              : "-",
-          ]}
-        />
-      ))}
-    </DataTable>
-  )}
-</SectionCard>
+            <SectionCard title="Policy Changes">
+              {query.data.policies.length === 0 ? (
+                <div style={{ color: "#6B665F" }}>No policy changes.</div>
+              ) : (
+                <DataTable columns={["Change", "Policy ID", "Fields"]}>
+                  {query.data.policies.map((entry: PolicyDiffEntry) => (
+                    <DataTableRow
+                      key={`${entry.change_type}-${entry.policy_id}`}
+                      columns={[
+                        <StatusBadge key="change" tone={getTone(entry.change_type)}>
+                          {entry.change_type}
+                        </StatusBadge>,
+                        entry.policy_id,
+                        entry.changed_fields.length > 0
+                          ? entry.changed_fields
+                              .map((field: SnapshotChangedField) => field.field)
+                              .join(", ")
+                          : "-",
+                      ]}
+                    />
+                  ))}
+                </DataTable>
+              )}
+            </SectionCard>
           </>
         ) : null}
       </PageStack>

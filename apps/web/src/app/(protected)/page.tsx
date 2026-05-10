@@ -38,7 +38,7 @@ export default function DashboardPage() {
           subtitle="Operate, investigate, and govern API access decisions across Gatekeeper with a calm, auditable, and deployment-safe control plane."
           action={<StatusBadge tone="gold">{user?.role ?? "unknown"}</StatusBadge>}
         />
-        
+
         <RecentDomainEvents />
         <FrontendHealthPanel />
 

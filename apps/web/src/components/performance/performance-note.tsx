@@ -1,8 +1,4 @@
-export function PerformanceNote({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export function PerformanceNote({ children }: { children: React.ReactNode }) {
   return (
     <div
       style={{

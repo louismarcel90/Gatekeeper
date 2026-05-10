@@ -71,8 +71,7 @@ export async function checkQuota(input: QuotaInput): Promise<QuotaResult> {
       degraded: false,
     };
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Redis quota operation failed.";
+    const message = error instanceof Error ? error.message : "Redis quota operation failed.";
 
     setDependencyStatus({
       dependency: "redis",

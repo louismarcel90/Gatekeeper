@@ -18,12 +18,8 @@ type RateLimitResult = {
   degraded: boolean;
 };
 
-export async function checkRateLimit(
-  input: RateLimitInput,
-): Promise<RateLimitResult> {
-  const currentWindow = Math.floor(
-    Date.now() / (env.RATE_LIMIT_WINDOW_SECONDS * 1000),
-  );
+export async function checkRateLimit(input: RateLimitInput): Promise<RateLimitResult> {
+  const currentWindow = Math.floor(Date.now() / (env.RATE_LIMIT_WINDOW_SECONDS * 1000));
 
   const redisKey = `rate-limit:${input.clientId}:${input.routeId}:${currentWindow}`;
 
@@ -66,8 +62,7 @@ export async function checkRateLimit(
       degraded: false,
     };
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Redis rate-limit operation failed.";
+    const message = error instanceof Error ? error.message : "Redis rate-limit operation failed.";
 
     setDependencyStatus({
       dependency: "redis",

@@ -28,8 +28,8 @@ export function FrontendHealthPanel() {
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           <StatusBadge tone={getTone(overallStatus)}>{overallStatus}</StatusBadge>
           <span style={{ fontSize: 13, color: "#6B665F" }}>
-            Frontend health is derived from Control Plane reachability, realtime
-            stream state, and auth session readiness.
+            Frontend health is derived from Control Plane reachability, realtime stream state, and
+            auth session readiness.
           </span>
         </div>
 
@@ -47,15 +47,11 @@ export function FrontendHealthPanel() {
               }}
             >
               <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                <StatusBadge tone={getTone(dependency.status)}>
-                  {dependency.status}
-                </StatusBadge>
+                <StatusBadge tone={getTone(dependency.status)}>{dependency.status}</StatusBadge>
                 <strong style={{ fontSize: 14 }}>{dependency.name}</strong>
               </div>
 
-              <div style={{ fontSize: 13, color: "#6B665F" }}>
-                {dependency.reason}
-              </div>
+              <div style={{ fontSize: 13, color: "#6B665F" }}>{dependency.reason}</div>
 
               <div style={{ fontSize: 12, color: "#78716C" }}>
                 Last checked: {new Date(dependency.lastCheckedAt).toLocaleString()}

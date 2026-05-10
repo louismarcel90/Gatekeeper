@@ -2,10 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/src/core/api/client";
 import { useAuthStore } from "@/src/core/state/auth-store";
 import { logUiEvent } from "@/src/modules/observability/logger";
-import {
-  notifyError,
-  notifySuccess,
-} from '../notifications/domain-notifications';
+import { notifyError, notifySuccess } from "../notifications/domain-notifications";
 
 export type PolicyInput = {
   id: string;
@@ -66,10 +63,7 @@ export function useCreatePolicy() {
         queryClient.invalidateQueries({ queryKey: ["snapshots"] }),
       ]);
 
-      notifySuccess(
-  "Policy created",
-  `Policy ${data.id} was created successfully.`,
-);
+      notifySuccess("Policy created", `Policy ${data.id} was created successfully.`);
     },
     onError: (error) => {
       logUiEvent({
@@ -80,10 +74,7 @@ export function useCreatePolicy() {
           error: error instanceof Error ? error.message : "unknown error",
         },
       });
-      notifyError(
-  "Policy creation failed",
-  "The policy could not be created.",
-);
+      notifyError("Policy creation failed", "The policy could not be created.");
     },
   });
 }
@@ -122,10 +113,7 @@ export function useUpdatePolicy() {
         queryClient.invalidateQueries({ queryKey: ["snapshots"] }),
       ]);
 
-      notifySuccess(
-  "Policy updated",
-  `Policy ${data.id} was updated successfully.`,
-);
+      notifySuccess("Policy updated", `Policy ${data.id} was updated successfully.`);
     },
     onError: (error) => {
       logUiEvent({
@@ -136,10 +124,7 @@ export function useUpdatePolicy() {
           error: error instanceof Error ? error.message : "unexpected error",
         },
       });
-      notifyError(
-  "Policy update failed",
-  "The policy could not be updated.",
-);
+      notifyError("Policy update failed", "The policy could not be updated.");
     },
   });
 }

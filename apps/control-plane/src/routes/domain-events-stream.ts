@@ -10,9 +10,7 @@ function writeSseEvent(reply: FastifyReply, event: DomainEvent): void {
   reply.raw.write(`data: ${JSON.stringify(event)}\n\n`);
 }
 
-export async function registerDomainEventStreamRoutes(
-  app: FastifyInstance,
-): Promise<void> {
+export async function registerDomainEventStreamRoutes(app: FastifyInstance): Promise<void> {
   app.get("/events/stream", async (req, reply) => {
     const clientId = crypto.randomUUID();
 

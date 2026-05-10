@@ -101,3 +101,4 @@ compare snapshot diff
 activate snapshot
   ↓
 verify gateway decisions
+```

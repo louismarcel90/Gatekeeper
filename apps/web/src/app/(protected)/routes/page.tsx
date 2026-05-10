@@ -22,13 +22,13 @@ import {
   useRoutes,
   useSetRouteEnabled,
   useUpdateRoute,
-} from '../../../modules/routes/use-routes'; 
+} from "../../../modules/routes/use-routes";
 import { ConfirmationPanel } from "@/src/components/feedback/confirmation-panel";
 import {
   includesNormalized,
   paginateItems,
-  stableSortByString
-} from '../../../core/performance/array-utils';
+  stableSortByString,
+} from "../../../core/performance/array-utils";
 
 import { PerformanceNote } from "@/src/components/performance/performance-note";
 
@@ -86,40 +86,40 @@ export default function RoutesPage() {
 
   const pageSize = 10;
   const items = useMemo(() => {
-  return (query.data ?? []) as RouteItem[];
-}, [query.data]);
+    return (query.data ?? []) as RouteItem[];
+  }, [query.data]);
 
-const filteredItems = useMemo(() => {
-  let result = [...items];
+  const filteredItems = useMemo(() => {
+    let result = [...items];
 
-  if (pathFilter.trim()) {
-    result = result.filter((item) => includesNormalized(item.path, pathFilter));
-  }
+    if (pathFilter.trim()) {
+      result = result.filter((item) => includesNormalized(item.path, pathFilter));
+    }
 
-  if (methodFilter) {
-    result = result.filter((item) => item.method === methodFilter);
-  }
+    if (methodFilter) {
+      result = result.filter((item) => item.method === methodFilter);
+    }
 
-  if (sortMode === "method") {
-    return stableSortByString(result, (item) => item.method);
-  }
+    if (sortMode === "method") {
+      return stableSortByString(result, (item) => item.method);
+    }
 
-  if (sortMode === "enabled") {
-    return [...result].sort((a, b) => Number(b.enabled) - Number(a.enabled));
-  }
+    if (sortMode === "enabled") {
+      return [...result].sort((a, b) => Number(b.enabled) - Number(a.enabled));
+    }
 
-  return stableSortByString(result, (item) => item.path);
-}, [items, pathFilter, methodFilter, sortMode]);
+    return stableSortByString(result, (item) => item.path);
+  }, [items, pathFilter, methodFilter, sortMode]);
 
   const pagedItems = useMemo(
-  () =>
-    paginateItems({
-      items: filteredItems,
-      page,
-      pageSize,
-    }),
-  [filteredItems, page],
-);
+    () =>
+      paginateItems({
+        items: filteredItems,
+        page,
+        pageSize,
+      }),
+    [filteredItems, page],
+  );
 
   function updateForm<K extends keyof RouteInput>(key: K, value: RouteInput[K]) {
     setForm((current) => ({
@@ -265,8 +265,8 @@ const filteredItems = useMemo(() => {
 
         {!canCreate ? (
           <CapabilityHint>
-            Your role can inspect routes, but creating a new route requires a
-            security or admin role.
+            Your role can inspect routes, but creating a new route requires a security or admin
+            role.
           </CapabilityHint>
         ) : null}
 
@@ -318,9 +318,9 @@ const filteredItems = useMemo(() => {
           </FiltersBar>
 
           <PerformanceNote>
-  Routes use memoized filtering, sorting, and pagination to avoid unnecessary
-  rendering work as the managed API surface grows.
-</PerformanceNote>
+            Routes use memoized filtering, sorting, and pagination to avoid unnecessary rendering
+            work as the managed API surface grows.
+          </PerformanceNote>
 
           {query.isLoading ? (
             <div style={{ color: "#6B665F" }}>Loading routes...</div>
@@ -334,82 +334,77 @@ const filteredItems = useMemo(() => {
           ) : (
             <>
               <DataTable columns={["Path", "Method", "Upstream", "Status", "Actions"]}>
-  {pagedItems.map((item) => (
-    <DataTableRow
-      key={item.id}
-      columns={[
-        <button
-          key={`path-${item.id}`}
-          type="button"
-          onClick={() => setSelectedItem(item)}
-          style={{
-            border: 0,
-            background: "transparent",
-            padding: 0,
-            cursor: "pointer",
-            color: "inherit",
-            textAlign: "left",
-          }}
-        >
-          {item.path}
-        </button>,
+                {pagedItems.map((item) => (
+                  <DataTableRow
+                    key={item.id}
+                    columns={[
+                      <button
+                        key={`path-${item.id}`}
+                        type="button"
+                        onClick={() => setSelectedItem(item)}
+                        style={{
+                          border: 0,
+                          background: "transparent",
+                          padding: 0,
+                          cursor: "pointer",
+                          color: "inherit",
+                          textAlign: "left",
+                        }}
+                      >
+                        {item.path}
+                      </button>,
 
-        item.method,
+                      item.method,
 
-        item.upstream_url,
+                      item.upstream_url,
 
-        item.enabled ? (
-          <StatusBadge key={`status-${item.id}`} tone="green">
-            Enabled
-          </StatusBadge>
-        ) : (
-          <StatusBadge key={`status-${item.id}`} tone="red">
-            Disabled
-          </StatusBadge>
-        ),
+                      item.enabled ? (
+                        <StatusBadge key={`status-${item.id}`} tone="green">
+                          Enabled
+                        </StatusBadge>
+                      ) : (
+                        <StatusBadge key={`status-${item.id}`} tone="red">
+                          Disabled
+                        </StatusBadge>
+                      ),
 
-        <div
-          key={`actions-${item.id}`}
-          style={{
-            display: "flex",
-            gap: 8,
-            flexWrap: "wrap",
-          }}
-        >
-          {canCreate ? (
-            <>
-              <ActionButton
-                tone="neutral"
-                onClick={() => startEditingRoute(item)}
-              >
-                Edit
-              </ActionButton>
+                      <div
+                        key={`actions-${item.id}`}
+                        style={{
+                          display: "flex",
+                          gap: 8,
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        {canCreate ? (
+                          <>
+                            <ActionButton tone="neutral" onClick={() => startEditingRoute(item)}>
+                              Edit
+                            </ActionButton>
 
-              <ActionButton
-                tone={item.enabled ? "gold" : "violet"}
-                onClick={() => requestToggleRoute(item)}
-                disabled={lifecycleMutation.isPending}
-              >
-                {item.enabled ? "Disable" : "Enable"}
-              </ActionButton>
-            </>
-          ) : (
-            "-"
-          )}
-        </div>,
-      ]}
-    />
-  ))}
-</DataTable>
+                            <ActionButton
+                              tone={item.enabled ? "gold" : "violet"}
+                              onClick={() => requestToggleRoute(item)}
+                              disabled={lifecycleMutation.isPending}
+                            >
+                              {item.enabled ? "Disable" : "Enable"}
+                            </ActionButton>
+                          </>
+                        ) : (
+                          "-"
+                        )}
+                      </div>,
+                    ]}
+                  />
+                ))}
+              </DataTable>
               <PaginationControls
                 page={page}
                 pageSize={pageSize}
                 itemCount={filteredItems.length}
                 onPrevious={() => setPage((p) => Math.max(0, p - 1))}
                 onNext={() =>
-                  setPage((p) =>
-                    (p + 1) * pageSize < filteredItems.length ? p + 1 : p,
-                  )
+                  setPage((p) => ((p + 1) * pageSize < filteredItems.length ? p + 1 : p))
                 }
               />
             </>
@@ -437,21 +432,13 @@ const filteredItems = useMemo(() => {
 
         {pendingLifecycleAction ? (
           <ConfirmationPanel
-            title={
-              pendingLifecycleAction.nextEnabled
-                ? "Enable route"
-                : "Disable route"
-            }
+            title={pendingLifecycleAction.nextEnabled ? "Enable route" : "Disable route"}
             description={
               pendingLifecycleAction.nextEnabled
                 ? "This route will become eligible for runtime enforcement after the next snapshot publish and activation workflow."
                 : "This route will be disabled in the control plane. After publishing and activating a snapshot, matching runtime traffic can be denied."
             }
-            confirmLabel={
-              pendingLifecycleAction.nextEnabled
-                ? "Confirm enable"
-                : "Confirm disable"
-            }
+            confirmLabel={pendingLifecycleAction.nextEnabled ? "Confirm enable" : "Confirm disable"}
             tone={pendingLifecycleAction.nextEnabled ? "violet" : "danger"}
             isPending={lifecycleMutation.isPending}
             onConfirm={confirmToggleRoute}
@@ -613,9 +600,7 @@ const filteredItems = useMemo(() => {
 
               <select
                 value={form.method}
-                onChange={(e) =>
-                  updateForm("method", e.target.value as RouteInput["method"])
-                }
+                onChange={(e) => updateForm("method", e.target.value as RouteInput["method"])}
                 style={{
                   padding: 12,
                   borderRadius: 12,

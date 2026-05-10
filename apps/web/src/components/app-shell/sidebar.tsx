@@ -29,7 +29,7 @@ type NavLabel =
   | "Policy Documents"
   | "Deployments"
   | "Admin Users"
-  | "Snapshot Diff"
+  | "Snapshot Diff";
 
 type IconType = ComponentType<{ className?: string }>;
 

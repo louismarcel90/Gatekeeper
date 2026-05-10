@@ -10,9 +10,7 @@ import { dispatchDecisionAudit } from "./services/audit-dispatcher";
 import { loadSnapshotOnStartup, startSnapshotPolling } from "./services/snapshot-sync";
 import { snapshotStore } from "./services/snapshot-store";
 import { startRuntimeInfrastructure } from "./bootstrap/start-runtime";
-import {
-  registerRuntimeMetricsRoute,
-} from "./routes/runtime-metrics-route";
+import { registerRuntimeMetricsRoute } from "./routes/runtime-metrics-route";
 import { registerRuntimeHealthRoute } from "./routes/runtime-health-route";
 import { registerRuntimeSnapshotRoute } from "./routes/runtime-snapshot-route";
 import { registerRuntimeConsistencyRoute } from "./routes/runtime-consistency-route";
@@ -40,13 +38,13 @@ async function registerRoutes() {
     const context = buildContext(req);
     const snapshot = snapshotStore.getSnapshot();
     if (!snapshot) {
-  return reply.code(503).send({
-    decision: "DENY",
-    reason_code: "SNAPSHOT_MISSING",
-    explanation: "No active runtime snapshot is loaded.",
-    timestamp: new Date().toISOString(),
-  });
-}
+      return reply.code(503).send({
+        decision: "DENY",
+        reason_code: "SNAPSHOT_MISSING",
+        explanation: "No active runtime snapshot is loaded.",
+        timestamp: new Date().toISOString(),
+      });
+    }
     const decision = await evaluateWithSnapshot(snapshot, context);
 
     logRequest(req, decision);
@@ -86,13 +84,13 @@ async function start() {
     await app.listen({ port: env.PORT });
 
     app.log.info(
-  {
-    port: env.PORT,
-    controlPlaneBaseUrl: env.CONTROL_PLANE_BASE_URL,
-    snapshotPollIntervalMs: env.SNAPSHOT_POLL_INTERVAL_MS,
-  },
-  "Gateway running",
-);
+      {
+        port: env.PORT,
+        controlPlaneBaseUrl: env.CONTROL_PLANE_BASE_URL,
+        snapshotPollIntervalMs: env.SNAPSHOT_POLL_INTERVAL_MS,
+      },
+      "Gateway running",
+    );
   } catch (error) {
     app.log.error(error, "Failed to start Gateway");
     process.exit(1);

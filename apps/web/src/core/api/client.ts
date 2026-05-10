@@ -14,8 +14,7 @@ type RequestConfigWithMetadata = AxiosRequestConfig & {
 };
 
 export const apiClient = axios.create({
-  baseURL:
-    process.env.NEXT_PUBLIC_CONTROL_PLANE_BASE_URL ?? "http://localhost:3001",
+  baseURL: process.env.NEXT_PUBLIC_CONTROL_PLANE_BASE_URL ?? "http://localhost:3001",
 });
 
 apiClient.interceptors.request.use((config) => {
@@ -55,9 +54,7 @@ apiClient.interceptors.response.use(
     const metadata = (response.config as RequestConfigWithMetadata).metadata;
 
     const durationMs =
-      typeof metadata?.started_at === "number"
-        ? Date.now() - metadata.started_at
-        : undefined;
+      typeof metadata?.started_at === "number" ? Date.now() - metadata.started_at : undefined;
 
     logUiEvent({
       level: "success",
@@ -91,9 +88,7 @@ apiClient.interceptors.response.use(
     logUiEvent({
       level: "error",
       scope: "http.response",
-      message: `${config?.method?.toUpperCase() ?? "UNKNOWN"} ${
-        config?.url ?? "unknown"
-      } -> error`,
+      message: `${config?.method?.toUpperCase() ?? "UNKNOWN"} ${config?.url ?? "unknown"} -> error`,
       request_id: config?.metadata?.request_id,
       meta: {
         duration_ms: durationMs,

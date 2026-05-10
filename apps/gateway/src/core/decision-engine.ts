@@ -1,12 +1,6 @@
 import { checkQuota } from "../services/quota-limiter";
 import { checkRateLimit } from "../services/rate-limiter";
-import type {
-  Decision,
-  ManagedRoute,
-  Policy,
-  RequestContext,
-  Snapshot,
-} from "./types";
+import type { Decision, ManagedRoute, Policy, RequestContext, Snapshot } from "./types";
 import {
   recordAllowDecision,
   recordDenyDecision,
@@ -17,9 +11,7 @@ import {
 import { runtimeLogger } from "../observability/runtime-logger";
 // import { withSpan } from "../observability/tracing";
 
-function buildDecision(
-  input: Omit<Decision, "decision_id" | "timestamp">,
-): Decision {
+function buildDecision(input: Omit<Decision, "decision_id" | "timestamp">): Decision {
   return {
     decision_id: crypto.randomUUID(),
     timestamp: new Date().toISOString(),
@@ -27,10 +19,7 @@ function buildDecision(
   };
 }
 
-function findRouteForRequest(
-  snapshot: Snapshot,
-  context: RequestContext,
-): ManagedRoute | null {
+function findRouteForRequest(snapshot: Snapshot, context: RequestContext): ManagedRoute | null {
   const route = snapshot.routes.find(
     (candidate) =>
       candidate.path === context.path &&
@@ -41,9 +30,7 @@ function findRouteForRequest(
 }
 
 function findPolicyForRoute(snapshot: Snapshot, routeId: string): Policy | null {
-  const policy = snapshot.policies.find(
-    (candidate) => candidate.route_id === routeId,
-  );
+  const policy = snapshot.policies.find((candidate) => candidate.route_id === routeId);
 
   return policy ?? null;
 }
@@ -100,8 +87,7 @@ export async function evaluateDecisionInternal(
     return buildDecision({
       decision: "DENY",
       reason_code: "API_KEY_MISSING",
-      explanation:
-        "This route requires a valid API key or authenticated client identity.",
+      explanation: "This route requires a valid API key or authenticated client identity.",
       snapshot_version: snapshot.version,
       route_id: route.id,
       policy_id: policy.id,
@@ -109,11 +95,7 @@ export async function evaluateDecisionInternal(
     });
   }
 
-  if (
-    policy.required_scopes.length > 0 &&
-    context.auth.bearer_present &&
-    !context.auth.jwt_valid
-  ) {
+  if (policy.required_scopes.length > 0 && context.auth.bearer_present && !context.auth.jwt_valid) {
     recordDenyDecision();
 
     return buildDecision({
@@ -143,9 +125,7 @@ export async function evaluateDecisionInternal(
     });
   }
 
-  const missingScopes = policy.required_scopes.filter(
-    (scope) => !context.scopes.includes(scope),
-  );
+  const missingScopes = policy.required_scopes.filter((scope) => !context.scopes.includes(scope));
 
   if (missingScopes.length > 0) {
     recordDenyDecision();
@@ -175,9 +155,7 @@ export async function evaluateDecisionInternal(
       recordRateLimitExceeded();
       recordThrottleDecision();
 
-
       console.log("[DEBUG RATE LIMIT WARN SHOULD FIRE]");
-
 
       runtimeLogger.warn("Gateway decision throttled: rate limit exceeded.", {
         route_id: route.id,
@@ -251,8 +229,7 @@ export async function evaluateDecisionInternal(
   return buildDecision({
     decision: "ALLOW",
     reason_code: "OK",
-    explanation:
-      "The request matched an enabled route and satisfied its active policy.",
+    explanation: "The request matched an enabled route and satisfied its active policy.",
     snapshot_version: snapshot.version,
     route_id: route.id,
     policy_id: policy.id,

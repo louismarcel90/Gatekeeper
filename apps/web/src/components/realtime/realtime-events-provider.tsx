@@ -3,7 +3,7 @@
 import { ReactNode, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 
-import { useRealtimeEventStore } from "@/src/core/state/realtime-event-store"; 
+import { useRealtimeEventStore } from "@/src/core/state/realtime-event-store";
 import { useFrontendHealthStore } from "@/src/core/state/frontend-health-store";
 import {
   startDomainEventStream,
@@ -24,9 +24,7 @@ type RealtimeEventsProviderProps = {
 };
 
 function getControlPlaneBaseUrl(): string {
-  return (
-    process.env.NEXT_PUBLIC_CONTROL_PLANE_BASE_URL ?? "http://localhost:3001"
-  );
+  return process.env.NEXT_PUBLIC_CONTROL_PLANE_BASE_URL ?? "http://localhost:3001";
 }
 
 function notifyFromEvent(eventName: string, resourceId: string): void {
@@ -43,24 +41,16 @@ function notifyFromEvent(eventName: string, resourceId: string): void {
   notifyInfo("Realtime event", `${eventName} for ${resourceId}.`);
 }
 
-export function RealtimeEventsProvider({
-  children,
-}: RealtimeEventsProviderProps) {
+export function RealtimeEventsProvider({ children }: RealtimeEventsProviderProps) {
   const queryClient = useQueryClient();
 
-  const setConnectionState = useRealtimeEventStore(
-    (state) => state.setConnectionState,
-  );
+  const setConnectionState = useRealtimeEventStore((state) => state.setConnectionState);
 
   const pushEvent = useRealtimeEventStore((state) => state.pushEvent);
 
-  const setRejectedEventReason = useRealtimeEventStore(
-    (state) => state.setRejectedEventReason,
-  );
+  const setRejectedEventReason = useRealtimeEventStore((state) => state.setRejectedEventReason);
 
-  const setDependencyStatus = useFrontendHealthStore(
-    (state) => state.setDependencyStatus,
-  );
+  const setDependencyStatus = useFrontendHealthStore((state) => state.setDependencyStatus);
 
   useEffect(() => {
     setConnectionState("reconnecting");
@@ -115,13 +105,7 @@ export function RealtimeEventsProvider({
         reason: "Realtime stream disconnected.",
       });
     };
-  }, [
-    pushEvent,
-    queryClient,
-    setConnectionState,
-    setDependencyStatus,
-    setRejectedEventReason,
-  ]);
+  }, [pushEvent, queryClient, setConnectionState, setDependencyStatus, setRejectedEventReason]);
 
   return <>{children}</>;
 }

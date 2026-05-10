@@ -43,12 +43,15 @@ Realtime events are capped in memory to avoid unbounded client growth.
 ## State Categories
 
 ### Server state
+
 Owned by the Control Plane and accessed via React Query.
 
 ### Realtime projection state
+
 Owned by the frontend temporarily for operator visibility.
 
 ### Local UI state
+
 Filters, selected rows, forms, pagination, and editing state.
 
 ---

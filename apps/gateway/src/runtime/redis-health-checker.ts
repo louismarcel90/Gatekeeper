@@ -33,8 +33,7 @@ export async function checkRedisHealth(): Promise<void> {
       redis_response: pong,
     });
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Redis health check failed.";
+    const message = error instanceof Error ? error.message : "Redis health check failed.";
 
     setDependencyStatus({
       dependency: "redis",

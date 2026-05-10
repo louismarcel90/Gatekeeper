@@ -21,9 +21,7 @@ type RuntimeSnapshotResponse = {
   policies: RuntimePolicySnapshot[];
 };
 
-export async function registerRuntimeRoutes(
-  app: FastifyInstance,
-): Promise<void> {
+export async function registerRuntimeRoutes(app: FastifyInstance): Promise<void> {
   app.get("/runtime/active-snapshot", async (): Promise<RuntimeSnapshotResponse> => {
     return {
       version: 1,

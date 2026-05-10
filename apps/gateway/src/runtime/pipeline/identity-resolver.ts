@@ -7,9 +7,7 @@ type JwtPayload = {
   scope?: string;
 };
 
-export function resolveIdentity(
-  authorizationHeader?: string,
-): RuntimeIdentity {
+export function resolveIdentity(authorizationHeader?: string): RuntimeIdentity {
   if (!authorizationHeader) {
     return {
       clientId: "anonymous",
@@ -23,8 +21,6 @@ export function resolveIdentity(
 
   return {
     clientId: decoded.client_id ?? "unknown-client",
-    scopes: decoded.scope
-      ? decoded.scope.split(" ")
-      : [],
+    scopes: decoded.scope ? decoded.scope.split(" ") : [],
   };
 }

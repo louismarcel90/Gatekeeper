@@ -10,26 +10,21 @@ type VirtualListProps<T> = {
   renderItem: (item: T, index: number) => ReactNode;
 };
 
-export function VirtualList<T>({
-  items,
- estimateSize,
-  height,
-  renderItem,
-}: VirtualListProps<T>) {
+export function VirtualList<T>({ items, estimateSize, height, renderItem }: VirtualListProps<T>) {
   const parentRef = useRef<HTMLDivElement | null>(null);
 
   const virtualizerOptions = useMemo(
-  () => ({
-    count: items.length,
-    getScrollElement: () => parentRef.current,
-    estimateSize: () => estimateSize,
-    overscan: 8,
-  }),
-  [items.length, estimateSize],
-);
+    () => ({
+      count: items.length,
+      getScrollElement: () => parentRef.current,
+      estimateSize: () => estimateSize,
+      overscan: 8,
+    }),
+    [items.length, estimateSize],
+  );
 
-// eslint-disable-next-line react-hooks/incompatible-library
-const virtualizer = useVirtualizer(virtualizerOptions);
+  // eslint-disable-next-line react-hooks/incompatible-library
+  const virtualizer = useVirtualizer(virtualizerOptions);
 
   return (
     <div

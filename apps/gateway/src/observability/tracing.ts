@@ -66,8 +66,7 @@ export async function withSpan<T>(
 
       return result;
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Tracing operation failed.";
+      const message = error instanceof Error ? error.message : "Tracing operation failed.";
 
       span.recordException({
         name: "Error",

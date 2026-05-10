@@ -9,9 +9,7 @@ function calculateUptimeSeconds(startedAt: string): number {
   return Math.max(Math.floor((Date.now() - startedAtMs) / 1000), 0);
 }
 
-export async function registerRuntimeMetricsRoute(
-  app: FastifyInstance,
-): Promise<void> {
+export async function registerRuntimeMetricsRoute(app: FastifyInstance): Promise<void> {
   app.get("/runtime/metrics", async () => {
     const metrics = getRuntimeMetrics();
     const health = getRuntimeHealth();

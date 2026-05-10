@@ -9,17 +9,11 @@ function calculateUptimeSeconds(startedAt: string): number {
   return Math.max(Math.floor((Date.now() - startedAtMs) / 1000), 0);
 }
 
-function calculateDecisionTotal(params: {
-  allow: number;
-  deny: number;
-  throttle: number;
-}): number {
+function calculateDecisionTotal(params: { allow: number; deny: number; throttle: number }): number {
   return params.allow + params.deny + params.throttle;
 }
 
-export async function registerRuntimeDashboardRoute(
-  app: FastifyInstance,
-): Promise<void> {
+export async function registerRuntimeDashboardRoute(app: FastifyInstance): Promise<void> {
   app.get("/runtime/dashboard", async () => {
     const health = getRuntimeHealth();
     const metrics = getRuntimeMetrics();
@@ -66,16 +60,11 @@ export async function registerRuntimeDashboardRoute(
         exporter_endpoint: env.OTEL_EXPORTER_OTLP_ENDPOINT,
       },
       operational_summary: {
-        runtime_ready:
-          health.status !== "UNAVAILABLE" &&
-          snapshotCache.activeSnapshot !== null,
+        runtime_ready: health.status !== "UNAVAILABLE" && snapshotCache.activeSnapshot !== null,
         using_last_known_good_snapshot:
-          snapshotCache.status === "REFRESH_FAILED" ||
-          snapshotCache.status === "STALE",
+          snapshotCache.status === "REFRESH_FAILED" || snapshotCache.status === "STALE",
         redis_degraded: health.dependencies.some(
-          (dependency) =>
-            dependency.dependency === "redis" &&
-            dependency.status !== "HEALTHY",
+          (dependency) => dependency.dependency === "redis" && dependency.status !== "HEALTHY",
         ),
       },
     };

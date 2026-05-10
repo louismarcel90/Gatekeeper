@@ -73,6 +73,5 @@ export function DataTableRow({ columns }: { columns: ReactNode[] }) {
         </div>
       ))}
     </div>
-    
   );
 }

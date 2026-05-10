@@ -13,9 +13,7 @@ function parseTimestamp(value: string): number {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
-export function shouldAcceptRealtimeEvent(
-  event: RealtimeDomainEvent,
-): ReconciliationDecision {
+export function shouldAcceptRealtimeEvent(event: RealtimeDomainEvent): ReconciliationDecision {
   if (processedEventIds.has(event.id)) {
     return {
       shouldAccept: false,

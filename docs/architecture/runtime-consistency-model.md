@@ -18,3 +18,4 @@ Immutable Snapshot
 Gateway Runtime Cache
         ↓ enforce
 API Traffic Decisions
+```

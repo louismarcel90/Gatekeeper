@@ -14,11 +14,7 @@ export type AppNotification = {
 
 type NotificationState = {
   notifications: AppNotification[];
-  pushNotification: (input: {
-    tone: NotificationTone;
-    title: string;
-    message: string;
-  }) => void;
+  pushNotification: (input: { tone: NotificationTone; title: string; message: string }) => void;
   dismissNotification: (id: string) => void;
   clearNotifications: () => void;
 };
@@ -46,9 +42,7 @@ export const useNotificationStore = create<NotificationState>((set) => ({
 
   dismissNotification: (id) =>
     set((state) => ({
-      notifications: state.notifications.filter(
-        (notification) => notification.id !== id,
-      ),
+      notifications: state.notifications.filter((notification) => notification.id !== id),
     })),
 
   clearNotifications: () =>

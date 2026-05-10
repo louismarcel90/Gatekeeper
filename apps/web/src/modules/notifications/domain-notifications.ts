@@ -1,4 +1,4 @@
-import { useNotificationStore } from "@/src/core/state/notification-store"; 
+import { useNotificationStore } from "@/src/core/state/notification-store";
 
 export function notifySuccess(title: string, message: string): void {
   useNotificationStore.getState().pushNotification({

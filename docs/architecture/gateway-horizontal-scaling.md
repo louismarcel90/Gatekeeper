@@ -23,6 +23,7 @@ Upstream Services
 ```
 
 ## Snapshot Scaling Model
+
 ```text
 Control Plane
    ↓
@@ -32,6 +33,7 @@ Gateway C snapshot cache
 ```
 
 ## Rate Limiting Scaling Model
+
 ```text
 Gateway A \
 Gateway B ---> Redis counters

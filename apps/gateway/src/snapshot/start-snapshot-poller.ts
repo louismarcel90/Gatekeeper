@@ -11,8 +11,7 @@ export async function startSnapshotPoller(): Promise<void> {
   try {
     await loadRuntimeSnapshot();
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Initial snapshot load failed.";
+    const message = error instanceof Error ? error.message : "Initial snapshot load failed.";
 
     runtimeLogger.error("Initial runtime snapshot load failed.", {
       error_message: message,
@@ -28,24 +27,17 @@ async function refreshSnapshotSafely(): Promise<void> {
   try {
     await loadRuntimeSnapshot();
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Snapshot refresh failed.";
+    const message = error instanceof Error ? error.message : "Snapshot refresh failed.";
 
     if (hasRuntimeSnapshot()) {
-      runtimeLogger.warn(
-        "Snapshot refresh failed, keeping last known good snapshot.",
-        {
-          error_message: message,
-        },
-      );
+      runtimeLogger.warn("Snapshot refresh failed, keeping last known good snapshot.", {
+        error_message: message,
+      });
       return;
     }
 
-    runtimeLogger.error(
-      "Snapshot refresh failed and no cached snapshot exists.",
-      {
-        error_message: message,
-      },
-    );
+    runtimeLogger.error("Snapshot refresh failed and no cached snapshot exists.", {
+      error_message: message,
+    });
   }
 }

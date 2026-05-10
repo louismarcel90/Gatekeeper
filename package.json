@@ -26,10 +26,14 @@
     "audit:list": "curl http://localhost:3001/audit/decisions -H \"Authorization: Bearer %ADMIN_TOKEN%\"",
     "deployments:list": "curl http://localhost:3001/deployments/history -H \"Authorization: Bearer %ADMIN_TOKEN%\"",
     "format": "prettier . --write",
-    "format:check": "prettier . --check"
+    "format:check": "prettier . --check",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",
+    "@playwright/test": "^1.59.1",
     "@types/node": "^25.5.0",
     "eslint": "^9.9.0",
     "eslint-config-prettier": "^9.1.0",

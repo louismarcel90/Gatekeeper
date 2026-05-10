@@ -107,3 +107,4 @@ Tracing is controlled with:
 OTEL_TRACING_ENABLED=false
 OTEL_SERVICE_NAME=gatekeeper-gateway
 OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318/v1/traces
+```
