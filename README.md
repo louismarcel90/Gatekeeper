@@ -169,7 +169,7 @@ Decision = f(identity, action, resource, context, policy)
       │                │                  │
       ▼                ▼                  ▼
               ┌──────────────────────┐
-              │   DECISION OUTPUT     │
+              │   DECISION OUTPUT    │
               └─────────┬────────────┘
                         │
                         ▼
