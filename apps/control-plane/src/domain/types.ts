@@ -2,6 +2,12 @@ export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
 export type AdminRole = "viewer" | "security" | "admin";
 
+export type SnapshotIntegrity = {
+  algorithm: "sha256";
+  hash: string;
+  generated_at: string;
+};
+
 export type AdminUser = {
   id: string;
   email: string;
@@ -32,6 +38,7 @@ export type Snapshot = {
   generated_at: string;
   routes: ManagedRoute[];
   policies: Policy[];
+  integrity: SnapshotIntegrity;
   is_active?: boolean;
 };
 

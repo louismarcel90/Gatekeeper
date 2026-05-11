@@ -34,6 +34,12 @@ export type Decision = {
   timestamp: string;
 };
 
+export type SnapshotIntegrity = {
+  algorithm: "sha256";
+  hash: string;
+  generated_at: string;
+};
+
 export type JwtClaims = {
   sub?: string;
   client_id?: string;
@@ -80,4 +86,7 @@ export type Snapshot = {
   generated_at: string;
   routes: ManagedRoute[];
   policies: Policy[];
+  integrity: SnapshotIntegrity;
+
 };
+

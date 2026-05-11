@@ -14,6 +14,15 @@ const gatewayEnvSchema = z.object({
 
   CONTROL_PLANE_BASE_URL: z.string().min(1),
 
+  OTEL_SERVICE_NAME: z.string().min(1),
+
+  OTEL_EXPORTER_OTLP_ENDPOINT: z.string().min(1),
+
+  OTEL_TRACING_ENABLED: z
+  .string()
+  .default("false")
+  .transform((value) => value === "true"),
+
   SNAPSHOT_POLL_INTERVAL_MS: z.coerce
   .number()
   .int()

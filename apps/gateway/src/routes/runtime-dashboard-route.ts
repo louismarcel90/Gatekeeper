@@ -3,6 +3,7 @@ import { env } from "../config/env";
 import { getRuntimeMetrics } from "../observability/runtime-metrics";
 import { getRuntimeHealth } from "../runtime/runtime-health-registry";
 import { getRuntimeSnapshotCache } from "../snapshot/runtime-snapshot-store";
+import { getRuntimeIntegrityState } from "../runtime/runtime-integrity-state";
 
 function calculateUptimeSeconds(startedAt: string): number {
   const startedAtMs = new Date(startedAt).getTime();
@@ -67,6 +68,7 @@ export async function registerRuntimeDashboardRoute(app: FastifyInstance): Promi
           (dependency) => dependency.dependency === "redis" && dependency.status !== "HEALTHY",
         ),
       },
+      integrity: getRuntimeIntegrityState(),
     };
   });
 }

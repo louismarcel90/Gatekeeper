@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { controlPlaneConfig } from "../config/env";
+import { env } from "../config/env";
 import { AdminUser } from "../domain/types";
 import { LoginInput } from "../domain/validators";
 import { findAdminUserByEmail, findAdminUserById } from "../infrastructure/admin-user-repository";
@@ -35,7 +35,7 @@ export async function loginAdmin(input: LoginInput): Promise<{
       client_id: "admin-client",
       scope: "search:read",
     },
-    controlPlaneConfig.adminJwtSecret,
+    env.ADMIN_JWT_SECRET,
     {
       algorithm: "HS256",
       expiresIn: "12h",
@@ -53,7 +53,7 @@ export async function loginAdmin(input: LoginInput): Promise<{
 }
 
 export function verifyAdminToken(token: string): AuthTokenPayload {
-  const decoded = jwt.verify(token, controlPlaneConfig.adminJwtSecret);
+  const decoded = jwt.verify(token, env.ADMIN_JWT_SECRET);
 
   if (typeof decoded === "string") {
     throw new Error("INVALID_ADMIN_TOKEN");

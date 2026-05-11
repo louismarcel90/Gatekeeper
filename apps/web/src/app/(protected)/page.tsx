@@ -14,6 +14,8 @@ import { useRoutes } from "@/src/modules/routes/use-routes";
 import { useActiveSnapshot } from "@/src/modules/snapshots/use-snapshots";
 import { RecentDomainEvents } from "@/src/components/realtime/recent-domain-events";
 import { FrontendHealthPanel } from "@/src/components/health/frontend-health-panel";
+import { RuntimeIntegrityPanel } from "@/src/components/runtime/runtime-integrity-panel";
+import { useRuntimeDashboard } from "@/src/modules/runtime/use-runtime-dashboard";
 
 type RouteItem = {
   id: string;
@@ -26,6 +28,8 @@ export default function DashboardPage() {
   const user = useAuthStore((state) => state.user);
   const routesQuery = useRoutes();
   const activeSnapshotQuery = useActiveSnapshot();
+  const runtimeDashboardQuery = useRuntimeDashboard();
+const runtimeDashboard = runtimeDashboardQuery.data;
 
   const routes = (routesQuery.data ?? []) as RouteItem[];
   const enabledRoutes = routes.filter((route) => route.enabled).length;
@@ -41,6 +45,10 @@ export default function DashboardPage() {
 
         <RecentDomainEvents />
         <FrontendHealthPanel />
+
+        {runtimeDashboard ? (
+  <RuntimeIntegrityPanel integrity={runtimeDashboard.integrity} />
+) : null}
 
         <PageSectionGrid>
           <StatCard label="Managed Routes" value={routes.length} />

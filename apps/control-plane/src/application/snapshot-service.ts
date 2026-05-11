@@ -11,6 +11,7 @@ import {
   insertSnapshot,
   listSnapshots as listSnapshotsFromDb,
 } from "../infrastructure/snapshot-repository";
+import { createSnapshotHash } from "../snapshots/create-snapshot-hash";
 
 type ActionContext = {
   request_id?: string | null;
@@ -24,13 +25,26 @@ export async function publishSnapshot(context?: ActionContext): Promise<Snapshot
   const version = await getNextSnapshotVersion();
   const currentActive = await getActiveSnapshotFromDb();
 
-  const snapshot: Snapshot = {
-    version,
-    generated_at: new Date().toISOString(),
-    routes,
-    policies,
-    is_active: currentActive === null,
-  };
+  const generatedAt = new Date().toISOString();
+
+const snapshotPayload = {
+  version,
+  generated_at: generatedAt,
+  routes,
+  policies,
+};
+
+const integrity = {
+  algorithm: "sha256" as const,
+  hash: createSnapshotHash(snapshotPayload),
+  generated_at: new Date().toISOString(),
+};
+
+const snapshot: Snapshot = {
+  ...snapshotPayload,
+  integrity,
+  is_active: currentActive === null,
+};
 
   const inserted = await insertSnapshot(snapshot);
 

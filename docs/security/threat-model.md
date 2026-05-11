@@ -319,3 +319,20 @@ Gatekeeper mitigates these through:
 - startup security audits
 - fail-fast configuration parsing
 - explicit environment schemas
+
+---
+
+## Snapshot Integrity Risks
+
+Runtime risks include:
+
+- corrupted snapshot files
+- partial deployment artifacts
+- tampered runtime configuration
+
+Current mitigations:
+
+- SHA-256 snapshot integrity verification
+- runtime verification before load
+- integrity state exposed in dashboard
+- fail-fast snapshot rejection

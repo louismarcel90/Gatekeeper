@@ -12,6 +12,7 @@ import { getActor, getRequestId } from "../shared/request-context";
 import { sendInternalError, sendNotFound } from "../shared/http";
 import { publishDomainEvent } from "../events/domain-event-bus";
 
+
 export async function registerSnapshotRoutes(app: FastifyInstance) {
   app.get("/snapshots", { preHandler: [requireAdminAuth] }, async () => {
     return {
