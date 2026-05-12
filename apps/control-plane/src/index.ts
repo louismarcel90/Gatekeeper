@@ -22,6 +22,7 @@ import { registerDomainEventLogger } from "./events/domain-event-logger";
 import { registerDevEventRoutes } from "./routes/dev-events";
 import { registerDomainEventStreamSubscriber } from "./events/domain-event-stream-subscriber";
 import { registerDomainEventStreamRoutes } from "./routes/domain-events-stream";
+import { registerAdminAuditRoutes } from "./routes/admin-audit";
 import { env } from "./config/env";
 
 const app = Fastify({
@@ -53,6 +54,7 @@ async function buildServer() {
   await registerSnapshotDiffRoutes(app);
   await registerDevEventRoutes(app);
   await registerDomainEventStreamRoutes(app);
+  await registerAdminAuditRoutes(app);
 
   return app;
 }

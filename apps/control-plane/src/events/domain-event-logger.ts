@@ -1,3 +1,4 @@
+import { recordAdminAuditEvent } from "../application/admin-audit-service";
 import { DomainEvent } from "./domain-event";
 import { subscribeToDomainEvents } from "./domain-event-bus";
 
@@ -23,5 +24,19 @@ function logDomainEvent(event: DomainEvent): void {
 export function registerDomainEventLogger(): void {
   subscribeToDomainEvents(async (event) => {
     logDomainEvent(event);
+
+    await recordAdminAuditEvent({
+      action: event.name,
+      resource_type: event.payload.resource_type,
+      resource_id: event.payload.resource_id,
+      actor_user_id: null,
+      actor_email: event.payload.actor_email ?? null,
+      request_id: event.payload.request_id ?? null,
+      metadata: {
+        domain_event_id: event.id,
+        domain_action: event.payload.action,
+        ...(event.payload.metadata ?? {}),
+      },
+    });
   });
 }

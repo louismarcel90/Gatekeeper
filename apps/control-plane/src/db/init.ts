@@ -119,6 +119,20 @@ export async function initDatabase(): Promise<void> {
     ADD COLUMN IF NOT EXISTS actor_email TEXT NULL;
   `);
 
+  await pool.query(`
+  CREATE TABLE IF NOT EXISTS admin_audit_events (
+    id TEXT PRIMARY KEY,
+    action TEXT NOT NULL,
+    resource_type TEXT NOT NULL,
+    resource_id TEXT NOT NULL,
+    actor_user_id TEXT,
+    actor_email TEXT,
+    request_id TEXT,
+    metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  )
+`);
+
   const existingAdmin = await pool.query<{ email: string }>(
     `
     SELECT email

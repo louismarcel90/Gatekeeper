@@ -12,12 +12,12 @@ import {
   Rocket,
   UserStar,
   GitCompareArrows,
+  ScrollText,
 } from "lucide-react";
 
 import { useAuthStore } from "@/src/core/state/auth-store";
 import { getVisibleNavItems } from "@/src/modules/navigation/role-access";
 import { NavItem } from "./nav-item";
-// import { GatekeeperMark } from "../icons/gatekeeper-mark";
 
 type NavLabel =
   | "Dashboard"
@@ -29,7 +29,8 @@ type NavLabel =
   | "Policy Documents"
   | "Deployments"
   | "Admin Users"
-  | "Snapshot Diff";
+  | "Snapshot Diff"
+  | "Admin Audit";
 
 type IconType = ComponentType<{ className?: string }>;
 
@@ -44,6 +45,7 @@ const navIcons: Record<NavLabel, IconType> = {
   Deployments: Rocket,
   "Admin Users": UserStar,
   "Snapshot Diff": GitCompareArrows,
+  "Admin Audit": ScrollText,
 };
 
 export function Sidebar() {

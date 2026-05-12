@@ -1,5 +1,4 @@
 import axios, { AxiosError, type AxiosRequestConfig } from "axios";
-
 import { createRequestId } from "../observability/request-id";
 import { useFrontendHealthStore } from "../state/frontend-health-store";
 import { logUiEvent } from "@/src/modules/observability/logger";

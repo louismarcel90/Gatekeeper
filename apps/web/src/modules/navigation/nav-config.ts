@@ -57,4 +57,9 @@ export const NAV_ITEMS: NavItemConfig[] = [
     href: "/admin-users",
     roles: ["admin"],
   },
+  {
+  label: "Admin Audit",
+  href: "/admin-audit",
+  roles: ["viewer", "security", "admin"],
+},
 ];
