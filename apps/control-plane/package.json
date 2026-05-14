@@ -1,0 +1,32 @@
+{
+  "name": "@gatekeeper/control-plane",
+  "private": true,
+  "type": "commonjs",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/bootstrap.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@fastify/cors": "8",
+    "bcryptjs": "^3.0.3",
+    "dotenv": "^17.3.1",
+    "fastify": "^4.29.1",
+    "jsonwebtoken": "^9.0.3",
+    "pg": "^8.20.0",
+    "pino": "^9.14.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^22.19.15",
+    "@types/pg": "^8.20.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "vitest": "^2.0.5"
+  }
+}

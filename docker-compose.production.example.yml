@@ -1,0 +1,44 @@
+services:
+  control-plane:
+    build:
+      context: .
+      dockerfile: apps/control-plane/Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      CORS_ORIGIN: ${CORS_ORIGIN}
+      CONTROL_PLANE_INSTANCE_ID: ${CONTROL_PLANE_INSTANCE_ID}
+
+  gateway:
+    build:
+      context: .
+      dockerfile: apps/gateway/Dockerfile
+    ports:
+      - "3002:3002"
+    environment:
+      NODE_ENV: production
+      PORT: 3002
+      REDIS_URL: ${REDIS_URL}
+      CONTROL_PLANE_BASE_URL: ${CONTROL_PLANE_BASE_URL}
+      GATEWAY_INSTANCE_ID: ${GATEWAY_INSTANCE_ID}
+      SNAPSHOT_POLL_INTERVAL_MS: ${SNAPSHOT_POLL_INTERVAL_MS}
+      RATE_LIMIT_WINDOW_SECONDS: ${RATE_LIMIT_WINDOW_SECONDS}
+      QUOTA_WINDOW_SECONDS: ${QUOTA_WINDOW_SECONDS}
+      OTEL_TRACING_ENABLED: ${OTEL_TRACING_ENABLED}
+      OTEL_SERVICE_NAME: ${OTEL_SERVICE_NAME}
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT}
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_CONTROL_PLANE_BASE_URL: ${CONTROL_PLANE_BASE_URL}
